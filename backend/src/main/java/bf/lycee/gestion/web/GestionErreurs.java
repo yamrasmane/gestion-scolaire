@@ -2,6 +2,7 @@ package bf.lycee.gestion.web;
 
 import bf.lycee.gestion.service.IntrouvableException;
 import bf.lycee.gestion.service.RegleMetierException;
+import bf.lycee.gestion.service.SaisieInvalideException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,11 @@ public class GestionErreurs extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IntrouvableException.class)
     public ProblemDetail introuvable(IntrouvableException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(SaisieInvalideException.class)
+    public ProblemDetail saisieInvalide(SaisieInvalideException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(RegleMetierException.class)

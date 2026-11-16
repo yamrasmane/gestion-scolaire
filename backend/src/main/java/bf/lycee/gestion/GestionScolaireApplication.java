@@ -2,8 +2,10 @@ package bf.lycee.gestion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class GestionScolaireApplication {
     public static void main(String[] args) {
         SpringApplication.run(GestionScolaireApplication.class, args);

@@ -4,6 +4,8 @@ package bf.lycee.gestion.security;
 public final class Roles {
 
     public static final String DIRECTION = "hasAnyRole('DIRECTEUR', 'CENSEUR')";
+    /** Gestion des élèves et des inscriptions. */
+    public static final String SCOLARITE = "hasAnyRole('DIRECTEUR', 'CENSEUR', 'SURVEILLANT')";
     public static final String ENSEIGNANT = "hasRole('ENSEIGNANT')";
     public static final String SURVEILLANT = "hasRole('SURVEILLANT')";
     public static final String INTENDANT = "hasRole('INTENDANT')";
