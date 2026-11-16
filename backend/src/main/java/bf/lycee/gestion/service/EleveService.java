@@ -22,6 +22,7 @@ import bf.lycee.gestion.web.EleveDto.LigneImport;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,8 +52,9 @@ public class EleveService {
     private static final List<String> OBLIGATOIRES = List.of("matricule", "nom", "prenom", "date_naissance", "sexe");
     private static final List<DateTimeFormatter> FORMATS_DATE = List.of(
             DateTimeFormatter.ISO_LOCAL_DATE,
-            DateTimeFormatter.ofPattern("d/M/uuuu"),
-            DateTimeFormatter.ofPattern("d-M-uuuu"));
+            // STRICT : sans cela, une date impossible comme 31/02/2014 serait ramenée au 28/02
+            DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d-M-uuuu").withResolverStyle(ResolverStyle.STRICT));
 
     private final EleveRepository eleves;
     private final InscriptionRepository inscriptions;
