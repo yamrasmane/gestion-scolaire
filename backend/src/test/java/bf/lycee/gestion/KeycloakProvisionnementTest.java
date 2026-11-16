@@ -93,7 +93,7 @@ class KeycloakProvisionnementTest {
         keycloak.expect(requestTo(BASE + "/admin/realms/lycee/users"))
                 .andRespond(withStatus(HttpStatus.CONFLICT));
         keycloak.expect(requestTo(
-                        BASE + "/admin/realms/lycee/users?username=issa.sawadogo@lycee.bf&exact=true"))
+                        BASE + "/admin/realms/lycee/users?username=issa.sawadogo%40lycee.bf&exact=true"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("[{\"id\": \"" + ID + "\"}]", MediaType.APPLICATION_JSON));
         attendreAttributionDuRole();
