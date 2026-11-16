@@ -14,7 +14,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.envers.Audited;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "eleve")
@@ -35,7 +37,9 @@ public class Eleve extends AbstractAuditingEntity {
     @Column(nullable = false)
     private LocalDate dateNaissance;
 
+    // Sans cette précision, Hibernate attend un CHAR(1) pour une énumération à noms d'une lettre
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 1)
     private Sexe sexe;
 
