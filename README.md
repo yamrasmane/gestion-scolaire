@@ -4,7 +4,7 @@ Application web de gestion scolaire, académique et financière pour un établis
 
 | Dossier | Contenu |
 |---|---|
-| `backend/` | API REST Java 21 / Spring Boot 3, PostgreSQL, Flyway, Hibernate Envers |
+| `backend/` | API REST Java 21 / Spring Boot 3 (Maven), PostgreSQL, Flyway, Hibernate Envers |
 | `frontend/` | Interface Angular 20 (connexion Keycloak) |
 | `docker/`, `docker-compose.yml` | PostgreSQL 16 et Keycloak 26 pour le développement |
 | `.github/workflows/ci.yml` | Compilation et tests automatiques à chaque envoi sur GitHub |
@@ -18,7 +18,7 @@ Application web de gestion scolaire, académique et financière pour un établis
 
 ## Démarrer en développement
 
-Prérequis : Docker, Java 21, Node.js 22.
+Prérequis : Docker, Java 21, Maven 3.9+, Node.js 22.
 
 ```bash
 # 1. Base de données et Keycloak
@@ -26,7 +26,7 @@ docker compose up -d
 
 # 2. API (http://localhost:8080)
 cd backend
-./gradlew bootRun
+mvn spring-boot:run
 
 # 3. Interface (http://localhost:4200)
 cd frontend
@@ -53,7 +53,7 @@ Mot de passe initial de ces comptes : `Changeme123!` (à changer à la première
 
 ```bash
 cd backend
-./gradlew test        # nécessite PostgreSQL démarré (base lycee_test créée par docker compose)
+mvn test        # nécessite PostgreSQL démarré (base lycee_test créée par docker compose)
 ```
 
 Au démarrage, l'API vérifie que les entités Java correspondent exactement au schéma de la base

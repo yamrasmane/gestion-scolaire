@@ -29,15 +29,15 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+          cache: maven
       - name: Compilation et tests
-        run: ./gradlew build --no-daemon
+        run: mvn --batch-mode --no-transfer-progress verify
       - name: Rapport de tests
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rapport-tests-backend
-          path: backend/build/reports/tests/test
+          path: backend/target/surefire-reports
           if-no-files-found: ignore
 
   frontend:

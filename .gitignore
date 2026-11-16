@@ -1,6 +1,5 @@
 # Backend
-backend/build/
-backend/.gradle/
+backend/target/
 *.class
 # Frontend
 frontend/node_modules/
