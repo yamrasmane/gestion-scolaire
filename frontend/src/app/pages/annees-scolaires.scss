@@ -1,18 +1,5 @@
-.grille {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
 .options {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
-}
-
-.case {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-weight: 400;
 }

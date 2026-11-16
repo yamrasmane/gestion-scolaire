@@ -11,8 +11,8 @@ Application web de gestion scolaire, académique et financière pour un établis
 
 ## État d'avancement
 
-- **Lot 1 — Socle (ce dépôt)** : schéma complet des 22 tables et de leurs tables d'audit, sécurité par rôles Keycloak, audit à deux niveaux, gestion des années scolaires, squelette Angular avec connexion.
-- Lot 2 — Paramétrage : trimestres, niveaux, classes, personnel, élèves, imports Excel.
+- **Lot 1 — Socle (fait)** : schéma complet des 22 tables et de leurs tables d'audit, sécurité par rôles Keycloak, audit à deux niveaux, gestion des années scolaires, squelette Angular avec connexion.
+- **Lot 2 — Paramétrage (fait)** : trimestres et option Composition (par année, trimestre ou cycle), niveaux, classes, personnel, élèves, inscriptions, imports Excel/CSV en deux étapes.
 - Lot 3 — Finances : types de frais, grille tarifaire nouveau/ancien, plans de tranches, encaissement, reçus, impayés.
 - Lot 4 — Notes : évaluations, saisie, moyennes, classement, bulletins PDF.
 
@@ -78,13 +78,58 @@ Côté interface, les adresses de l'API et de Keycloak sont dans `frontend/src/a
 - `backend/.../security/Roles.java` : expressions de droits utilisées dans `@PreAuthorize`.
 - `frontend/src/app/core/` : connexion Keycloak, intercepteur HTTP, garde par rôle.
 
-## API disponible (lot 1)
+## Imports Excel / CSV
+
+Les imports acceptent les fichiers `.xlsx`, `.xls` et `.csv` (séparateur `;` ou `,`, encodage UTF-8).
+La première ligne contient les en-têtes ; la casse, les accents et l'ordre des colonnes sont libres.
+
+| Import | Colonnes obligatoires | Colonnes facultatives |
+|---|---|---|
+| Personnel | Matricule, Nom, Prénom, Email, Rôle | Téléphone |
+| Élèves d'une classe | Matricule, Nom, Prénom, Date de naissance (JJ/MM/AAAA), Sexe (M/F) | Parent, Contact, Redoublant (oui/non) |
+
+L'import se fait en deux étapes : « Analyser » affiche l'aperçu et les erreurs sans rien enregistrer,
+puis « Importer » enregistre. Si une seule ligne est en erreur, aucune ligne n'est importée.
+
+À l'import des élèves, la catégorie **nouveau / ancien** est calculée automatiquement : un élève est
+« ancien » s'il était inscrit dans l'établissement l'année scolaire précédente. L'intendant peut la
+corriger, avec un motif.
+
+## Comptes Keycloak du personnel
+
+Par défaut, l'application n'écrit rien dans Keycloak : les comptes de connexion sont créés à la main.
+Pour qu'ils soient créés automatiquement à l'ajout ou à l'import du personnel (mot de passe temporaire
+à changer à la première connexion, rôle attribué), définir :
+
+| Variable | Rôle |
+|---|---|
+| `KEYCLOAK_PROVISIONNEMENT=true` | Active la création automatique |
+| `KEYCLOAK_URL` | Adresse de Keycloak (défaut `http://localhost:8081`) |
+| `KEYCLOAK_CLIENT_ID` / `KEYCLOAK_CLIENT_SECRET` | Client confidentiel `lycee-backend` |
+| `KEYCLOAK_MOT_DE_PASSE_INITIAL` | Mot de passe temporaire des nouveaux comptes |
+
+L'identifiant de connexion est l'adresse email de la personne.
+
+## API disponible
 
 | Méthode | Chemin | Accès |
 |---|---|---|
 | GET | `/api/moi` | Tout utilisateur connecté |
-| GET | `/api/annees-scolaires` | Tout utilisateur connecté |
-| GET | `/api/annees-scolaires/active` | Tout utilisateur connecté |
-| POST | `/api/annees-scolaires` | Directeur, Censeur |
-| POST | `/api/annees-scolaires/{id}/activation` | Directeur, Censeur |
-| GET | `/api/annees-scolaires/{id}/historique` | Directeur, Censeur |
+| GET | `/api/annees-scolaires`, `/api/annees-scolaires/active` | Tout utilisateur connecté |
+| POST | `/api/annees-scolaires`, `/api/annees-scolaires/{id}/activation` | Direction |
+| GET | `/api/annees-scolaires/{id}/historique` | Direction |
+| GET | `/api/annees-scolaires/{id}/trimestres` | Tout utilisateur connecté |
+| POST | `/api/annees-scolaires/{id}/trimestres` | Direction |
+| PUT | `/api/trimestres/{id}/composition` | Direction |
+| PUT, DELETE | `/api/trimestres/{id}/composition/{cycle}` | Direction |
+| POST | `/api/trimestres/{id}/cloture`, `/api/trimestres/{id}/reouverture` | Direction |
+| GET | `/api/niveaux`, `/api/annees-scolaires/{id}/classes` | Tout utilisateur connecté |
+| POST, PUT | `/api/niveaux`, `/api/annees-scolaires/{id}/classes`, `/api/classes/{id}` | Direction |
+| GET, POST, PUT | `/api/personnel`, `/api/personnel/{id}`, activation / désactivation | Direction |
+| POST | `/api/personnel/import?simulation=true|false` | Direction |
+| GET | `/api/eleves?recherche=`, `/api/classes/{id}/inscriptions` | Tout utilisateur connecté |
+| POST | `/api/classes/{id}/inscriptions` | Direction, Surveillant |
+| POST | `/api/classes/{id}/inscriptions/import?simulation=true|false` | Direction, Surveillant |
+| PUT | `/api/inscriptions/{id}/categorie` | Intendant |
+
+« Direction » = Directeur ou Censeur.

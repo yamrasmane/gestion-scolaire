@@ -54,3 +54,14 @@ main {
   margin: 0 auto;
   padding: 1.5rem;
 }
+
+.annee {
+  width: auto;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+
+  option {
+    color: #1c2733;
+  }
+}

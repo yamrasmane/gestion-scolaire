@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AnneeContexte } from '../core/annee-contexte';
 import { AnneeScolaire, ApiService, messageErreur } from '../core/api.service';
 import { AuthService } from '../core/auth.service';
 import { DIRECTION } from '../core/roles';
@@ -15,6 +16,7 @@ export class AnneesScolaires {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly contexte = inject(AnneeContexte);
 
   protected readonly annees = signal<AnneeScolaire[]>([]);
   protected readonly chargement = signal(true);
@@ -57,6 +59,7 @@ export class AnneesScolaires {
         apres?.();
         this.enCours.set(false);
         this.charger();
+        this.contexte.charger();
       },
       error: (e) => {
         this.erreur.set(messageErreur(e));

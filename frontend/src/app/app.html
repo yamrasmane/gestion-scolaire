@@ -3,7 +3,22 @@
   <nav aria-label="Navigation principale">
     <a routerLink="/" routerLinkActive="actif" [routerLinkActiveOptions]="{ exact: true }">Accueil</a>
     <a routerLink="/annees-scolaires" routerLinkActive="actif">Années scolaires</a>
+    <a routerLink="/trimestres" routerLinkActive="actif">Trimestres</a>
+    <a routerLink="/classes" routerLinkActive="actif">Classes</a>
+    <a routerLink="/eleves" routerLinkActive="actif">Élèves</a>
+    @if (direction) {
+      <a routerLink="/personnel" routerLinkActive="actif">Personnel</a>
+    }
   </nav>
+  @if (contexte.annees().length > 0) {
+    <select class="annee" aria-label="Année scolaire de travail" (change)="choisirAnnee($event)">
+      @for (a of contexte.annees(); track a.id) {
+        <option [value]="a.id" [selected]="a.id === contexte.anneeId()">
+          {{ a.libelle }}{{ a.actif ? ' (active)' : '' }}
+        </option>
+      }
+    </select>
+  }
   <div class="utilisateur">
     <span class="nom">{{ auth.nomComplet() }}</span>
     <span class="roles">{{ auth.libellesRoles().join(', ') || 'Aucun rôle' }}</span>
