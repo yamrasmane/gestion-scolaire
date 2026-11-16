@@ -1,0 +1,16 @@
+<header class="bandeau">
+  <a class="marque" routerLink="/">Gestion scolaire</a>
+  <nav aria-label="Navigation principale">
+    <a routerLink="/" routerLinkActive="actif" [routerLinkActiveOptions]="{ exact: true }">Accueil</a>
+    <a routerLink="/annees-scolaires" routerLinkActive="actif">Années scolaires</a>
+  </nav>
+  <div class="utilisateur">
+    <span class="nom">{{ auth.nomComplet() }}</span>
+    <span class="roles">{{ auth.libellesRoles().join(', ') || 'Aucun rôle' }}</span>
+    <button type="button" class="secondaire" (click)="auth.deconnecter()">Se déconnecter</button>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>

@@ -1,0 +1,159 @@
+{
+  "realm": "lycee",
+  "displayName": "Gestion scolaire",
+  "enabled": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "fr"
+  ],
+  "defaultLocale": "fr",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "bruteForceProtected": true,
+  "passwordPolicy": "length(8) and notUsername",
+  "roles": {
+    "realm": [
+      {
+        "name": "DIRECTEUR",
+        "description": "Chef d'établissement"
+      },
+      {
+        "name": "CENSEUR",
+        "description": "Censeur"
+      },
+      {
+        "name": "ENSEIGNANT",
+        "description": "Enseignant"
+      },
+      {
+        "name": "INTENDANT",
+        "description": "Intendant : paramétrage financier"
+      },
+      {
+        "name": "ECONOME",
+        "description": "Économe / caissier : encaissements"
+      },
+      {
+        "name": "SURVEILLANT",
+        "description": "Surveillant"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "lycee-frontend",
+      "name": "Interface Angular",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4200/*"
+      }
+    },
+    {
+      "clientId": "lycee-backend",
+      "name": "API Spring Boot (provisionnement des comptes)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "changez-ce-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "directeur",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Le",
+      "lastName": "Directeur",
+      "email": "directeur@lycee.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Changeme123!",
+          "temporary": true
+        }
+      ],
+      "realmRoles": [
+        "DIRECTEUR"
+      ]
+    },
+    {
+      "username": "intendant",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "L'",
+      "lastName": "Intendant",
+      "email": "intendant@lycee.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Changeme123!",
+          "temporary": true
+        }
+      ],
+      "realmRoles": [
+        "INTENDANT"
+      ]
+    },
+    {
+      "username": "econome",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "L'",
+      "lastName": "Econome",
+      "email": "econome@lycee.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Changeme123!",
+          "temporary": true
+        }
+      ],
+      "realmRoles": [
+        "ECONOME"
+      ]
+    },
+    {
+      "username": "enseignant",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Un",
+      "lastName": "Enseignant",
+      "email": "enseignant@lycee.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Changeme123!",
+          "temporary": true
+        }
+      ],
+      "realmRoles": [
+        "ENSEIGNANT"
+      ]
+    },
+    {
+      "username": "service-account-lycee-backend",
+      "enabled": true,
+      "serviceAccountClientId": "lycee-backend",
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: gestion-scolaire
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/lycee}
+    username: ${DB_USER:lycee}
+    password: ${DB_PASSWORD:lycee}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # le schéma est géré par Flyway uniquement
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+      org.hibernate.envers:
+        audit_table_suffix: _aud
+        revision_field_name: rev_id
+        revision_type_field_name: revtype
+        store_data_at_delete: true
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8081/realms/lycee}
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  cors:
+    origines-autorisees: ${CORS_ORIGINES:http://localhost:4200}

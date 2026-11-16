@@ -1,0 +1,117 @@
+:root {
+  --bleu: #1f3a5f;
+  --bleu-clair: #e8eff7;
+  --bordure: #d5dbe3;
+  --texte: #1c2733;
+  --discret: #5b6875;
+  --vert: #1d7a46;
+  --rouge: #b3261e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--texte);
+  background: #f6f8fa;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+}
+
+.carte {
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--bleu);
+  background: var(--bleu);
+  color: #fff;
+
+  &.secondaire {
+    background: #fff;
+    color: var(--bleu);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--bordure);
+  }
+
+  th {
+    background: var(--bleu-clair);
+    font-size: 0.9rem;
+  }
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+input[type='text'],
+input[type='date'],
+input[type='number'] {
+  font: inherit;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--bleu-clair);
+  color: var(--bleu);
+
+  &.succes {
+    background: #e2f3e9;
+    color: var(--vert);
+  }
+}
+
+.erreur {
+  color: var(--rouge);
+  margin: 0.5rem 0;
+}
+
+.discret {
+  color: var(--discret);
+}
