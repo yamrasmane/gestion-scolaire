@@ -17,6 +17,7 @@ import { ApiService, Classe, Inscription, messageErreur } from '@core/api.servic
 import { AuthService } from '@core/authentication';
 import { SCOLARITE } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 import { ImportFichier } from '@shared/composants/import-fichier';
 
 @Component({
@@ -36,6 +37,7 @@ import { ImportFichier } from '@shared/composants/import-fichier';
     MatCheckboxModule,
     MatTooltipModule,
     PageHeader,
+    AnneeRequise,
     ImportFichier,
   ],
 })

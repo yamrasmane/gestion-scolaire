@@ -23,6 +23,7 @@ import {
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
 
@@ -42,6 +43,7 @@ type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
     MatSelectModule,
     MatCheckboxModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class Trimestres {

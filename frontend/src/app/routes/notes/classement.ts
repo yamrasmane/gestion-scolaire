@@ -13,6 +13,7 @@ import { AnneeContexte } from '@core/annee-contexte';
 import { ApiService, Classe, LigneClassement, Trimestre, messageErreur } from '@core/api.service';
 import { AuthService } from '@core/authentication';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Classement de la classe, délibération et accès aux bulletins (SF-15 à SF-17). */
 @Component({
@@ -21,7 +22,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     <page-header title="Classement et bulletins" [subtitle]="contexte.annee()?.libelle ?? ''" />
 
     @if (!contexte.annee()) {
-      <p class="text-muted">Créez d'abord une année scolaire.</p>
+      <app-annee-requise />
     } @else {
       <mat-card>
         <mat-card-content>
@@ -154,6 +155,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatSelectModule,
     MatTooltipModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class Classement {

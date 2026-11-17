@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Montant de chaque frais par niveau ou classe et par catégorie d'élève (SF-22). */
 @Component({
@@ -39,6 +40,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatSelectModule,
     MatExpansionModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class GrilleTarifaire {

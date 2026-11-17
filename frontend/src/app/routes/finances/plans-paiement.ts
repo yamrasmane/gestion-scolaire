@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 interface TrancheSaisie {
   numero: number;
@@ -49,6 +50,7 @@ interface TrancheSaisie {
     MatSelectModule,
     MatCheckboxModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class PlansPaiement {

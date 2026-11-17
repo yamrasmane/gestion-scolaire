@@ -19,7 +19,9 @@ import { AuthService } from '@core/authentication';
         </mat-card-header>
         <mat-card-content>
           <p>Le serveur de connexion n'a pas répondu. Vérifiez qu'il est démarré :</p>
-          <p><code>{{ auth.adresseServeur }}</code></p>
+          <p>
+            <code>{{ auth.adresseServeur }}</code>
+          </p>
           <p class="text-muted">
             En développement, il s'agit du conteneur Keycloak :
             <code>docker compose up -d keycloak</code>

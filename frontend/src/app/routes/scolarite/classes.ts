@@ -15,6 +15,7 @@ import { ApiService, Classe, Cycle, Niveau, messageErreur } from '@core/api.serv
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 @Component({
   selector: 'app-classes',
@@ -30,6 +31,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatSelectModule,
     MatExpansionModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class Classes {

@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Grille de saisie des notes, par matière et par trimestre (SF-11, SF-12). */
 @Component({
@@ -39,6 +40,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatCheckboxModule,
     MatTooltipModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class SaisieNotes {

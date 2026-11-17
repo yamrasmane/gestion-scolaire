@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { AnneeContexte } from '@core/annee-contexte';
 import { ApiService, Classe, Impaye, Recouvrement, messageErreur } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Liste des échéances échues non soldées et tableau de bord (SF-31, SF-32). */
 @Component({
@@ -20,7 +21,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     <page-header title="Impayés" [subtitle]="contexte.annee()?.libelle ?? ''" />
 
     @if (!contexte.annee()) {
-      <p class="text-muted">Créez d'abord une année scolaire.</p>
+      <app-annee-requise />
     } @else {
       @if (erreur(); as message) {
         <p class="alerte-erreur" role="alert">{{ message }}</p>
@@ -156,6 +157,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatFormFieldModule,
     MatSelectModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class Impayes {

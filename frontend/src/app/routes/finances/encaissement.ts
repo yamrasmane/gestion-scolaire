@@ -28,6 +28,7 @@ import {
 } from '@core/api.service';
 import { AuthService } from '@core/authentication';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Fiche financière de l'élève et encaissement (SF-28 à SF-31). */
 @Component({
@@ -48,6 +49,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatExpansionModule,
     MatTooltipModule,
     PageHeader,
+    AnneeRequise,
   ],
 })
 export class Encaissement {
