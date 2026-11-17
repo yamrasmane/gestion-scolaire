@@ -337,7 +337,7 @@ class FinancesIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"matricule": "%s", "nom": "%s", "prenom": "%s",
-                                 "dateNaissance": "15/03/2012", "sexe": "F"}"""
+                                 "dateNaissance": "2012-03-15", "sexe": "F"}"""
                                 .formatted(matricule, nom, prenom)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("""
