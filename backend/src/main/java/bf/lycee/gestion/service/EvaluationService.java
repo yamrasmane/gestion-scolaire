@@ -216,10 +216,11 @@ public class EvaluationService {
         if (authentification == null) {
             return;
         }
-        boolean direction = authentification.getAuthorities().stream()
-                .anyMatch(autorite -> "ROLE_DIRECTEUR".equals(autorite.getAuthority())
+        boolean toutesClasses = authentification.getAuthorities().stream()
+                .anyMatch(autorite -> "ROLE_ADMIN".equals(autorite.getAuthority())
+                        || "ROLE_DIRECTEUR".equals(autorite.getAuthority())
                         || "ROLE_CENSEUR".equals(autorite.getAuthority()));
-        if (direction) {
+        if (toutesClasses) {
             return;
         }
         UUID titulaire = enseignement.getEnseignant() == null ? null : enseignement.getEnseignant().getId();

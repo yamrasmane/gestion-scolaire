@@ -73,8 +73,10 @@ export class AuthService {
     return `${config.keycloak.url}/realms/${config.keycloak.realm}`;
   }
 
+  /** L'administrateur satisfait tous les contrôles de rôle. */
   aUnRole(...roles: Role[]): boolean {
-    return roles.some((role) => this._roles().includes(role));
+    const siens = this._roles();
+    return siens.includes('ADMIN') || roles.some((role) => siens.includes(role));
   }
 
   /** Utilisé par la garde de route du gabarit. */

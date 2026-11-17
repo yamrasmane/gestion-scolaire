@@ -123,6 +123,21 @@ selon l'ordre de priorité des types de frais. Le caissier peut aussi imputer su
 **Reçus et bulletins** : ils s'impriment depuis le navigateur (impression ou enregistrement en
 PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 
+## Rôles
+
+| Rôle | Ce qu'il peut faire |
+|---|---|
+| `ADMIN` | Tout. Chaque contrôle d'autorisation l'accepte, côté API comme côté interface. |
+| `DIRECTEUR` | Années, trimestres, classes, matières, personnel, délibérations ; valide les remises importantes. |
+| `CENSEUR` | Comme le Directeur, sauf la validation des remises au-delà du seuil. |
+| `INTENDANT` | Types de frais, grille tarifaire, plans de paiement, remises, annulations de règlement. |
+| `ECONOME` | Encaissement et consultation des situations financières. |
+| `ENSEIGNANT` | Évaluations et notes des matières dont il est le professeur titulaire. |
+| `SURVEILLANT` | Élèves et inscriptions. |
+
+Les rôles viennent du jeton Keycloak. Un compte sans rôle peut se connecter mais ne voit qu'un
+menu réduit, et l'application le lui signale.
+
 ## Identifiants
 
 Toutes les clés primaires et étrangères sont des **UUID** (`uuid` PostgreSQL), y compris dans
@@ -186,7 +201,10 @@ Le script refuse de s'exécuter si la base contient déjà des données. Pour re
 psql -U lycee -h localhost -d lycee -c "TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, revinfo RESTART IDENTITY CASCADE;"
 ```
 
-Les comptes de démonstration de Keycloak (`directeur`, `intendant`, `econome`, `enseignant`)
+Un compte **`admin`** existe aussi, porteur du rôle `ADMIN` : il ouvre toutes les fonctions de
+l'application, y compris celles réservées à la direction, à l'intendance, à la caisse ou au
+professeur titulaire d'une matière. Les comptes de démonstration de Keycloak (`directeur`,
+`intendant`, `econome`, `enseignant`)
 correspondent à des fiches du personnel : le rattachement se fait tout seul à la première
 connexion, par l'adresse électronique. Le compte `enseignant` est professeur de mathématiques
 en 6ème A et 6ème B, et peut donc y saisir des notes.

@@ -15,6 +15,10 @@
   "roles": {
     "realm": [
       {
+        "name": "ADMIN",
+        "description": "Administrateur : accès à toutes les fonctions de l'application"
+      },
+      {
         "name": "DIRECTEUR",
         "description": "Chef d'établissement"
       },
@@ -71,6 +75,24 @@
     }
   ],
   "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Administrateur",
+      "lastName": "Lycée",
+      "email": "admin@lycee.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Changeme123!",
+          "temporary": true
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    },
     {
       "username": "directeur",
       "enabled": true,

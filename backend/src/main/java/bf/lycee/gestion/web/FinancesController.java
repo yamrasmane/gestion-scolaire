@@ -172,7 +172,8 @@ public class FinancesController {
                                                 @Valid @RequestBody FinancesDto.RemiseSaisie saisie,
                                                 Authentication authentification) {
         boolean estDirecteur = authentification.getAuthorities().stream()
-                .anyMatch(autorite -> "ROLE_DIRECTEUR".equals(autorite.getAuthority()));
+                .anyMatch(autorite -> "ROLE_DIRECTEUR".equals(autorite.getAuthority())
+                        || "ROLE_ADMIN".equals(autorite.getAuthority()));
         return facturation.appliquerRemise(fraisId, saisie, estDirecteur);
     }
 
