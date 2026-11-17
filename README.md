@@ -123,6 +123,31 @@ selon l'ordre de priorité des types de frais. Le caissier peut aussi imputer su
 **Reçus et bulletins** : ils s'impriment depuis le navigateur (impression ou enregistrement en
 PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 
+## Jeu de données de démonstration
+
+`backend/src/main/resources/db/donnees-demo.sql` remplit une base vierge avec un établissement
+complet et inventé : deux années scolaires, 8 classes et 144 élèves cette année, le personnel,
+les matières et coefficients, les notes du 1er trimestre, la grille tarifaire, les plans de
+paiement, les frais par élève, les échéanciers et les règlements déjà encaissés (soldés,
+partiels, en retard, un règlement annulé).
+
+Démarrez d'abord l'API une fois pour que Flyway crée les tables, arrêtez-la, puis :
+
+```bash
+psql -U lycee -h localhost -d lycee -f backend/src/main/resources/db/donnees-demo.sql
+```
+
+Le script refuse de s'exécuter si la base contient déjà des données. Pour repartir de zéro :
+
+```bash
+psql -U lycee -h localhost -d lycee -c "TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, revinfo RESTART IDENTITY CASCADE;"
+```
+
+Les comptes de démonstration de Keycloak (`directeur`, `intendant`, `econome`, `enseignant`)
+correspondent à des fiches du personnel : le rattachement se fait tout seul à la première
+connexion, par l'adresse électronique. Le compte `enseignant` est professeur de mathématiques
+en 6ème A et 6ème B, et peut donc y saisir des notes.
+
 ## Imports Excel / CSV
 
 Les imports acceptent les fichiers `.xlsx`, `.xls` et `.csv` (séparateur `;` ou `,`, encodage UTF-8).

@@ -14,7 +14,6 @@ import bf.lycee.gestion.repository.EcheanceEleveRepository;
 import bf.lycee.gestion.repository.ImputationPaiementRepository;
 import bf.lycee.gestion.repository.InscriptionRepository;
 import bf.lycee.gestion.repository.PaiementRepository;
-import bf.lycee.gestion.repository.PersonnelRepository;
 import bf.lycee.gestion.security.UtilisateurCourant;
 import bf.lycee.gestion.web.FinancesDto;
 import java.math.BigDecimal;
@@ -40,19 +39,19 @@ public class CaisseService {
     private final ImputationPaiementRepository imputations;
     private final EcheanceEleveRepository echeances;
     private final InscriptionRepository inscriptions;
-    private final PersonnelRepository personnels;
+    private final ComptePersonnelService comptes;
     private final ClasseRepository classes;
     private final FacturationService facturation;
 
     public CaisseService(PaiementRepository paiements, ImputationPaiementRepository imputations,
                          EcheanceEleveRepository echeances, InscriptionRepository inscriptions,
-                         PersonnelRepository personnels, ClasseRepository classes,
+                         ComptePersonnelService comptes, ClasseRepository classes,
                          FacturationService facturation) {
         this.paiements = paiements;
         this.imputations = imputations;
         this.echeances = echeances;
         this.inscriptions = inscriptions;
-        this.personnels = personnels;
+        this.comptes = comptes;
         this.classes = classes;
         this.facturation = facturation;
     }
@@ -243,13 +242,7 @@ public class CaisseService {
 
     /** Le caissier est le membre du personnel dont le compte Keycloak est connecté. */
     private java.util.Optional<Personnel> caissierConnecte() {
-        return UtilisateurCourant.identifiant().flatMap(identifiant -> {
-            try {
-                return personnels.findByKeycloakId(java.util.UUID.fromString(identifiant));
-            } catch (IllegalArgumentException identifiantNonUuid) {
-                return java.util.Optional.empty();
-            }
-        });
+        return comptes.connecte();
     }
 
     private Paiement paiement(Long id) {

@@ -12,9 +12,7 @@ import bf.lycee.gestion.repository.EnseignementRepository;
 import bf.lycee.gestion.repository.EvaluationRepository;
 import bf.lycee.gestion.repository.InscriptionRepository;
 import bf.lycee.gestion.repository.NoteRepository;
-import bf.lycee.gestion.repository.PersonnelRepository;
 import bf.lycee.gestion.repository.TrimestreRepository;
-import bf.lycee.gestion.security.UtilisateurCourant;
 import bf.lycee.gestion.web.NotesDto;
 import bf.lycee.gestion.web.TrimestreDto.CompositionEffective;
 import java.math.BigDecimal;
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -39,19 +36,19 @@ public class EvaluationService {
     private final TrimestreRepository trimestres;
     private final ConfigCompositionCycleRepository configsCycle;
     private final InscriptionRepository inscriptions;
-    private final PersonnelRepository personnels;
+    private final ComptePersonnelService comptes;
 
     public EvaluationService(EvaluationRepository evaluations, NoteRepository notes,
                              EnseignementRepository enseignements, TrimestreRepository trimestres,
                              ConfigCompositionCycleRepository configsCycle,
-                             InscriptionRepository inscriptions, PersonnelRepository personnels) {
+                             InscriptionRepository inscriptions, ComptePersonnelService comptes) {
         this.evaluations = evaluations;
         this.notes = notes;
         this.enseignements = enseignements;
         this.trimestres = trimestres;
         this.configsCycle = configsCycle;
         this.inscriptions = inscriptions;
-        this.personnels = personnels;
+        this.comptes = comptes;
     }
 
     // ---------- Évaluations ----------
@@ -225,16 +222,7 @@ public class EvaluationService {
             return;
         }
         Long titulaire = enseignement.getEnseignant() == null ? null : enseignement.getEnseignant().getId();
-        Long connecte = UtilisateurCourant.identifiant()
-                .map(identifiant -> {
-                    try {
-                        return personnels.findByKeycloakId(UUID.fromString(identifiant))
-                                .map(p -> p.getId()).orElse(null);
-                    } catch (IllegalArgumentException identifiantNonUuid) {
-                        return null;
-                    }
-                })
-                .orElse(null);
+        Long connecte = comptes.connecte().map(personnel -> personnel.getId()).orElse(null);
         if (titulaire == null || !titulaire.equals(connecte)) {
             throw new RegleMetierException("Vous n'êtes pas le professeur titulaire de cette matière");
         }

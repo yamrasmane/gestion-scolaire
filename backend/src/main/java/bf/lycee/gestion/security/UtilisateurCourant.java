@@ -28,6 +28,12 @@ public final class UtilisateurCourant {
         return jeton().map(Jwt::getSubject);
     }
 
+    /** Adresse électronique du compte ({@code email}). */
+    public static Optional<String> courriel() {
+        return jeton().map(jwt -> jwt.getClaimAsString("email"))
+                .filter(courriel -> !courriel.isBlank());
+    }
+
     /** Nom d'utilisateur ({@code preferred_username}), à défaut le {@code sub}. */
     public static Optional<String> nomUtilisateur() {
         return jeton().map(jwt -> {
