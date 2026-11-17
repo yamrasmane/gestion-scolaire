@@ -25,7 +25,7 @@ export class Bulletin {
 
   constructor() {
     queueMicrotask(() => {
-      this.api.bulletin(Number(this.inscriptionId()), Number(this.trimestreId())).subscribe({
+      this.api.bulletin(this.inscriptionId(), this.trimestreId()).subscribe({
         next: (bulletin) => this.bulletin.set(bulletin),
         error: (e) => this.erreur.set(messageErreur(e)),
       });

@@ -123,6 +123,22 @@ selon l'ordre de priorité des types de frais. Le caissier peut aussi imputer su
 **Reçus et bulletins** : ils s'impriment depuis le navigateur (impression ou enregistrement en
 PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 
+## Identifiants
+
+Toutes les clés primaires et étrangères sont des **UUID** (`uuid` PostgreSQL), y compris dans
+les tables d'audit. Seul le numéro de révision (`rev_id`) reste un entier, parce qu'Hibernate
+Envers numérote les révisions de façon croissante.
+
+Les identifiants sont engendrés par l'application à l'insertion, en UUID ordonné dans le temps
+(`@UuidGenerator(style = TIME)`) : deux enregistrements créés l'un après l'autre ont des
+identifiants voisins, ce qui évite la fragmentation des index que provoquerait un UUID purement
+aléatoire. La base pose malgré tout un `DEFAULT gen_random_uuid()`, utile pour les insertions
+faites directement en SQL.
+
+Ce que cela change à l'usage : un identifiant ne se devine plus et ne révèle plus le volume de
+la base (`/eleves/312` renseignait sur le nombre d'élèves), et deux établissements peuvent
+fusionner leurs bases sans collision d'identifiants.
+
 ## Piste d'audit
 
 L'historique des modifications (Hibernate Envers) vit dans un schéma PostgreSQL à part,
@@ -144,7 +160,7 @@ Pour lire l'historique d'un enregistrement :
 ```sql
 SELECT a.rev_id, r.username, to_timestamp(r.rev_tstmp / 1000) AS quand, a.*
 FROM audit.inscription_aud a JOIN audit.revinfo r ON r.rev_id = a.rev_id
-WHERE a.id = 42 ORDER BY a.rev_id;
+WHERE a.id = '3f2b…' ORDER BY a.rev_id;
 ```
 
 Le déplacement est fait par la migration `V4__schema_audit.sql` : une base déjà en service le

@@ -164,8 +164,8 @@ export class Classement {
   protected readonly colonnes = ['rang', 'eleve', 'moyenne', 'mention', 'actions'];
   protected readonly classes = signal<Classe[]>([]);
   protected readonly trimestres = signal<Trimestre[]>([]);
-  protected readonly classeId = signal<number | null>(null);
-  protected readonly trimestreId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
+  protected readonly trimestreId = signal<string | null>(null);
   protected readonly lignes = signal<LigneClassement[]>([]);
   protected readonly erreur = signal('');
   protected readonly information = signal('');
@@ -193,12 +193,12 @@ export class Classement {
     });
   }
 
-  protected choisirClasse(id: number): void {
+  protected choisirClasse(id: string): void {
     this.classeId.set(id);
     this.charger();
   }
 
-  protected choisirTrimestre(id: number): void {
+  protected choisirTrimestre(id: string): void {
     this.trimestreId.set(id);
     this.charger();
   }

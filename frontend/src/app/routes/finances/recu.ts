@@ -234,7 +234,7 @@ export class Recu {
 
   constructor() {
     queueMicrotask(() => {
-      this.api.recu(Number(this.paiementId()), this.duplicata() === 'true').subscribe({
+      this.api.recu(this.paiementId(), this.duplicata() === 'true').subscribe({
         next: (recu) => this.recu.set(recu),
         error: (e) => this.erreur.set(messageErreur(e)),
       });

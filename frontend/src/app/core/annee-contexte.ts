@@ -10,7 +10,7 @@ export class AnneeContexte {
   private readonly api = inject(ApiService);
 
   private readonly _annees = signal<AnneeScolaire[]>([]);
-  private readonly _anneeId = signal<number | null>(null);
+  private readonly _anneeId = signal<string | null>(null);
 
   readonly annees = this._annees.asReadonly();
   readonly anneeId = this._anneeId.asReadonly();
@@ -28,7 +28,7 @@ export class AnneeContexte {
     });
   }
 
-  choisir(id: number): void {
+  choisir(id: string): void {
     this._anneeId.set(id);
   }
 }

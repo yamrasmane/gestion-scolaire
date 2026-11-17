@@ -48,9 +48,9 @@ export class SaisieNotes {
   protected readonly classes = signal<Classe[]>([]);
   protected readonly trimestres = signal<Trimestre[]>([]);
   protected readonly enseignements = signal<Enseignement[]>([]);
-  protected readonly classeId = signal<number | null>(null);
-  protected readonly trimestreId = signal<number | null>(null);
-  protected readonly enseignementId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
+  protected readonly trimestreId = signal<string | null>(null);
+  protected readonly enseignementId = signal<string | null>(null);
   protected readonly grille = signal<Grille | null>(null);
   protected readonly erreur = signal('');
   protected readonly information = signal('');
@@ -87,7 +87,7 @@ export class SaisieNotes {
     });
   }
 
-  protected choisirClasse(id: number): void {
+  protected choisirClasse(id: string): void {
     this.classeId.set(id);
     this.enseignementId.set(null);
     this.grille.set(null);
@@ -97,23 +97,23 @@ export class SaisieNotes {
     });
   }
 
-  protected choisirMatiere(id: number): void {
+  protected choisirMatiere(id: string): void {
     this.enseignementId.set(id);
     this.charger();
   }
 
-  protected choisirTrimestre(id: number): void {
+  protected choisirTrimestre(id: string): void {
     this.trimestreId.set(id);
     if (this.enseignementId()) {
       this.charger();
     }
   }
 
-  protected cle(inscriptionId: number, evaluationId: number): string {
+  protected cle(inscriptionId: string, evaluationId: string): string {
     return `${inscriptionId}-${evaluationId}`;
   }
 
-  protected saisie(inscriptionId: number, evaluationId: number) {
+  protected saisie(inscriptionId: string, evaluationId: string) {
     const cle = this.cle(inscriptionId, evaluationId);
     this.valeurs[cle] ??= { valeur: null, absent: false };
     return this.valeurs[cle];
@@ -135,7 +135,7 @@ export class SaisieNotes {
     );
   }
 
-  protected supprimerEvaluation(evaluationId: number): void {
+  protected supprimerEvaluation(evaluationId: string): void {
     this.executer(this.api.supprimerEvaluation(evaluationId));
   }
 

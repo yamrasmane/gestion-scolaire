@@ -52,7 +52,7 @@ export class Eleves {
     : ['matricule', 'nom', 'naissance', 'sexe', 'categorie', 'redoublant'];
 
   protected readonly classes = signal<Classe[]>([]);
-  protected readonly classeId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
   protected readonly classe = computed(
     () => this.classes().find((c) => c.id === this.classeId()) ?? null,
   );
@@ -61,7 +61,7 @@ export class Eleves {
   protected readonly enCours = signal(false);
 
   protected nouveau = this.vide();
-  protected correction: { inscriptionId: number; categorie: string; motif: string } | null = null;
+  protected correction: { inscriptionId: string; categorie: string; motif: string } | null = null;
 
   constructor() {
     effect(() => {
@@ -76,7 +76,7 @@ export class Eleves {
     });
   }
 
-  protected choisirClasse(id: number | null): void {
+  protected choisirClasse(id: string | null): void {
     this.classeId.set(id);
     this.correction = null;
     this.erreur.set('');
@@ -135,7 +135,7 @@ export class Eleves {
     }
   }
 
-  private chargerClasses(anneeId: number): void {
+  private chargerClasses(anneeId: string): void {
     this.api.classes(anneeId).subscribe({
       next: (classes) => this.classes.set(classes),
       error: (e) => this.erreur.set(messageErreur(e)),

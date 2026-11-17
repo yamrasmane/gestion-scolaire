@@ -173,7 +173,7 @@ export class Impayes {
   ];
   protected readonly impayes = signal<Impaye[]>([]);
   protected readonly classes = signal<Classe[]>([]);
-  protected readonly classeId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
   protected readonly recouvrement = signal<Recouvrement | null>(null);
   protected readonly erreur = signal('');
 
@@ -200,7 +200,7 @@ export class Impayes {
     });
   }
 
-  protected filtrer(classeId: number | null): void {
+  protected filtrer(classeId: string | null): void {
     this.classeId.set(classeId);
     const anneeId = this.contexte.anneeId();
     if (anneeId) {
@@ -240,7 +240,7 @@ export class Impayes {
     URL.revokeObjectURL(lien.href);
   }
 
-  private charger(anneeId: number): void {
+  private charger(anneeId: string): void {
     this.api.impayes(anneeId, this.classeId()).subscribe({
       next: (impayes) => this.impayes.set(impayes),
       error: (e) => this.erreur.set(messageErreur(e)),

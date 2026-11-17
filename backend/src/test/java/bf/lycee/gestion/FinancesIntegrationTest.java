@@ -326,7 +326,7 @@ class FinancesIntegrationTest {
         UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + annee + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": 60}"
+                        .content("{\"niveauId\": \"%s\", \"nom\": \"%s\", \"effectifMax\": 60}"
                                 .formatted(niveauId, nom)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = ?",
@@ -354,7 +354,7 @@ class FinancesIntegrationTest {
         mvc.perform(post("/api/annees-scolaires/" + annee + "/grille-tarifaire").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"typeFraisId": %d, "niveauId": %d, "categorie": "%s", "montant": %d}"""
+                                {"typeFraisId": "%s", "niveauId": "%s", "categorie": "%s", "montant": %d}"""
                                 .formatted(typeFraisId, niveauId, categorie, montant)))
                 .andExpect(status().isCreated());
     }
@@ -363,7 +363,7 @@ class FinancesIntegrationTest {
         mvc.perform(post("/api/annees-scolaires/" + annee + "/grille-tarifaire").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"typeFraisId": %d, "classeId": %d, "categorie": "%s", "montant": %d}"""
+                                {"typeFraisId": "%s", "classeId": "%s", "categorie": "%s", "montant": %d}"""
                                 .formatted(typeFraisId, classeId, categorie, montant)))
                 .andExpect(status().isCreated());
     }

@@ -88,8 +88,8 @@ export class Encaissement {
 
   protected readonly classes = signal<Classe[]>([]);
   protected readonly inscriptions = signal<Inscription[]>([]);
-  protected readonly classeId = signal<number | null>(null);
-  protected readonly inscriptionId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
+  protected readonly inscriptionId = signal<string | null>(null);
   protected readonly fiche = signal<FicheFinanciere | null>(null);
   protected readonly typesFrais = signal<TypeFrais[]>([]);
   protected readonly erreur = signal('');
@@ -102,10 +102,10 @@ export class Encaissement {
   });
 
   protected paiement = this.vide();
-  protected fraisAAjouter: number | null = null;
-  protected remise: { fraisId: number; type: TypeRemise; valeur: number; motif: string } | null =
+  protected fraisAAjouter: string | null = null;
+  protected remise: { fraisId: string; type: TypeRemise; valeur: number; motif: string } | null =
     null;
-  protected annulation: { paiementId: number; motif: string } | null = null;
+  protected annulation: { paiementId: string; motif: string } | null = null;
 
   constructor() {
     this.api.typesFrais(true).subscribe({
@@ -128,7 +128,7 @@ export class Encaissement {
     });
   }
 
-  protected choisirClasse(id: number): void {
+  protected choisirClasse(id: string): void {
     this.classeId.set(id);
     this.inscriptionId.set(null);
     this.fiche.set(null);
@@ -138,7 +138,7 @@ export class Encaissement {
     });
   }
 
-  protected choisirEleve(id: number): void {
+  protected choisirEleve(id: string): void {
     this.inscriptionId.set(id);
     this.remise = null;
     this.annulation = null;
@@ -306,7 +306,7 @@ export class Encaissement {
       mode: 'ESPECES' as ModePaiement,
       reference: '',
       payeur: '',
-      typeFraisId: null as number | null,
+      typeFraisId: null as string | null,
     };
   }
 }

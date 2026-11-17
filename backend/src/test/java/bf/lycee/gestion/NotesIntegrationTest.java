@@ -251,7 +251,7 @@ class NotesIntegrationTest {
         UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + annee + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": 60}"
+                        .content("{\"niveauId\": \"%s\", \"nom\": \"%s\", \"effectifMax\": 60}"
                                 .formatted(niveauId, nom)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("SELECT id FROM classe WHERE nom = ?", UUID.class, nom);
@@ -276,7 +276,7 @@ class NotesIntegrationTest {
     private UUID creerEnseignement(UUID matiereId, int coefficient) throws Exception {
         mvc.perform(post("/api/classes/" + classe + "/enseignements").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"matiereId\": %d, \"coefficient\": %d}"
+                        .content("{\"matiereId\": \"%s\", \"coefficient\": %d}"
                                 .formatted(matiereId, coefficient)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject(
@@ -318,7 +318,7 @@ class NotesIntegrationTest {
 
     private static String note(UUID inscription, UUID evaluation, String valeur, boolean absent) {
         return """
-                {"inscriptionId": %d, "evaluationId": %d, "valeur": %s, "absent": %s}"""
+                {"inscriptionId": "%s", "evaluationId": "%s", "valeur": %s, "absent": %s}"""
                 .formatted(inscription, evaluation, valeur == null ? "null" : valeur, absent);
     }
 

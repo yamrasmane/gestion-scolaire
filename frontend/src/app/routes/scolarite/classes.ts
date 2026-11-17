@@ -44,7 +44,7 @@ export class Classes {
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
 
-  protected nouvelleClasse: { niveauId: number | null; nom: string; effectifMax: number } = {
+  protected nouvelleClasse: { niveauId: string | null; nom: string; effectifMax: number } = {
     niveauId: null,
     nom: '',
     effectifMax: 60,
@@ -109,7 +109,7 @@ export class Classes {
     });
   }
 
-  private chargerClasses(anneeId: number): void {
+  private chargerClasses(anneeId: string): void {
     this.api.classes(anneeId).subscribe({
       next: (classes) => this.classes.set(classes),
       error: (e) => this.erreur.set(messageErreur(e)),

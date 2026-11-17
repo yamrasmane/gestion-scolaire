@@ -62,7 +62,7 @@ export class PlansPaiement {
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
   /** Plan en cours de modification ; `null` quand on en crée un nouveau. */
-  protected readonly enEdition = signal<number | null>(null);
+  protected readonly enEdition = signal<string | null>(null);
   protected readonly formulaireOuvert = signal(false);
 
   protected saisie = this.vide();
@@ -195,7 +195,7 @@ export class PlansPaiement {
     });
   }
 
-  private charger(anneeId: number): void {
+  private charger(anneeId: string): void {
     this.api.plansPaiement(anneeId).subscribe({
       next: (plans) => this.plans.set(plans),
       error: (e) => this.erreur.set(messageErreur(e)),
@@ -211,8 +211,8 @@ export class PlansPaiement {
       libelle: '',
       porteeClasse: false,
       toutePortee: true,
-      niveauId: null as number | null,
-      classeId: null as number | null,
+      niveauId: null as string | null,
+      classeId: null as string | null,
       categorie: null as 'NOUVEAU' | 'ANCIEN' | null,
       modeRepartition: 'POURCENTAGE' as ModeRepartition,
       parDefaut: false,

@@ -45,7 +45,7 @@ export class Matieres {
   protected readonly classes = signal<Classe[]>([]);
   protected readonly enseignants = signal<Personnel[]>([]);
   protected readonly enseignements = signal<Enseignement[]>([]);
-  protected readonly classeId = signal<number | null>(null);
+  protected readonly classeId = signal<string | null>(null);
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
 
@@ -73,7 +73,7 @@ export class Matieres {
     });
   }
 
-  protected choisirClasse(id: number): void {
+  protected choisirClasse(id: string): void {
     this.classeId.set(id);
     this.chargerEnseignements();
   }
@@ -147,8 +147,8 @@ export class Matieres {
 
   private videAffectation() {
     return {
-      matiereId: null as number | null,
-      enseignantId: null as number | null,
+      matiereId: null as string | null,
+      enseignantId: null as string | null,
       coefficient: 1 as number | null,
     };
   }

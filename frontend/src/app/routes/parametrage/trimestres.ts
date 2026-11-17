@@ -62,9 +62,9 @@ export class Trimestres {
 
   protected nouveau = { numero: 1, dateDebut: '', dateFin: '' };
   /** Saisies en cours, par trimestre. */
-  protected choix: Record<number, { mode: ChoixTrimestre; poids: number }> = {};
+  protected choix: Record<string, { mode: ChoixTrimestre; poids: number }> = {};
   protected cycleEnEdition: {
-    trimestreId: number;
+    trimestreId: string;
     cycle: Cycle;
     avec: boolean;
     poids: number;
@@ -164,7 +164,7 @@ export class Trimestres {
     });
   }
 
-  private charger(anneeId: number): void {
+  private charger(anneeId: string): void {
     this.api.trimestres(anneeId).subscribe({
       next: (trimestres) => {
         this.choix = {};

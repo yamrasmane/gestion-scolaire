@@ -12,7 +12,7 @@ export interface Profil {
 }
 
 export interface AnneeScolaire {
-  id: number;
+  id: string;
   libelle: string;
   dateDebut: string;
   dateFin: string;
@@ -41,7 +41,7 @@ export interface CompositionEffective {
 }
 
 export interface Trimestre {
-  id: number;
+  id: string;
   numero: number;
   dateDebut: string;
   dateFin: string;
@@ -52,7 +52,7 @@ export interface Trimestre {
 }
 
 export interface Niveau {
-  id: number;
+  id: string;
   code: string;
   libelle: string;
   cycle: Cycle;
@@ -60,8 +60,8 @@ export interface Niveau {
 }
 
 export interface Classe {
-  id: number;
-  niveauId: number;
+  id: string;
+  niveauId: string;
   niveauCode: string;
   cycle: Cycle;
   nom: string;
@@ -70,7 +70,7 @@ export interface Classe {
 }
 
 export interface Personnel {
-  id: number;
+  id: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -87,7 +87,7 @@ export interface ResultatPersonnel {
 }
 
 export interface Eleve {
-  id: number;
+  id: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -98,9 +98,9 @@ export interface Eleve {
 }
 
 export interface Inscription {
-  id: number;
+  id: string;
   eleve: Eleve;
-  classeId: number;
+  classeId: string;
   categorie: 'NOUVEAU' | 'ANCIEN';
   categorieForcee: boolean;
   motifCategorie: string | null;
@@ -127,7 +127,7 @@ export type ModePaiement = 'ESPECES' | 'MOBILE_MONEY' | 'VIREMENT' | 'CHEQUE';
 export type StatutEcheance = 'A_VENIR' | 'PARTIEL' | 'PAYEE' | 'EN_RETARD';
 
 export interface TypeFrais {
-  id: number;
+  id: string;
   code: string;
   libelle: string;
   obligatoire: boolean;
@@ -137,20 +137,20 @@ export interface TypeFrais {
 }
 
 export interface Tarif {
-  id: number;
-  typeFraisId: number;
+  id: string;
+  typeFraisId: string;
   typeFraisCode: string;
   typeFraisLibelle: string;
-  niveauId: number | null;
+  niveauId: string | null;
   niveauCode: string | null;
-  classeId: number | null;
+  classeId: string | null;
   classeNom: string | null;
   categorie: CategorieTarif;
   montant: number;
 }
 
 export interface Tranche {
-  id: number;
+  id: string;
   numero: number;
   libelle: string;
   dateEcheance: string;
@@ -159,11 +159,11 @@ export interface Tranche {
 }
 
 export interface PlanPaiement {
-  id: number;
+  id: string;
   libelle: string;
-  niveauId: number | null;
+  niveauId: string | null;
   niveauCode: string | null;
-  classeId: number | null;
+  classeId: string | null;
   classeNom: string | null;
   categorie: 'NOUVEAU' | 'ANCIEN' | null;
   modeRepartition: ModeRepartition;
@@ -173,8 +173,8 @@ export interface PlanPaiement {
 }
 
 export interface FraisEleve {
-  id: number;
-  typeFraisId: number;
+  id: string;
+  typeFraisId: string;
   typeFraisCode: string;
   typeFraisLibelle: string;
   obligatoire: boolean;
@@ -189,8 +189,8 @@ export interface FraisEleve {
 }
 
 export interface Echeance {
-  id: number;
-  fraisEleveId: number;
+  id: string;
+  fraisEleveId: string;
   typeFraisLibelle: string;
   trancheNumero: number | null;
   trancheLibelle: string;
@@ -203,14 +203,14 @@ export interface Echeance {
 }
 
 export interface Imputation {
-  echeanceId: number;
+  echeanceId: string;
   typeFraisLibelle: string;
   trancheLibelle: string;
   montant: number;
 }
 
 export interface Paiement {
-  id: number;
+  id: string;
   numeroRecu: string;
   datePaiement: string;
   montant: number;
@@ -225,7 +225,7 @@ export interface Paiement {
 }
 
 export interface FicheFinanciere {
-  inscriptionId: number;
+  inscriptionId: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -264,7 +264,7 @@ export interface Recu {
 }
 
 export interface Impaye {
-  inscriptionId: number;
+  inscriptionId: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -299,27 +299,27 @@ export interface Recouvrement {
 export type CategorieEvaluation = 'DEVOIR' | 'COMPOSITION';
 
 export interface Matiere {
-  id: number;
+  id: string;
   code: string;
   libelle: string;
 }
 
 export interface Enseignement {
-  id: number;
-  classeId: number;
+  id: string;
+  classeId: string;
   classeNom: string;
-  matiereId: number;
+  matiereId: string;
   matiereCode: string;
   matiereLibelle: string;
-  enseignantId: number | null;
+  enseignantId: string | null;
   enseignantNom: string | null;
   coefficient: number;
 }
 
 export interface Evaluation {
-  id: number;
-  enseignementId: number;
-  trimestreId: number;
+  id: string;
+  enseignementId: string;
+  trimestreId: string;
   categorie: CategorieEvaluation;
   libelle: string;
   dateEval: string | null;
@@ -327,15 +327,15 @@ export interface Evaluation {
 }
 
 export interface NoteVue {
-  inscriptionId: number;
-  evaluationId: number;
+  inscriptionId: string;
+  evaluationId: string;
   valeur: number | null;
   absent: boolean;
   appreciation: string | null;
 }
 
 export interface LigneGrille {
-  inscriptionId: number;
+  inscriptionId: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -345,10 +345,10 @@ export interface LigneGrille {
 }
 
 export interface Grille {
-  enseignementId: number;
+  enseignementId: string;
   matiereLibelle: string;
   classeNom: string;
-  trimestreId: number;
+  trimestreId: string;
   avecComposition: boolean;
   poidsComposition: number;
   trimestreCloture: boolean;
@@ -380,7 +380,7 @@ export interface StatistiquesClasse {
 }
 
 export interface Bulletin {
-  inscriptionId: number;
+  inscriptionId: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -404,7 +404,7 @@ export interface Bulletin {
 }
 
 export interface LigneClassement {
-  inscriptionId: number;
+  inscriptionId: string;
   matricule: string;
   nom: string;
   prenom: string;
@@ -432,32 +432,32 @@ export class ApiService {
     return this.http.post<AnneeScolaire>(`${this.base}/annees-scolaires`, annee);
   }
 
-  activerAnneeScolaire(id: number): Observable<AnneeScolaire> {
+  activerAnneeScolaire(id: string): Observable<AnneeScolaire> {
     return this.http.post<AnneeScolaire>(`${this.base}/annees-scolaires/${id}/activation`, null);
   }
 
   // ---------- Trimestres et composition ----------
 
-  trimestres(anneeId: number): Observable<Trimestre[]> {
+  trimestres(anneeId: string): Observable<Trimestre[]> {
     return this.http.get<Trimestre[]>(`${this.base}/annees-scolaires/${anneeId}/trimestres`);
   }
 
   creerTrimestre(
-    anneeId: number,
+    anneeId: string,
     t: { numero: number; dateDebut: string; dateFin: string },
   ): Observable<Trimestre> {
     return this.http.post<Trimestre>(`${this.base}/annees-scolaires/${anneeId}/trimestres`, t);
   }
 
   reglerComposition(
-    trimestreId: number,
+    trimestreId: string,
     reglage: { avecComposition: boolean | null; poidsComposition: number | null },
   ): Observable<Trimestre> {
     return this.http.put<Trimestre>(`${this.base}/trimestres/${trimestreId}/composition`, reglage);
   }
 
   reglerCompositionCycle(
-    trimestreId: number,
+    trimestreId: string,
     cycle: Cycle,
     reglage: { avecComposition: boolean; poidsComposition: number },
   ): Observable<Trimestre> {
@@ -467,17 +467,17 @@ export class ApiService {
     );
   }
 
-  supprimerReglageCycle(trimestreId: number, cycle: Cycle): Observable<Trimestre> {
+  supprimerReglageCycle(trimestreId: string, cycle: Cycle): Observable<Trimestre> {
     return this.http.delete<Trimestre>(
       `${this.base}/trimestres/${trimestreId}/composition/${cycle}`,
     );
   }
 
-  cloturerTrimestre(trimestreId: number): Observable<Trimestre> {
+  cloturerTrimestre(trimestreId: string): Observable<Trimestre> {
     return this.http.post<Trimestre>(`${this.base}/trimestres/${trimestreId}/cloture`, null);
   }
 
-  rouvrirTrimestre(trimestreId: number): Observable<Trimestre> {
+  rouvrirTrimestre(trimestreId: string): Observable<Trimestre> {
     return this.http.post<Trimestre>(`${this.base}/trimestres/${trimestreId}/reouverture`, null);
   }
 
@@ -496,13 +496,13 @@ export class ApiService {
     return this.http.post<Niveau>(`${this.base}/niveaux`, n);
   }
 
-  classes(anneeId: number): Observable<Classe[]> {
+  classes(anneeId: string): Observable<Classe[]> {
     return this.http.get<Classe[]>(`${this.base}/annees-scolaires/${anneeId}/classes`);
   }
 
   creerClasse(
-    anneeId: number,
-    c: { niveauId: number; nom: string; effectifMax: number },
+    anneeId: string,
+    c: { niveauId: string; nom: string; effectifMax: number },
   ): Observable<Classe> {
     return this.http.post<Classe>(`${this.base}/annees-scolaires/${anneeId}/classes`, c);
   }
@@ -524,7 +524,7 @@ export class ApiService {
     return this.http.post<ResultatPersonnel>(`${this.base}/personnel`, p);
   }
 
-  activerPersonnel(id: number, actif: boolean): Observable<Personnel> {
+  activerPersonnel(id: string, actif: boolean): Observable<Personnel> {
     return this.http.post<Personnel>(
       `${this.base}/personnel/${id}/${actif ? 'activation' : 'desactivation'}`,
       null,
@@ -533,12 +533,12 @@ export class ApiService {
 
   // ---------- Élèves et inscriptions ----------
 
-  inscriptions(classeId: number): Observable<Inscription[]> {
+  inscriptions(classeId: string): Observable<Inscription[]> {
     return this.http.get<Inscription[]>(`${this.base}/classes/${classeId}/inscriptions`);
   }
 
   inscrire(
-    classeId: number,
+    classeId: string,
     eleve: {
       matricule: string;
       nom: string;
@@ -554,7 +554,7 @@ export class ApiService {
   }
 
   corrigerCategorie(
-    inscriptionId: number,
+    inscriptionId: string,
     categorie: string,
     motif: string,
   ): Observable<Inscription> {
@@ -578,23 +578,23 @@ export class ApiService {
     return this.http.post<TypeFrais>(`${this.base}/types-frais`, saisie);
   }
 
-  modifierTypeFrais(id: number, saisie: Omit<TypeFrais, 'id' | 'actif'>): Observable<TypeFrais> {
+  modifierTypeFrais(id: string, saisie: Omit<TypeFrais, 'id' | 'actif'>): Observable<TypeFrais> {
     return this.http.put<TypeFrais>(`${this.base}/types-frais/${id}`, saisie);
   }
 
-  activerTypeFrais(id: number, actif: boolean): Observable<TypeFrais> {
+  activerTypeFrais(id: string, actif: boolean): Observable<TypeFrais> {
     return this.http.post<TypeFrais>(
       `${this.base}/types-frais/${id}/activation?actif=${actif}`,
       null,
     );
   }
 
-  grilleTarifaire(anneeId: number): Observable<Tarif[]> {
+  grilleTarifaire(anneeId: string): Observable<Tarif[]> {
     return this.http.get<Tarif[]>(`${this.base}/annees-scolaires/${anneeId}/grille-tarifaire`);
   }
 
   ajouterTarif(
-    anneeId: number,
+    anneeId: string,
     saisie: Omit<Tarif, 'id' | 'typeFraisCode' | 'typeFraisLibelle' | 'niveauCode' | 'classeNom'>,
   ): Observable<Tarif> {
     return this.http.post<Tarif>(
@@ -603,17 +603,17 @@ export class ApiService {
     );
   }
 
-  supprimerTarif(tarifId: number): Observable<void> {
+  supprimerTarif(tarifId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/grille-tarifaire/${tarifId}`);
   }
 
-  viderGrille(anneeId: number): Observable<void> {
+  viderGrille(anneeId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/annees-scolaires/${anneeId}/grille-tarifaire`);
   }
 
   dupliquerGrille(
-    anneeId: number,
-    anneeSourceId: number,
+    anneeId: string,
+    anneeSourceId: string,
     haussePourcentage: number,
   ): Observable<Tarif[]> {
     return this.http.post<Tarif[]>(
@@ -625,78 +625,78 @@ export class ApiService {
     );
   }
 
-  plansPaiement(anneeId: number): Observable<PlanPaiement[]> {
+  plansPaiement(anneeId: string): Observable<PlanPaiement[]> {
     return this.http.get<PlanPaiement[]>(`${this.base}/annees-scolaires/${anneeId}/plans-paiement`);
   }
 
-  creerPlan(anneeId: number, saisie: unknown): Observable<PlanPaiement> {
+  creerPlan(anneeId: string, saisie: unknown): Observable<PlanPaiement> {
     return this.http.post<PlanPaiement>(
       `${this.base}/annees-scolaires/${anneeId}/plans-paiement`,
       saisie,
     );
   }
 
-  modifierPlan(planId: number, saisie: unknown): Observable<PlanPaiement> {
+  modifierPlan(planId: string, saisie: unknown): Observable<PlanPaiement> {
     return this.http.put<PlanPaiement>(`${this.base}/plans-paiement/${planId}`, saisie);
   }
 
-  supprimerPlan(planId: number): Observable<void> {
+  supprimerPlan(planId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/plans-paiement/${planId}`);
   }
 
   // ---------- Finances : fiche de l'élève et caisse (SF-24 à SF-32) ----------
 
-  ficheFinanciere(inscriptionId: number): Observable<FicheFinanciere> {
+  ficheFinanciere(inscriptionId: string): Observable<FicheFinanciere> {
     return this.http.get<FicheFinanciere>(`${this.base}/inscriptions/${inscriptionId}/finances`);
   }
 
-  genererFrais(inscriptionId: number): Observable<string[]> {
+  genererFrais(inscriptionId: string): Observable<string[]> {
     return this.http.post<string[]>(
       `${this.base}/inscriptions/${inscriptionId}/finances/generation`,
       null,
     );
   }
 
-  ajouterFraisFacultatif(inscriptionId: number, typeFraisId: number): Observable<FraisEleve> {
+  ajouterFraisFacultatif(inscriptionId: string, typeFraisId: string): Observable<FraisEleve> {
     return this.http.post<FraisEleve>(`${this.base}/inscriptions/${inscriptionId}/finances/frais`, {
       typeFraisId,
     });
   }
 
   appliquerRemise(
-    fraisId: number,
+    fraisId: string,
     remise: { type: TypeRemise | null; valeur: number | null; motif: string | null },
   ): Observable<FraisEleve> {
     return this.http.put<FraisEleve>(`${this.base}/frais-eleve/${fraisId}/remise`, remise);
   }
 
-  supprimerFrais(fraisId: number): Observable<void> {
+  supprimerFrais(fraisId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/frais-eleve/${fraisId}`);
   }
 
   encaisser(
-    inscriptionId: number,
+    inscriptionId: string,
     saisie: {
       datePaiement: string;
       montant: number;
       mode: ModePaiement;
       reference: string | null;
       payeur: string | null;
-      typeFraisId: number | null;
+      typeFraisId: string | null;
     },
   ): Observable<Paiement> {
     return this.http.post<Paiement>(`${this.base}/inscriptions/${inscriptionId}/paiements`, saisie);
   }
 
-  annulerPaiement(paiementId: number, motif: string): Observable<Paiement> {
+  annulerPaiement(paiementId: string, motif: string): Observable<Paiement> {
     return this.http.post<Paiement>(`${this.base}/paiements/${paiementId}/annulation`, { motif });
   }
 
-  recu(paiementId: number, duplicata = false): Observable<Recu> {
+  recu(paiementId: string, duplicata = false): Observable<Recu> {
     return this.http.get<Recu>(`${this.base}/paiements/${paiementId}/recu?duplicata=${duplicata}`);
   }
 
-  impayes(anneeId: number, classeId: number | null): Observable<Impaye[]> {
+  impayes(anneeId: string, classeId: string | null): Observable<Impaye[]> {
     const filtre = classeId ? `?classeId=${classeId}` : '';
     return this.http.get<Impaye[]>(`${this.base}/annees-scolaires/${anneeId}/impayes${filtre}`);
   }
@@ -705,7 +705,7 @@ export class ApiService {
     return this.http.get<JournalCaisse>(`${this.base}/caisse/journal?journee=${journee}`);
   }
 
-  recouvrement(anneeId: number): Observable<Recouvrement> {
+  recouvrement(anneeId: string): Observable<Recouvrement> {
     return this.http.get<Recouvrement>(`${this.base}/annees-scolaires/${anneeId}/recouvrement`);
   }
 
@@ -719,37 +719,37 @@ export class ApiService {
     return this.http.post<Matiere>(`${this.base}/matieres`, saisie);
   }
 
-  enseignements(classeId: number): Observable<Enseignement[]> {
+  enseignements(classeId: string): Observable<Enseignement[]> {
     return this.http.get<Enseignement[]>(`${this.base}/classes/${classeId}/enseignements`);
   }
 
   ajouterEnseignement(
-    classeId: number,
-    saisie: { matiereId: number; enseignantId: number | null; coefficient: number },
+    classeId: string,
+    saisie: { matiereId: string; enseignantId: string | null; coefficient: number },
   ): Observable<Enseignement> {
     return this.http.post<Enseignement>(`${this.base}/classes/${classeId}/enseignements`, saisie);
   }
 
   modifierEnseignement(
-    enseignementId: number,
-    saisie: { matiereId: number; enseignantId: number | null; coefficient: number },
+    enseignementId: string,
+    saisie: { matiereId: string; enseignantId: string | null; coefficient: number },
   ): Observable<Enseignement> {
     return this.http.put<Enseignement>(`${this.base}/enseignements/${enseignementId}`, saisie);
   }
 
-  supprimerEnseignement(enseignementId: number): Observable<void> {
+  supprimerEnseignement(enseignementId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/enseignements/${enseignementId}`);
   }
 
-  evaluations(enseignementId: number, trimestreId: number): Observable<Evaluation[]> {
+  evaluations(enseignementId: string, trimestreId: string): Observable<Evaluation[]> {
     return this.http.get<Evaluation[]>(
       `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/evaluations`,
     );
   }
 
   creerEvaluation(
-    enseignementId: number,
-    trimestreId: number,
+    enseignementId: string,
+    trimestreId: string,
     saisie: { categorie: CategorieEvaluation; libelle: string; dateEval: string | null },
   ): Observable<Evaluation> {
     return this.http.post<Evaluation>(
@@ -758,22 +758,22 @@ export class ApiService {
     );
   }
 
-  supprimerEvaluation(evaluationId: number): Observable<void> {
+  supprimerEvaluation(evaluationId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/evaluations/${evaluationId}`);
   }
 
-  grille(enseignementId: number, trimestreId: number): Observable<Grille> {
+  grille(enseignementId: string, trimestreId: string): Observable<Grille> {
     return this.http.get<Grille>(
       `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/grille`,
     );
   }
 
   enregistrerGrille(
-    enseignementId: number,
-    trimestreId: number,
+    enseignementId: string,
+    trimestreId: string,
     notes: {
-      inscriptionId: number;
-      evaluationId: number;
+      inscriptionId: string;
+      evaluationId: string;
       valeur: number | null;
       absent: boolean;
       appreciation: string | null;
@@ -785,28 +785,28 @@ export class ApiService {
     );
   }
 
-  classement(classeId: number, trimestreId: number): Observable<LigneClassement[]> {
+  classement(classeId: string, trimestreId: string): Observable<LigneClassement[]> {
     return this.http.get<LigneClassement[]>(
       `${this.base}/classes/${classeId}/trimestres/${trimestreId}/classement`,
     );
   }
 
-  deliberer(classeId: number, trimestreId: number): Observable<LigneClassement[]> {
+  deliberer(classeId: string, trimestreId: string): Observable<LigneClassement[]> {
     return this.http.post<LigneClassement[]>(
       `${this.base}/classes/${classeId}/trimestres/${trimestreId}/deliberation`,
       null,
     );
   }
 
-  bulletin(inscriptionId: number, trimestreId: number): Observable<Bulletin> {
+  bulletin(inscriptionId: string, trimestreId: string): Observable<Bulletin> {
     return this.http.get<Bulletin>(
       `${this.base}/inscriptions/${inscriptionId}/trimestres/${trimestreId}/bulletin`,
     );
   }
 
   enregistrerDecision(
-    inscriptionId: number,
-    trimestreId: number,
+    inscriptionId: string,
+    trimestreId: string,
     decision: { mention: string | null; appreciationConseil: string | null },
   ): Observable<Bulletin> {
     return this.http.put<Bulletin>(

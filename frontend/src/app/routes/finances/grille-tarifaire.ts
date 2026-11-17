@@ -65,7 +65,7 @@ export class GrilleTarifaire {
   });
 
   protected nouveau = this.vide();
-  protected duplication = { anneeSourceId: null as number | null, haussePourcentage: 0 };
+  protected duplication = { anneeSourceId: null as string | null, haussePourcentage: 0 };
 
   constructor() {
     this.api.typesFrais(true).subscribe({
@@ -164,7 +164,7 @@ export class GrilleTarifaire {
     });
   }
 
-  private charger(anneeId: number): void {
+  private charger(anneeId: string): void {
     this.api.grilleTarifaire(anneeId).subscribe({
       next: (tarifs) => this.tarifs.set(tarifs),
       error: (e) => this.erreur.set(messageErreur(e)),
@@ -177,10 +177,10 @@ export class GrilleTarifaire {
 
   private vide() {
     return {
-      typeFraisId: null as number | null,
+      typeFraisId: null as string | null,
       porteeClasse: false,
-      niveauId: null as number | null,
-      classeId: null as number | null,
+      niveauId: null as string | null,
+      classeId: null as string | null,
       categorie: 'TOUS' as CategorieTarif,
       montant: null as number | null,
     };

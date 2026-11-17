@@ -79,7 +79,7 @@ class ParametrageEtImportsIntegrationTest {
         UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + anneeId + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": %d}"
+                        .content("{\"niveauId\": \"%s\", \"nom\": \"%s\", \"effectifMax\": %d}"
                                 .formatted(niveauId, nom, effectifMax)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = ?",
@@ -207,7 +207,7 @@ class ParametrageEtImportsIntegrationTest {
         UUID sixieme = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", UUID.class);
         mvc.perform(post("/api/annees-scolaires/" + annee2026 + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"niveauId\": %d, \"nom\": \"6ÈME a\", \"effectifMax\": 50}".formatted(sixieme)))
+                        .content("{\"niveauId\": \"%s\", \"nom\": \"6ÈME a\", \"effectifMax\": 50}".formatted(sixieme)))
                 .andExpect(status().isConflict());
         // le même nom reste possible une autre année
         creerClasse(annee2025, "6EME", "6ème A", 60);
