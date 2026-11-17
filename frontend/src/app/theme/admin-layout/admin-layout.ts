@@ -9,6 +9,7 @@ import { Subscription, filter } from 'rxjs';
 
 import { AppSettings, SettingsService } from '@core';
 import { Customizer } from '../customizer/customizer';
+import { AvisRoles } from '@shared/composants/avis-roles';
 import { Header } from '../header/header';
 import { Sidebar } from '../sidebar/sidebar';
 import { Topmenu } from '../topmenu/topmenu';
@@ -32,6 +33,7 @@ const MONITOR_MEDIAQUERY = 'screen and (min-width: 960px)';
     Topmenu,
     Sidebar,
     Customizer,
+    AvisRoles,
   ],
   host: {
     '[class.matero-content-width-fix]': 'contentWidthFix',

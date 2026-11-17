@@ -100,7 +100,12 @@ export class AuthService {
   private lireJeton(): void {
     const jeton = this.keycloak.tokenParsed ?? {};
     const connus = Object.keys(LIBELLES_ROLES);
-    const roles: string[] = jeton.realm_access?.roles ?? [];
+    // Les rôles peuvent être posés sur le realm ou sur le client, selon la
+    // façon dont les comptes ont été créés dans Keycloak : on lit les deux.
+    const roles: string[] = [
+      ...(jeton.realm_access?.roles ?? []),
+      ...(jeton.resource_access?.[config.keycloak.clientId]?.roles ?? []),
+    ];
     this._roles.set(roles.map((r) => r.toUpperCase()).filter((r): r is Role => connus.includes(r)));
     this._nomUtilisateur.set(jeton['preferred_username'] ?? '');
     this._nomComplet.set(jeton['name'] ?? jeton['preferred_username'] ?? '');
