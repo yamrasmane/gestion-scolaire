@@ -8,8 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DonneesDemoIntegrationTest {
 
     private static final RequestPostProcessor DIRECTEUR = jwt()
@@ -44,7 +46,7 @@ class DonneesDemoIntegrationTest {
     private Long premierTrimestre;
     private Long sixiemeA;
 
-    @BeforeEach
+    @BeforeAll
     void charger() throws Exception {
         jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, revinfo "
                 + "RESTART IDENTITY CASCADE");
@@ -63,6 +65,21 @@ class DonneesDemoIntegrationTest {
         sixiemeA = jdbc.queryForObject(
                 "SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = '6ème A'",
                 Long.class, anneeCourante);
+
+        // Le jeu de données doit être chargé en entier : sinon, les vérifications
+        // qui suivent échoueraient sans dire ce qui manque.
+        assertThat(compter("classe WHERE annee_scolaire_id = " + anneeCourante)).isEqualTo(8);
+        assertThat(compter("inscription WHERE annee_scolaire_id = " + anneeCourante)).isEqualTo(144);
+        assertThat(compter("note")).isGreaterThan(3000);
+        assertThat(compter("echeance_eleve")).isGreaterThan(800);
+        assertThat(compter("paiement WHERE statut = 'VALIDE'")).isGreaterThan(100);
+        assertThat(compter("echeance_eleve WHERE statut = 'EN_RETARD'")).isGreaterThan(0);
+        assertThat(compter("echeance_eleve WHERE date_echeance <= current_date"
+                + " AND montant_du > montant_paye")).isGreaterThan(0);
+    }
+
+    private int compter(String table) {
+        return jdbc.queryForObject("SELECT count(*) FROM " + table, Integer.class);
     }
 
     @Test
