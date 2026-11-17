@@ -26,12 +26,17 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HTTP_PORT: 8081
+      # Base Keycloak dans le PostgreSQL de la machine (base « keycloak », utilisateur lycee).
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://host.docker.internal:5432/keycloak
+      KC_DB_USERNAME: lycee
+      KC_DB_PASSWORD: lycee
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8081:8081"
     volumes:
       - ./docker/keycloak/realm-lycee.json:/opt/keycloak/data/import/realm-lycee.json:ro
-      - kcdata:/opt/keycloak/data/h2
 
 volumes:
   pgdata:
-  kcdata:
