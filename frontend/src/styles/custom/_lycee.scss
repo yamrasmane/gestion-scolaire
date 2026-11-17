@@ -46,3 +46,27 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+/** Bandeau de chiffres clés d'une fiche financière ou d'un tableau de bord. */
+.resume-finances {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .libelle {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .valeur {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .en-retard {
+    color: var(--mat-sys-error);
+  }
+}

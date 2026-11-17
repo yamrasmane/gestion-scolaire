@@ -118,6 +118,182 @@ export interface RapportImport {
   lignes: Record<string, string | number | boolean>[];
 }
 
+// ---------- Finances (lot 3) ----------
+
+export type CategorieTarif = 'NOUVEAU' | 'ANCIEN' | 'TOUS';
+export type ModeRepartition = 'POURCENTAGE' | 'MONTANT';
+export type TypeRemise = 'POURCENTAGE' | 'MONTANT';
+export type ModePaiement = 'ESPECES' | 'MOBILE_MONEY' | 'VIREMENT' | 'CHEQUE';
+export type StatutEcheance = 'A_VENIR' | 'PARTIEL' | 'PAYEE' | 'EN_RETARD';
+
+export interface TypeFrais {
+  id: number;
+  code: string;
+  libelle: string;
+  obligatoire: boolean;
+  fractionnable: boolean;
+  prioriteImputation: number;
+  actif: boolean;
+}
+
+export interface Tarif {
+  id: number;
+  typeFraisId: number;
+  typeFraisCode: string;
+  typeFraisLibelle: string;
+  niveauId: number | null;
+  niveauCode: string | null;
+  classeId: number | null;
+  classeNom: string | null;
+  categorie: CategorieTarif;
+  montant: number;
+}
+
+export interface Tranche {
+  id: number;
+  numero: number;
+  libelle: string;
+  dateEcheance: string;
+  pourcentage: number | null;
+  montant: number | null;
+}
+
+export interface PlanPaiement {
+  id: number;
+  libelle: string;
+  niveauId: number | null;
+  niveauCode: string | null;
+  classeId: number | null;
+  classeNom: string | null;
+  categorie: 'NOUVEAU' | 'ANCIEN' | null;
+  modeRepartition: ModeRepartition;
+  parDefaut: boolean;
+  montantMinInscription: number | null;
+  tranches: Tranche[];
+}
+
+export interface FraisEleve {
+  id: number;
+  typeFraisId: number;
+  typeFraisCode: string;
+  typeFraisLibelle: string;
+  obligatoire: boolean;
+  fractionnable: boolean;
+  montantBrut: number;
+  remiseType: TypeRemise | null;
+  remiseValeur: number | null;
+  montantRemise: number;
+  montantNet: number;
+  motifRemise: string | null;
+  remiseValideePar: string | null;
+}
+
+export interface Echeance {
+  id: number;
+  fraisEleveId: number;
+  typeFraisLibelle: string;
+  trancheNumero: number | null;
+  trancheLibelle: string;
+  dateEcheance: string;
+  montantDu: number;
+  montantPaye: number;
+  reste: number;
+  statut: StatutEcheance;
+  derogatoire: boolean;
+}
+
+export interface Imputation {
+  echeanceId: number;
+  typeFraisLibelle: string;
+  trancheLibelle: string;
+  montant: number;
+}
+
+export interface Paiement {
+  id: number;
+  numeroRecu: string;
+  datePaiement: string;
+  montant: number;
+  mode: ModePaiement;
+  reference: string | null;
+  payeur: string | null;
+  caissier: string | null;
+  statut: 'VALIDE' | 'ANNULE';
+  motifAnnulation: string | null;
+  annulePar: string | null;
+  imputations: Imputation[];
+}
+
+export interface FicheFinanciere {
+  inscriptionId: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  classeNom: string;
+  categorie: 'NOUVEAU' | 'ANCIEN';
+  planPaiement: string | null;
+  totalBrut: number;
+  totalRemise: number;
+  totalNet: number;
+  totalPaye: number;
+  resteAPayer: number;
+  echuNonPaye: number;
+  anomalies: string[];
+  frais: FraisEleve[];
+  echeances: Echeance[];
+  paiements: Paiement[];
+}
+
+export interface Recu {
+  numeroRecu: string;
+  duplicata: boolean;
+  datePaiement: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  classeNom: string;
+  montant: number;
+  montantEnLettres: string;
+  mode: ModePaiement;
+  reference: string | null;
+  payeur: string | null;
+  caissier: string | null;
+  statut: 'VALIDE' | 'ANNULE';
+  resteAPayer: number;
+  imputations: Imputation[];
+}
+
+export interface Impaye {
+  inscriptionId: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  classeNom: string;
+  typeFraisLibelle: string;
+  trancheLibelle: string;
+  dateEcheance: string;
+  montantDu: number;
+  montantPaye: number;
+  reste: number;
+  statut: StatutEcheance;
+}
+
+export interface JournalCaisse {
+  journee: string;
+  total: number;
+  totauxParMode: { mode: ModePaiement; total: number }[];
+  paiements: Paiement[];
+}
+
+export interface Recouvrement {
+  attendu: number;
+  encaisse: number;
+  reste: number;
+  echuNonPaye: number;
+  elevesAJour: number;
+  elevesEnRetard: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -268,6 +444,149 @@ export class ApiService {
   }
 
   // ---------- Imports Excel / CSV ----------
+
+  // ---------- Finances : paramétrage (SF-21, SF-22, SF-26) ----------
+
+  typesFrais(actifsSeulement = false): Observable<TypeFrais[]> {
+    return this.http.get<TypeFrais[]>(
+      `${this.base}/types-frais?actifsSeulement=${actifsSeulement}`,
+    );
+  }
+
+  creerTypeFrais(saisie: Omit<TypeFrais, 'id' | 'actif'>): Observable<TypeFrais> {
+    return this.http.post<TypeFrais>(`${this.base}/types-frais`, saisie);
+  }
+
+  modifierTypeFrais(id: number, saisie: Omit<TypeFrais, 'id' | 'actif'>): Observable<TypeFrais> {
+    return this.http.put<TypeFrais>(`${this.base}/types-frais/${id}`, saisie);
+  }
+
+  activerTypeFrais(id: number, actif: boolean): Observable<TypeFrais> {
+    return this.http.post<TypeFrais>(
+      `${this.base}/types-frais/${id}/activation?actif=${actif}`,
+      null,
+    );
+  }
+
+  grilleTarifaire(anneeId: number): Observable<Tarif[]> {
+    return this.http.get<Tarif[]>(`${this.base}/annees-scolaires/${anneeId}/grille-tarifaire`);
+  }
+
+  ajouterTarif(
+    anneeId: number,
+    saisie: Omit<Tarif, 'id' | 'typeFraisCode' | 'typeFraisLibelle' | 'niveauCode' | 'classeNom'>,
+  ): Observable<Tarif> {
+    return this.http.post<Tarif>(
+      `${this.base}/annees-scolaires/${anneeId}/grille-tarifaire`,
+      saisie,
+    );
+  }
+
+  supprimerTarif(tarifId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/grille-tarifaire/${tarifId}`);
+  }
+
+  viderGrille(anneeId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/annees-scolaires/${anneeId}/grille-tarifaire`);
+  }
+
+  dupliquerGrille(
+    anneeId: number,
+    anneeSourceId: number,
+    haussePourcentage: number,
+  ): Observable<Tarif[]> {
+    return this.http.post<Tarif[]>(
+      `${this.base}/annees-scolaires/${anneeId}/grille-tarifaire/duplication`,
+      {
+        anneeSourceId,
+        haussePourcentage,
+      },
+    );
+  }
+
+  plansPaiement(anneeId: number): Observable<PlanPaiement[]> {
+    return this.http.get<PlanPaiement[]>(`${this.base}/annees-scolaires/${anneeId}/plans-paiement`);
+  }
+
+  creerPlan(anneeId: number, saisie: unknown): Observable<PlanPaiement> {
+    return this.http.post<PlanPaiement>(
+      `${this.base}/annees-scolaires/${anneeId}/plans-paiement`,
+      saisie,
+    );
+  }
+
+  modifierPlan(planId: number, saisie: unknown): Observable<PlanPaiement> {
+    return this.http.put<PlanPaiement>(`${this.base}/plans-paiement/${planId}`, saisie);
+  }
+
+  supprimerPlan(planId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/plans-paiement/${planId}`);
+  }
+
+  // ---------- Finances : fiche de l'élève et caisse (SF-24 à SF-32) ----------
+
+  ficheFinanciere(inscriptionId: number): Observable<FicheFinanciere> {
+    return this.http.get<FicheFinanciere>(`${this.base}/inscriptions/${inscriptionId}/finances`);
+  }
+
+  genererFrais(inscriptionId: number): Observable<string[]> {
+    return this.http.post<string[]>(
+      `${this.base}/inscriptions/${inscriptionId}/finances/generation`,
+      null,
+    );
+  }
+
+  ajouterFraisFacultatif(inscriptionId: number, typeFraisId: number): Observable<FraisEleve> {
+    return this.http.post<FraisEleve>(`${this.base}/inscriptions/${inscriptionId}/finances/frais`, {
+      typeFraisId,
+    });
+  }
+
+  appliquerRemise(
+    fraisId: number,
+    remise: { type: TypeRemise | null; valeur: number | null; motif: string | null },
+  ): Observable<FraisEleve> {
+    return this.http.put<FraisEleve>(`${this.base}/frais-eleve/${fraisId}/remise`, remise);
+  }
+
+  supprimerFrais(fraisId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/frais-eleve/${fraisId}`);
+  }
+
+  encaisser(
+    inscriptionId: number,
+    saisie: {
+      datePaiement: string;
+      montant: number;
+      mode: ModePaiement;
+      reference: string | null;
+      payeur: string | null;
+      typeFraisId: number | null;
+    },
+  ): Observable<Paiement> {
+    return this.http.post<Paiement>(`${this.base}/inscriptions/${inscriptionId}/paiements`, saisie);
+  }
+
+  annulerPaiement(paiementId: number, motif: string): Observable<Paiement> {
+    return this.http.post<Paiement>(`${this.base}/paiements/${paiementId}/annulation`, { motif });
+  }
+
+  recu(paiementId: number, duplicata = false): Observable<Recu> {
+    return this.http.get<Recu>(`${this.base}/paiements/${paiementId}/recu?duplicata=${duplicata}`);
+  }
+
+  impayes(anneeId: number, classeId: number | null): Observable<Impaye[]> {
+    const filtre = classeId ? `?classeId=${classeId}` : '';
+    return this.http.get<Impaye[]>(`${this.base}/annees-scolaires/${anneeId}/impayes${filtre}`);
+  }
+
+  journalCaisse(journee: string): Observable<JournalCaisse> {
+    return this.http.get<JournalCaisse>(`${this.base}/caisse/journal?journee=${journee}`);
+  }
+
+  recouvrement(anneeId: number): Observable<Recouvrement> {
+    return this.http.get<Recouvrement>(`${this.base}/annees-scolaires/${anneeId}/recouvrement`);
+  }
 
   /** @param chemin chemin de l'API d'import, par exemple `/personnel/import` */
   importer(chemin: string, fichier: File, simulation: boolean): Observable<RapportImport> {

@@ -1,4 +1,4 @@
-import { DIRECTION } from '@core/roles';
+import { DIRECTION, FINANCES } from '@core/roles';
 import { Menu } from './menu.service';
 
 /**
@@ -24,6 +24,18 @@ export const MENU_LYCEE: Menu[] = [
     ],
   },
   {
+    route: 'finances',
+    name: 'finances',
+    type: 'sub',
+    icon: 'payments',
+    permissions: { only: FINANCES },
+    children: [
+      { route: 'encaissement', name: 'encaissement', type: 'link' },
+      { route: 'impayes', name: 'impayes', type: 'link' },
+      { route: 'journal-caisse', name: 'journal', type: 'link' },
+    ],
+  },
+  {
     route: 'parametrage',
     name: 'parametrage',
     type: 'sub',
@@ -31,6 +43,24 @@ export const MENU_LYCEE: Menu[] = [
     children: [
       { route: 'annees-scolaires', name: 'annees', type: 'link' },
       { route: 'trimestres', name: 'trimestres', type: 'link' },
+      {
+        route: 'finances/types-frais',
+        name: 'types_frais',
+        type: 'link',
+        permissions: { only: ['INTENDANT', ...DIRECTION] },
+      },
+      {
+        route: 'finances/grille-tarifaire',
+        name: 'grille',
+        type: 'link',
+        permissions: { only: ['INTENDANT', ...DIRECTION] },
+      },
+      {
+        route: 'finances/plans-paiement',
+        name: 'plans',
+        type: 'link',
+        permissions: { only: ['INTENDANT', ...DIRECTION] },
+      },
     ],
   },
   {

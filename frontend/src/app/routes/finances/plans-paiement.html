@@ -1,0 +1,244 @@
+<page-header title="Plans de paiement" [subtitle]="contexte.annee()?.libelle ?? ''" />
+
+@if (!contexte.annee()) {
+  <p class="text-muted">Créez d'abord une année scolaire.</p>
+} @else {
+  @if (erreur(); as message) {
+    <p class="alerte-erreur" role="alert">{{ message }}</p>
+  }
+
+  @for (plan of plans(); track plan.id) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          {{ plan.libelle }}
+          @if (plan.parDefaut) {
+            <mat-chip highlighted>Par défaut</mat-chip>
+          }
+        </mat-card-title>
+        <mat-card-subtitle>
+          S'applique à {{ portee(plan) }} —
+          {{ plan.modeRepartition === 'POURCENTAGE' ? 'parts en pourcentage' : 'montants fixes' }}
+          @if (plan.montantMinInscription) {
+            — minimum à l'inscription : {{ plan.montantMinInscription | number }} FCFA
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="table-defilement">
+          <table mat-table [dataSource]="plan.tranches" class="w-full">
+            <ng-container matColumnDef="numero">
+              <th mat-header-cell *matHeaderCellDef>N°</th>
+              <td mat-cell *matCellDef="let t">{{ t.numero }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="libelle">
+              <th mat-header-cell *matHeaderCellDef>Tranche</th>
+              <td mat-cell *matCellDef="let t">{{ t.libelle }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="echeance">
+              <th mat-header-cell *matHeaderCellDef>Échéance</th>
+              <td mat-cell *matCellDef="let t">{{ t.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="part">
+              <th mat-header-cell *matHeaderCellDef>Part</th>
+              <td mat-cell *matCellDef="let t">{{ part(plan, t) }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+            <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button matButton (click)="editer(plan)">
+          <mat-icon>edit</mat-icon>
+          Modifier
+        </button>
+        <button matButton [disabled]="enCours()" (click)="supprimer(plan)">
+          <mat-icon>delete</mat-icon>
+          Supprimer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  } @empty {
+    <p class="text-muted">Aucun plan de paiement n'est défini pour cette année.</p>
+  }
+
+  @if (!formulaireOuvert()) {
+    <button matButton="filled" (click)="nouveauPlan()">
+      <mat-icon>add</mat-icon>
+      Nouveau plan de paiement
+    </button>
+  } @else {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          {{ enEdition() ? 'Modifier le plan' : 'Nouveau plan de paiement' }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="grille-formulaire">
+          <mat-form-field>
+            <mat-label>Libellé</mat-label>
+            <input
+              matInput
+              name="libelle"
+              required
+              placeholder="Paiement en 3 tranches"
+              [(ngModel)]="saisie.libelle"
+            />
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Expression des tranches</mat-label>
+            <mat-select name="mode" [(ngModel)]="saisie.modeRepartition">
+              <mat-option value="POURCENTAGE">En pourcentage du total</mat-option>
+              <mat-option value="MONTANT">En montants fixes</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Portée</mat-label>
+            <mat-select name="portee" [(ngModel)]="saisie.toutePortee">
+              <mat-option [value]="true">Toute l'année scolaire</mat-option>
+              <mat-option [value]="false">Un niveau ou une classe</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (!saisie.toutePortee) {
+            <mat-form-field>
+              <mat-label>Cible</mat-label>
+              <mat-select name="cible" [(ngModel)]="saisie.porteeClasse">
+                <mat-option [value]="false">Un niveau</mat-option>
+                <mat-option [value]="true">Une classe</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            @if (saisie.porteeClasse) {
+              <mat-form-field>
+                <mat-label>Classe</mat-label>
+                <mat-select name="classe" [(ngModel)]="saisie.classeId">
+                  @for (c of classes(); track c.id) {
+                    <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            } @else {
+              <mat-form-field>
+                <mat-label>Niveau</mat-label>
+                <mat-select name="niveau" [(ngModel)]="saisie.niveauId">
+                  @for (n of niveaux(); track n.id) {
+                    <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+          }
+
+          <mat-form-field>
+            <mat-label>Élèves concernés</mat-label>
+            <mat-select name="categorie" [(ngModel)]="saisie.categorie">
+              <mat-option [value]="null">Tous</mat-option>
+              <mat-option value="NOUVEAU">Nouveaux</mat-option>
+              <mat-option value="ANCIEN">Anciens</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Minimum exigé à l'inscription (FCFA)</mat-label>
+            <input
+              matInput
+              name="minimum"
+              type="number"
+              min="0"
+              [(ngModel)]="saisie.montantMinInscription"
+            />
+          </mat-form-field>
+        </div>
+
+        <mat-checkbox name="defaut" [(ngModel)]="saisie.parDefaut">
+          Plan par défaut de l'année
+        </mat-checkbox>
+
+        <h3 class="f-w-400 m-t-24">Tranches</h3>
+        <p class="text-muted">
+          Les dates doivent être strictement croissantes. En pourcentage, la somme doit faire
+          exactement 100 %.
+        </p>
+
+        @for (tranche of saisie.tranches; track $index) {
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Libellé de la tranche {{ tranche.numero }}</mat-label>
+              <input matInput [name]="'libelle' + $index" [(ngModel)]="tranche.libelle" />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Échéance</mat-label>
+              <input
+                matInput
+                type="date"
+                [name]="'date' + $index"
+                [(ngModel)]="tranche.dateEcheance"
+              />
+            </mat-form-field>
+
+            @if (saisie.modeRepartition === 'POURCENTAGE') {
+              <mat-form-field>
+                <mat-label>Part (%)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  [name]="'pct' + $index"
+                  [(ngModel)]="tranche.pourcentage"
+                />
+              </mat-form-field>
+            } @else {
+              <mat-form-field>
+                <mat-label>Montant (FCFA)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [name]="'montant' + $index"
+                  [(ngModel)]="tranche.montant"
+                />
+              </mat-form-field>
+            }
+
+            <div class="ligne-actions">
+              <button matButton (click)="retirerTranche($index)">
+                <mat-icon>remove_circle_outline</mat-icon>
+                Retirer
+              </button>
+            </div>
+          </div>
+        }
+
+        <button matButton (click)="ajouterTranche()">
+          <mat-icon>add</mat-icon>
+          Ajouter une tranche
+        </button>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button
+          matButton="filled"
+          [disabled]="enCours() || saisie.tranches.length === 0"
+          (click)="enregistrer()"
+        >
+          Enregistrer le plan
+        </button>
+        <button matButton (click)="formulaireOuvert.set(false)">Annuler</button>
+      </mat-card-actions>
+    </mat-card>
+  }
+}

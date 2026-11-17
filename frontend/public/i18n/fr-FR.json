@@ -7,7 +7,14 @@
     "parametrage": "Paramétrage",
     "parametrage.annees": "Années scolaires",
     "parametrage.trimestres": "Trimestres",
-    "personnel": "Personnel"
+    "personnel": "Personnel",
+    "finances": "Finances",
+    "finances.encaissement": "Encaissement",
+    "finances.impayes": "Impayés",
+    "finances.journal": "Journal de caisse",
+    "parametrage.types_frais": "Types de frais",
+    "parametrage.grille": "Grille tarifaire",
+    "parametrage.plans": "Plans de paiement"
   },
   "validation": {
     "required": "Ce champ est obligatoire",

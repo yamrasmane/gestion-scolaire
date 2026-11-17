@@ -1,0 +1,206 @@
+<page-header title="Grille tarifaire" [subtitle]="contexte.annee()?.libelle ?? ''" />
+
+@if (!contexte.annee()) {
+  <p class="text-muted">Créez d'abord une année scolaire.</p>
+} @else {
+  @if (erreur(); as message) {
+    <p class="alerte-erreur" role="alert">{{ message }}</p>
+  }
+  @if (information(); as message) {
+    <p class="alerte-succes">{{ message }}</p>
+  }
+
+  <mat-card>
+    <mat-card-content>
+      @if (tarifs().length === 0) {
+        <p class="text-muted">
+          Aucun tarif n'est défini pour cette année. Ajoutez-les ci-dessous, ou reconduisez la
+          grille de l'année précédente.
+        </p>
+      } @else {
+        <div class="table-defilement">
+          <table mat-table [dataSource]="tarifs()" class="w-full">
+            <ng-container matColumnDef="cible">
+              <th mat-header-cell *matHeaderCellDef>S'applique à</th>
+              <td mat-cell *matCellDef="let t">{{ cible(t) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="categorie">
+              <th mat-header-cell *matHeaderCellDef>Élèves</th>
+              <td mat-cell *matCellDef="let t">{{ libelleCategorie(t.categorie) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="frais">
+              <th mat-header-cell *matHeaderCellDef>Frais</th>
+              <td mat-cell *matCellDef="let t">{{ t.typeFraisLibelle }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="montant">
+              <th mat-header-cell *matHeaderCellDef>Montant (FCFA)</th>
+              <td mat-cell *matCellDef="let t">
+                <strong>{{ t.montant | number }}</strong>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let t">
+                <button
+                  matIconButton
+                  [disabled]="enCours()"
+                  (click)="supprimer(t)"
+                  aria-label="Supprimer ce tarif"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+            <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+          </table>
+        </div>
+
+        <h3 class="f-w-400 m-t-24">Total par classe et catégorie</h3>
+        <ul>
+          @for (ligne of totaux(); track ligne.cle) {
+            <li>
+              {{ ligne.cle }} : <strong>{{ ligne.total | number }} FCFA</strong>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Ajouter un tarif</mat-card-title>
+      <mat-card-subtitle>
+        Un tarif de classe l'emporte sur celui du niveau ; un tarif « Tous » sert de valeur par
+        défaut aux deux catégories.
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="ajouter()">
+        <div class="grille-formulaire">
+          <mat-form-field>
+            <mat-label>Frais</mat-label>
+            <mat-select name="type" required [(ngModel)]="nouveau.typeFraisId">
+              @for (t of types(); track t.id) {
+                <mat-option [value]="t.id">{{ t.libelle }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Portée</mat-label>
+            <mat-select name="portee" [(ngModel)]="nouveau.porteeClasse">
+              <mat-option [value]="false">Un niveau</mat-option>
+              <mat-option [value]="true">Une classe précise</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (nouveau.porteeClasse) {
+            <mat-form-field>
+              <mat-label>Classe</mat-label>
+              <mat-select name="classe" required [(ngModel)]="nouveau.classeId">
+                @for (c of classes(); track c.id) {
+                  <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          } @else {
+            <mat-form-field>
+              <mat-label>Niveau</mat-label>
+              <mat-select name="niveau" required [(ngModel)]="nouveau.niveauId">
+                @for (n of niveaux(); track n.id) {
+                  <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          <mat-form-field>
+            <mat-label>Élèves concernés</mat-label>
+            <mat-select name="categorie" [(ngModel)]="nouveau.categorie">
+              <mat-option value="TOUS">Tous</mat-option>
+              <mat-option value="NOUVEAU">Nouveaux</mat-option>
+              <mat-option value="ANCIEN">Anciens</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Montant (FCFA)</mat-label>
+            <input
+              matInput
+              name="montant"
+              type="number"
+              min="0"
+              required
+              [(ngModel)]="nouveau.montant"
+            />
+          </mat-form-field>
+        </div>
+
+        <button matButton="filled" type="submit" [disabled]="enCours()">
+          <mat-icon>add</mat-icon>
+          Ajouter le tarif
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-accordion>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Reconduire la grille d'une autre année</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <p class="text-muted">
+        La grille de l'année choisie est recopiée dans {{ contexte.annee()?.libelle }}, avec une
+        hausse éventuelle. La grille actuelle doit être vide.
+      </p>
+
+      <div class="grille-formulaire">
+        <mat-form-field>
+          <mat-label>Année à reconduire</mat-label>
+          <mat-select name="source" [(ngModel)]="duplication.anneeSourceId">
+            @for (a of contexte.annees(); track a.id) {
+              @if (a.id !== contexte.anneeId()) {
+                <mat-option [value]="a.id">{{ a.libelle }}</mat-option>
+              }
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Hausse (%)</mat-label>
+          <input
+            matInput
+            name="hausse"
+            type="number"
+            min="0"
+            step="0.5"
+            [(ngModel)]="duplication.haussePourcentage"
+          />
+        </mat-form-field>
+      </div>
+
+      <div class="ligne-actions">
+        <button
+          matButton="filled"
+          [disabled]="enCours() || !duplication.anneeSourceId"
+          (click)="dupliquer()"
+        >
+          <mat-icon>content_copy</mat-icon>
+          Reconduire
+        </button>
+        <button matButton [disabled]="enCours() || tarifs().length === 0" (click)="vider()">
+          <mat-icon>delete_sweep</mat-icon>
+          Vider la grille
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+}

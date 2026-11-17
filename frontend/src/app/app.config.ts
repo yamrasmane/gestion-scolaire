@@ -1,6 +1,9 @@
+import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import localeFr from '@angular/common/locales/fr';
 import {
   ApplicationConfig,
+  LOCALE_ID,
   importProvidersFrom,
   inject,
   provideAppInitializer,
@@ -32,9 +35,13 @@ import { environment } from '@env/environment';
 import { formlyConfigFactory, PaginatorI18nService } from '@shared';
 import { routes } from './app.routes';
 
+// Montants et dates à la française : 125 000, 15/03/2026.
+registerLocaleData(localeFr);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
     { provide: BASE_URL, useValue: environment.baseUrl },
     // Ordre important : la session Keycloak d'abord, puis la langue, puis le
     // menu et les données communes (qui appellent l'API avec le jeton).

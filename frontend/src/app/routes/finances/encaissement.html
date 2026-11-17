@@ -1,0 +1,428 @@
+<page-header title="Encaissement" [subtitle]="contexte.annee()?.libelle ?? ''" />
+
+@if (!contexte.annee()) {
+  <p class="text-muted">Créez d'abord une année scolaire.</p>
+} @else {
+  <mat-card>
+    <mat-card-content>
+      <div class="grille-formulaire">
+        <mat-form-field>
+          <mat-label>Classe</mat-label>
+          <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
+            @for (c of classes(); track c.id) {
+              <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (classeId()) {
+          <mat-form-field>
+            <mat-label>Élève</mat-label>
+            <mat-select [ngModel]="inscriptionId()" (ngModelChange)="choisirEleve($event)">
+              @for (i of inscriptions(); track i.id) {
+                <mat-option [value]="i.id">
+                  {{ i.eleve.nom }} {{ i.eleve.prenom }} ({{ i.eleve.matricule }})
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (erreur(); as message) {
+    <p class="alerte-erreur" role="alert">{{ message }}</p>
+  }
+  @if (information(); as message) {
+    <p class="alerte-succes">{{ message }}</p>
+  }
+
+  @if (fiche(); as f) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ f.nom }} {{ f.prenom }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ f.matricule }} — {{ f.classeNom }} —
+          {{ f.categorie === 'ANCIEN' ? 'ancien élève' : 'nouvel élève' }}
+          @if (f.planPaiement) {
+            — plan : {{ f.planPaiement }}
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="resume-finances">
+          <div>
+            <span class="libelle">Total dû</span>
+            <span class="valeur">{{ f.totalNet | number }} FCFA</span>
+          </div>
+          <div>
+            <span class="libelle">Remises</span>
+            <span class="valeur">{{ f.totalRemise | number }} FCFA</span>
+          </div>
+          <div>
+            <span class="libelle">Payé</span>
+            <span class="valeur">{{ f.totalPaye | number }} FCFA</span>
+          </div>
+          <div>
+            <span class="libelle">Reste à payer</span>
+            <span class="valeur">{{ f.resteAPayer | number }} FCFA</span>
+          </div>
+          <div>
+            <span class="libelle">Échu non payé</span>
+            <span class="valeur" [class.en-retard]="f.echuNonPaye > 0">
+              {{ f.echuNonPaye | number }} FCFA
+            </span>
+          </div>
+        </div>
+
+        @for (anomalie of f.anomalies; track anomalie) {
+          <p class="alerte-erreur">{{ anomalie }}</p>
+        }
+      </mat-card-content>
+
+      @if (peutParametrer) {
+        <mat-card-actions>
+          <button matButton="tonal" [disabled]="enCours()" (click)="genererFrais()">
+            <mat-icon>refresh</mat-icon>
+            {{ f.frais.length === 0 ? 'Générer les frais' : 'Recalculer les frais' }}
+          </button>
+        </mat-card-actions>
+      }
+    </mat-card>
+
+    <!-- Échéancier -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Échéancier</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (f.echeances.length === 0) {
+          <p class="text-muted">Aucune échéance : générez d'abord les frais.</p>
+        } @else {
+          <div class="table-defilement">
+            <table mat-table [dataSource]="f.echeances" class="w-full">
+              <ng-container matColumnDef="tranche">
+                <th mat-header-cell *matHeaderCellDef>Tranche</th>
+                <td mat-cell *matCellDef="let e">{{ e.trancheLibelle }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="frais">
+                <th mat-header-cell *matHeaderCellDef>Frais</th>
+                <td mat-cell *matCellDef="let e">{{ e.typeFraisLibelle }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Échéance</th>
+                <td mat-cell *matCellDef="let e">{{ e.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="du">
+                <th mat-header-cell *matHeaderCellDef>Dû</th>
+                <td mat-cell *matCellDef="let e">{{ e.montantDu | number }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="paye">
+                <th mat-header-cell *matHeaderCellDef>Payé</th>
+                <td mat-cell *matCellDef="let e">{{ e.montantPaye | number }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="reste">
+                <th mat-header-cell *matHeaderCellDef>Reste</th>
+                <td mat-cell *matCellDef="let e">
+                  <strong>{{ e.reste | number }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="statut">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let e">
+                  <mat-chip [highlighted]="e.statut === 'PAYEE'">
+                    {{ libelleStatut(e.statut) }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnesEcheances"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnesEcheances"></tr>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Encaissement -->
+    @if (peutEncaisser && f.resteAPayer > 0) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Enregistrer un règlement</mat-card-title>
+          <mat-card-subtitle>
+            Sans précision, le montant solde les échéances les plus anciennes.
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Date</mat-label>
+              <input matInput type="date" name="date" [(ngModel)]="paiement.datePaiement" />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Montant (FCFA)</mat-label>
+              <input matInput type="number" min="1" name="montant" [(ngModel)]="paiement.montant" />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Mode de paiement</mat-label>
+              <mat-select name="mode" [(ngModel)]="paiement.mode">
+                @for (m of modes; track m.code) {
+                  <mat-option [value]="m.code">{{ m.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Référence</mat-label>
+              <input
+                matInput
+                name="reference"
+                placeholder="N° de transaction"
+                [(ngModel)]="paiement.reference"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Payeur</mat-label>
+              <input matInput name="payeur" [(ngModel)]="paiement.payeur" />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Imputer sur un frais précis</mat-label>
+              <mat-select name="imputation" [(ngModel)]="paiement.typeFraisId">
+                <mat-option [value]="null">Automatique (plus ancienne échéance)</mat-option>
+                @for (frais of f.frais; track frais.id) {
+                  <mat-option [value]="frais.typeFraisId">{{ frais.typeFraisLibelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <button
+            matButton="filled"
+            [disabled]="enCours() || !paiement.montant"
+            (click)="encaisser()"
+          >
+            <mat-icon>payments</mat-icon>
+            Encaisser
+          </button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Paiements -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Règlements</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (f.paiements.length === 0) {
+          <p class="text-muted">Aucun règlement enregistré.</p>
+        } @else {
+          <div class="table-defilement">
+            <table mat-table [dataSource]="f.paiements" class="w-full">
+              <ng-container matColumnDef="recu">
+                <th mat-header-cell *matHeaderCellDef>Reçu</th>
+                <td mat-cell *matCellDef="let p">{{ p.numeroRecu }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let p">{{ p.datePaiement | date: 'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="montant">
+                <th mat-header-cell *matHeaderCellDef>Montant</th>
+                <td mat-cell *matCellDef="let p">
+                  <strong>{{ p.montant | number }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="mode">
+                <th mat-header-cell *matHeaderCellDef>Mode</th>
+                <td mat-cell *matCellDef="let p">{{ libelleMode(p.mode) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="payeur">
+                <th mat-header-cell *matHeaderCellDef>Payeur</th>
+                <td mat-cell *matCellDef="let p">{{ p.payeur }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="statut">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let p">
+                  @if (p.statut === 'ANNULE') {
+                    <mat-chip [matTooltip]="p.motifAnnulation ?? ''">Annulé</mat-chip>
+                  } @else {
+                    <mat-chip highlighted>Valide</mat-chip>
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let p">
+                  <button matButton (click)="ouvrirRecu(p, p.statut === 'ANNULE')">
+                    <mat-icon>receipt_long</mat-icon>
+                    Reçu
+                  </button>
+                  @if (peutParametrer && p.statut === 'VALIDE') {
+                    <button matButton (click)="ouvrirAnnulation(p)">Annuler</button>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnesPaiements"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnesPaiements"></tr>
+            </table>
+          </div>
+
+          @if (annulation; as a) {
+            <div class="ligne-actions m-t-16">
+              <mat-form-field class="w-40">
+                <mat-label>Motif de l'annulation (obligatoire)</mat-label>
+                <input matInput maxlength="255" [(ngModel)]="a.motif" />
+              </mat-form-field>
+              <button
+                matButton="filled"
+                [disabled]="!a.motif.trim() || enCours()"
+                (click)="annuler()"
+              >
+                Confirmer l'annulation
+              </button>
+              <button matButton (click)="annulation = null">Renoncer</button>
+            </div>
+          }
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Frais et remises -->
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Détail des frais et remises</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="table-defilement">
+          <table mat-table [dataSource]="f.frais" class="w-full">
+            <ng-container matColumnDef="frais">
+              <th mat-header-cell *matHeaderCellDef>Frais</th>
+              <td mat-cell *matCellDef="let frais">
+                {{ frais.typeFraisLibelle }}
+                @if (!frais.obligatoire) {
+                  <span class="text-muted"> (facultatif)</span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="brut">
+              <th mat-header-cell *matHeaderCellDef>Montant</th>
+              <td mat-cell *matCellDef="let frais">{{ frais.montantBrut | number }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="remise">
+              <th mat-header-cell *matHeaderCellDef>Remise</th>
+              <td mat-cell *matCellDef="let frais">
+                {{ frais.montantRemise | number }}
+                @if (frais.motifRemise) {
+                  <span class="text-muted"> — {{ frais.motifRemise }}</span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="net">
+              <th mat-header-cell *matHeaderCellDef>Net dû</th>
+              <td mat-cell *matCellDef="let frais">
+                <strong>{{ frais.montantNet | number }}</strong>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let frais">
+                @if (peutRemiser) {
+                  <button matButton (click)="ouvrirRemise(frais)">Remise</button>
+                  @if (frais.montantRemise > 0) {
+                    <button matButton (click)="retirerRemise(frais)">Retirer</button>
+                  }
+                }
+                @if (peutParametrer && !frais.obligatoire) {
+                  <button
+                    matIconButton
+                    (click)="supprimerFrais(frais)"
+                    aria-label="Retirer ce frais"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="colonnesFrais"></tr>
+            <tr mat-row *matRowDef="let ligne; columns: colonnesFrais"></tr>
+          </table>
+        </div>
+
+        @if (remise; as r) {
+          <div class="ligne-actions m-t-16">
+            <mat-form-field>
+              <mat-label>Type de remise</mat-label>
+              <mat-select [(ngModel)]="r.type">
+                <mat-option value="POURCENTAGE">Pourcentage</mat-option>
+                <mat-option value="MONTANT">Montant fixe</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-20">
+              <mat-label>Valeur</mat-label>
+              <input matInput type="number" min="0" [(ngModel)]="r.valeur" />
+            </mat-form-field>
+            <mat-form-field class="w-40">
+              <mat-label>Motif (obligatoire)</mat-label>
+              <input matInput maxlength="255" [(ngModel)]="r.motif" />
+            </mat-form-field>
+            <button
+              matButton="filled"
+              [disabled]="!r.motif.trim() || enCours()"
+              (click)="enregistrerRemise()"
+            >
+              Appliquer
+            </button>
+            <button matButton (click)="remise = null">Annuler</button>
+          </div>
+        }
+
+        @if (peutParametrer && fraisFacultatifs().length > 0) {
+          <div class="ligne-actions m-t-24">
+            <mat-form-field>
+              <mat-label>Ajouter un frais</mat-label>
+              <mat-select [(ngModel)]="fraisAAjouter">
+                @for (t of fraisFacultatifs(); track t.id) {
+                  <mat-option [value]="t.id">{{ t.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button
+              matButton="tonal"
+              [disabled]="!fraisAAjouter || enCours()"
+              (click)="ajouterFrais()"
+            >
+              <mat-icon>add</mat-icon>
+              Ajouter à la fiche
+            </button>
+          </div>
+        }
+      </mat-expansion-panel>
+    </mat-accordion>
+  }
+}

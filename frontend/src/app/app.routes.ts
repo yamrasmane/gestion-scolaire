@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, roleGuard } from '@core';
-import { DIRECTION } from '@core/roles';
+import { DIRECTION, FINANCES } from '@core/roles';
 import { AdminLayout } from '@theme/admin-layout/admin-layout';
 import { ConnexionImpossible } from './routes/sessions/connexion-impossible';
 import { Error403 } from './routes/sessions/error-403';
@@ -10,6 +10,12 @@ import { Error500 } from './routes/sessions/error-500';
 
 export const routes: Routes = [
   { path: 'connexion-impossible', component: ConnexionImpossible },
+  {
+    // Reçu imprimable, hors coquille d'administration (SF-30).
+    path: 'recu/:paiementId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./routes/finances/recu').then((m) => m.Recu),
+  },
   {
     path: '',
     component: AdminLayout,
@@ -48,6 +54,48 @@ export const routes: Routes = [
             path: 'trimestres',
             loadComponent: () =>
               import('./routes/parametrage/trimestres').then((m) => m.Trimestres),
+          },
+        ],
+      },
+      {
+        path: 'finances',
+        canActivate: [roleGuard(...FINANCES)],
+        children: [
+          { path: '', redirectTo: 'encaissement', pathMatch: 'full' },
+          {
+            path: 'encaissement',
+            loadComponent: () =>
+              import('./routes/finances/encaissement').then((m) => m.Encaissement),
+          },
+          {
+            path: 'impayes',
+            loadComponent: () => import('./routes/finances/impayes').then((m) => m.Impayes),
+          },
+          {
+            path: 'journal-caisse',
+            loadComponent: () =>
+              import('./routes/finances/journal-caisse').then((m) => m.JournalCaisse),
+          },
+        ],
+      },
+      {
+        path: 'parametrage/finances',
+        canActivate: [roleGuard('INTENDANT', 'DIRECTEUR', 'CENSEUR')],
+        children: [
+          { path: '', redirectTo: 'types-frais', pathMatch: 'full' },
+          {
+            path: 'types-frais',
+            loadComponent: () => import('./routes/finances/types-frais').then((m) => m.TypesFrais),
+          },
+          {
+            path: 'grille-tarifaire',
+            loadComponent: () =>
+              import('./routes/finances/grille-tarifaire').then((m) => m.GrilleTarifaire),
+          },
+          {
+            path: 'plans-paiement',
+            loadComponent: () =>
+              import('./routes/finances/plans-paiement').then((m) => m.PlansPaiement),
           },
         ],
       },
