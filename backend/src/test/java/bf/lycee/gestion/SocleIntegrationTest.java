@@ -51,7 +51,7 @@ class SocleIntegrationTest {
 
     @BeforeEach
     void viderLesDonnees() {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire_aud, annee_scolaire RESTART IDENTITY CASCADE");
+        jdbc.execute("TRUNCATE TABLE audit.annee_scolaire_aud, annee_scolaire RESTART IDENTITY CASCADE");
     }
 
     private static RequestPostProcessor utilisateur(String nom, String role) {
@@ -64,11 +64,11 @@ class SocleIntegrationTest {
     void leSchemaComporteLes22TablesMetiersEtLeursTablesDAudit() {
         Integer metiers = jdbc.queryForObject("""
                 SELECT count(*) FROM information_schema.tables
-                WHERE table_schema = current_schema() AND table_name NOT LIKE '%\\_aud'
-                  AND table_name NOT IN ('revinfo', 'flyway_schema_history')""", Integer.class);
+                WHERE table_schema = current_schema()
+                  AND table_name NOT IN ('flyway_schema_history')""", Integer.class);
         Integer audits = jdbc.queryForObject("""
                 SELECT count(*) FROM information_schema.tables
-                WHERE table_schema = current_schema() AND table_name LIKE '%\\_aud'""", Integer.class);
+                WHERE table_schema = 'audit' AND table_name LIKE '%\\_aud'""", Integer.class);
         assertThat(metiers).isEqualTo(22);
         assertThat(audits).isEqualTo(22);
         assertThat(flyway.info().pending()).isEmpty();
@@ -114,7 +114,7 @@ class SocleIntegrationTest {
         // Second niveau : révision Envers avec l'identité Keycloak
         assertThat(jdbc.queryForObject("""
                 SELECT r.username || '/' || r.keycloak_user_id || '/' || a.revtype
-                FROM annee_scolaire_aud a JOIN revinfo r ON r.rev_id = a.rev_id""", String.class))
+                FROM audit.annee_scolaire_aud a JOIN audit.revinfo r ON r.rev_id = a.rev_id""", String.class))
                 .isEqualTo("le.directeur/id-le.directeur/0");
     }
 

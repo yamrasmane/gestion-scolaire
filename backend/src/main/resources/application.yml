@@ -13,6 +13,8 @@ spring:
       hibernate:
         jdbc.time_zone: UTC
       org.hibernate.envers:
+        # Les tables d'historique vivent dans leur propre schéma (migration V4).
+        default_schema: audit
         audit_table_suffix: _aud
         revision_field_name: rev_id
         revision_type_field_name: revtype

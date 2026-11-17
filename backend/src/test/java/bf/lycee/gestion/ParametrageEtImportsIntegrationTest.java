@@ -55,7 +55,7 @@ class ParametrageEtImportsIntegrationTest {
 
     @BeforeEach
     void preparer() throws Exception {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, revinfo RESTART IDENTITY CASCADE");
+        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, audit.revinfo RESTART IDENTITY CASCADE");
         annee2025 = creerAnnee("2025-2026", "2025-10-01", "2026-07-15");
         annee2026 = creerAnnee("2026-2027", "2026-10-01", "2027-07-15");
     }
@@ -459,8 +459,8 @@ class ParametrageEtImportsIntegrationTest {
 
         // la piste d'audit conserve l'ancienne et la nouvelle valeur, avec l'auteur
         assertThat(jdbc.queryForList("""
-                SELECT a.categorie || ' par ' || r.username FROM inscription_aud a
-                JOIN revinfo r ON r.rev_id = a.rev_id WHERE a.id = ? ORDER BY a.rev_id""", String.class, inscription))
+                SELECT a.categorie || ' par ' || r.username FROM audit.inscription_aud a
+                JOIN audit.revinfo r ON r.rev_id = a.rev_id WHERE a.id = ? ORDER BY a.rev_id""", String.class, inscription))
                 .containsExactly("NOUVEAU par le.surveillant", "ANCIEN par l.intendant");
     }
 }

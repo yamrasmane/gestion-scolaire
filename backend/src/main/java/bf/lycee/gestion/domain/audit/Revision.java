@@ -18,7 +18,7 @@ import org.hibernate.envers.RevisionTimestamp;
  * enrichie de l'identité Keycloak et de l'adresse IP de l'auteur.
  */
 @Entity
-@Table(name = "revinfo")
+@Table(name = "revinfo", schema = "audit")
 @RevisionEntity(KeycloakRevisionListener.class)
 @Getter
 @Setter
@@ -26,7 +26,8 @@ public class Revision {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "revinfo_seq")
-    @SequenceGenerator(name = "revinfo_seq", sequenceName = "revinfo_seq", allocationSize = 1)
+    @SequenceGenerator(name = "revinfo_seq", sequenceName = "revinfo_seq", schema = "audit",
+            allocationSize = 1)
     @RevisionNumber
     @Column(name = "rev_id")
     private int id;

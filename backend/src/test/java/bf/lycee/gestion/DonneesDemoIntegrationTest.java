@@ -48,7 +48,7 @@ class DonneesDemoIntegrationTest {
 
     @BeforeAll
     void charger() throws Exception {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, revinfo "
+        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, audit.revinfo "
                 + "RESTART IDENTITY CASCADE");
 
         String script = new String(new ClassPathResource("db/donnees-demo.sql")

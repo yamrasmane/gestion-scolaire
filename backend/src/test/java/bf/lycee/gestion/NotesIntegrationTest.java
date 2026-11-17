@@ -44,7 +44,7 @@ class NotesIntegrationTest {
 
     @BeforeEach
     void preparer() throws Exception {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, revinfo "
+        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, matiere, audit.revinfo "
                 + "RESTART IDENTITY CASCADE");
         annee = creerAnnee();
         classe = creerClasse("6EME", "6ème A");

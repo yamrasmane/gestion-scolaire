@@ -123,6 +123,33 @@ selon l'ordre de priorité des types de frais. Le caissier peut aussi imputer su
 **Reçus et bulletins** : ils s'impriment depuis le navigateur (impression ou enregistrement en
 PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 
+## Piste d'audit
+
+L'historique des modifications (Hibernate Envers) vit dans un schéma PostgreSQL à part,
+`audit` : une table `audit.<table>_aud` par table métier, plus `audit.revinfo` qui porte
+l'auteur (identifiant et nom Keycloak), l'adresse IP et l'horodatage de chaque transaction.
+
+Le schéma `public` ne contient donc que les 22 tables métier, ce qui garde la base lisible et
+permet de traiter l'historique à part : sauvegarde séparée, et accès en lecture seule donné à
+un auditeur sans ouvrir les tables métier. Par exemple :
+
+```sql
+CREATE ROLE auditeur LOGIN PASSWORD '...';
+GRANT USAGE ON SCHEMA audit TO auditeur;
+GRANT SELECT ON ALL TABLES IN SCHEMA audit TO auditeur;
+```
+
+Pour lire l'historique d'un enregistrement :
+
+```sql
+SELECT a.rev_id, r.username, to_timestamp(r.rev_tstmp / 1000) AS quand, a.*
+FROM audit.inscription_aud a JOIN audit.revinfo r ON r.rev_id = a.rev_id
+WHERE a.id = 42 ORDER BY a.rev_id;
+```
+
+Le déplacement est fait par la migration `V4__schema_audit.sql` : une base déjà en service le
+reprend toute seule au démarrage suivant de l'API.
+
 ## Jeu de données de démonstration
 
 `backend/src/main/resources/db/donnees-demo.sql` remplit une base vierge avec un établissement
