@@ -26,13 +26,24 @@ export class AuthService {
   readonly roles = this._roles.asReadonly();
   readonly libellesRoles = computed(() => this._roles().map((role) => LIBELLES_ROLES[role]));
 
+  /** Vrai si Keycloak n'a pas pu être joint au démarrage. */
+  readonly panne = signal(false);
+
   /** Appelé au démarrage : redirige vers la page de connexion Keycloak si nécessaire. */
   async initialiser(): Promise<void> {
-    await this.keycloak.init({
-      onLoad: 'login-required',
-      pkceMethod: 'S256',
-      checkLoginIframe: false,
-    });
+    try {
+      await this.keycloak.init({
+        onLoad: 'login-required',
+        pkceMethod: 'S256',
+        checkLoginIframe: false,
+      });
+    } catch (erreur) {
+      // L'application démarre quand même : sans cela, l'écran resterait
+      // bloqué sur « Chargement… » sans la moindre explication.
+      console.error('Connexion à Keycloak impossible', erreur);
+      this.panne.set(true);
+      return;
+    }
     this.keycloak.onTokenExpired = () => void this.jeton();
     this.lireJeton();
   }
@@ -44,9 +55,22 @@ export class AuthService {
         this.lireJeton();
       }
     } catch {
-      await this.keycloak.login();
+      // Surtout pas de redirection vers Keycloak ici : si le serveur est
+      // injoignable, chaque appel relancerait une connexion et l'adresse
+      // tournerait en boucle. L'appel partira sans jeton et l'API répondra 401.
+      return undefined;
     }
     return this.keycloak.token;
+  }
+
+  /** Relance une connexion, depuis la page « connexion impossible ». */
+  reconnecter(): void {
+    void this.keycloak.login({ redirectUri: window.location.origin });
+  }
+
+  /** Adresse du serveur Keycloak, affichée en cas de panne. */
+  get adresseServeur(): string {
+    return `${config.keycloak.url}/realms/${config.keycloak.realm}`;
   }
 
   aUnRole(...roles: Role[]): boolean {

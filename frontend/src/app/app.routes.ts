@@ -3,11 +3,13 @@ import { Routes } from '@angular/router';
 import { authGuard, roleGuard } from '@core';
 import { DIRECTION } from '@core/roles';
 import { AdminLayout } from '@theme/admin-layout/admin-layout';
+import { ConnexionImpossible } from './routes/sessions/connexion-impossible';
 import { Error403 } from './routes/sessions/error-403';
 import { Error404 } from './routes/sessions/error-404';
 import { Error500 } from './routes/sessions/error-500';
 
 export const routes: Routes = [
+  { path: 'connexion-impossible', component: ConnexionImpossible },
   {
     path: '',
     component: AdminLayout,

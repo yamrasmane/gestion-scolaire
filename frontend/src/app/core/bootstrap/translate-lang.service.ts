@@ -10,13 +10,18 @@ export class TranslateLangService {
   private readonly settings = inject(SettingsService);
 
   load() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       const defaultLang = this.settings.getTranslateLang();
 
       this.translate.setFallbackLang(defaultLang);
       this.translate.use(defaultLang).subscribe({
-        next: () => console.log(`Successfully initialized '${defaultLang}' language.'`),
-        error: () => console.error(`Problem with '${defaultLang}' language initialization.'`),
+        // Si le fichier de traduction manque, l'application démarre quand même
+        // (libellés affichés sous forme de clés) au lieu de rester bloquée sur
+        // l'écran de chargement.
+        error: () => {
+          console.error(`Fichier de traduction « ${defaultLang} » introuvable.`);
+          resolve();
+        },
         complete: () => resolve(),
       });
     });
