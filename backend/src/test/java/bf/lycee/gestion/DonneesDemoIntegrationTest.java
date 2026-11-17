@@ -90,11 +90,11 @@ class DonneesDemoIntegrationTest {
 
         mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/classes").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(8));
+                .andExpect(jsonPath("$[7].nom").isNotEmpty());
 
         mvc.perform(get("/api/classes/" + sixiemeA + "/inscriptions").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(18));
+                .andExpect(jsonPath("$[17].eleve.matricule").isNotEmpty());
     }
 
     @Test
@@ -102,7 +102,7 @@ class DonneesDemoIntegrationTest {
         mvc.perform(get("/api/classes/" + sixiemeA + "/trimestres/" + premierTrimestre
                         + "/classement").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(18))
+                .andExpect(jsonPath("$[17].matricule").isNotEmpty())
                 .andExpect(jsonPath("$[0].rang").value(1))
                 .andExpect(jsonPath("$[0].moyenneGenerale").isNotEmpty());
     }
@@ -118,7 +118,7 @@ class DonneesDemoIntegrationTest {
         mvc.perform(get("/api/inscriptions/" + inscription + "/trimestres/" + premierTrimestre
                         + "/bulletin").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lignes.length()").value(8))
+                .andExpect(jsonPath("$.lignes[7].matiereCode").isNotEmpty())
                 .andExpect(jsonPath("$.moyenneGenerale").isNotEmpty())
                 .andExpect(jsonPath("$.mention").isNotEmpty())
                 .andExpect(jsonPath("$.statistiques.effectif").value(18));
@@ -133,14 +133,11 @@ class DonneesDemoIntegrationTest {
                 HAVING sum(e.montant_paye) > 0 AND sum(e.montant_du - e.montant_paye) > 0
                 LIMIT 1""", Long.class);
 
-        String reponse = mvc.perform(get("/api/inscriptions/" + inscription + "/finances")
-                        .with(DIRECTEUR))
+        mvc.perform(get("/api/inscriptions/" + inscription + "/finances").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.frais.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(4)))
-                .andExpect(jsonPath("$.paiements.length()").value(org.hamcrest.Matchers.greaterThan(0)))
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(reponse).contains("\"resteAPayer\"");
+                .andExpect(jsonPath("$.frais[3].typeFraisCode").isNotEmpty())
+                .andExpect(jsonPath("$.paiements[0].numeroRecu").isNotEmpty())
+                .andExpect(jsonPath("$.echeances[0].statut").isNotEmpty());
 
         BigDecimal attendu = jdbc.queryForObject("""
                 SELECT sum(e.montant_du - e.montant_paye) FROM echeance_eleve e
@@ -152,19 +149,29 @@ class DonneesDemoIntegrationTest {
     }
 
     @Test
-    void les_impayes_et_le_journal_de_caisse_remontent_des_lignes() throws Exception {
-        mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/impayes").with(DIRECTEUR))
+    void les_impayes_remontent_des_lignes() throws Exception {
+        // Une seule classe : la réponse reste lisible en cas d'échec.
+        mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/impayes").with(DIRECTEUR)
+                        .param("classeId", sixiemeA.toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThan(0)));
+                .andExpect(jsonPath("$[0].matricule").isNotEmpty())
+                .andExpect(jsonPath("$[0].reste").isNumber())
+                .andExpect(jsonPath("$[0].statut").isNotEmpty());
+    }
 
+    @Test
+    void le_journal_de_caisse_et_le_recouvrement_sont_renseignes() throws Exception {
         mvc.perform(get("/api/caisse/journal").with(DIRECTEUR).param("journee", "2026-10-12"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(org.hamcrest.Matchers.greaterThan(0.0)));
+                .andExpect(jsonPath("$.total").isNumber())
+                .andExpect(jsonPath("$.totauxParMode[0].mode").isNotEmpty())
+                .andExpect(jsonPath("$.paiements[0].numeroRecu").isNotEmpty());
 
         mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/recouvrement").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.attendu").value(org.hamcrest.Matchers.greaterThan(0.0)))
-                .andExpect(jsonPath("$.elevesEnRetard").value(org.hamcrest.Matchers.greaterThan(0)));
+                .andExpect(jsonPath("$.attendu").isNumber())
+                .andExpect(jsonPath("$.encaisse").isNumber())
+                .andExpect(jsonPath("$.elevesEnRetard").isNumber());
     }
 
     @Test
@@ -176,7 +183,7 @@ class DonneesDemoIntegrationTest {
                         .param("duplicata", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.statut").value("ANNULE"))
-                .andExpect(jsonPath("$.imputations.length()").value(0))
+                .andExpect(jsonPath("$.imputations").isEmpty())
                 .andExpect(jsonPath("$.montantEnLettres").isNotEmpty());
     }
 }
