@@ -145,7 +145,10 @@ export class ApiService {
     return this.http.get<Trimestre[]>(`${this.base}/annees-scolaires/${anneeId}/trimestres`);
   }
 
-  creerTrimestre(anneeId: number, t: { numero: number; dateDebut: string; dateFin: string }): Observable<Trimestre> {
+  creerTrimestre(
+    anneeId: number,
+    t: { numero: number; dateDebut: string; dateFin: string },
+  ): Observable<Trimestre> {
     return this.http.post<Trimestre>(`${this.base}/annees-scolaires/${anneeId}/trimestres`, t);
   }
 
@@ -161,11 +164,16 @@ export class ApiService {
     cycle: Cycle,
     reglage: { avecComposition: boolean; poidsComposition: number },
   ): Observable<Trimestre> {
-    return this.http.put<Trimestre>(`${this.base}/trimestres/${trimestreId}/composition/${cycle}`, reglage);
+    return this.http.put<Trimestre>(
+      `${this.base}/trimestres/${trimestreId}/composition/${cycle}`,
+      reglage,
+    );
   }
 
   supprimerReglageCycle(trimestreId: number, cycle: Cycle): Observable<Trimestre> {
-    return this.http.delete<Trimestre>(`${this.base}/trimestres/${trimestreId}/composition/${cycle}`);
+    return this.http.delete<Trimestre>(
+      `${this.base}/trimestres/${trimestreId}/composition/${cycle}`,
+    );
   }
 
   cloturerTrimestre(trimestreId: number): Observable<Trimestre> {
@@ -182,7 +190,12 @@ export class ApiService {
     return this.http.get<Niveau[]>(`${this.base}/niveaux`);
   }
 
-  creerNiveau(n: { code: string; libelle: string; cycle: Cycle; ordre: number }): Observable<Niveau> {
+  creerNiveau(n: {
+    code: string;
+    libelle: string;
+    cycle: Cycle;
+    ordre: number;
+  }): Observable<Niveau> {
     return this.http.post<Niveau>(`${this.base}/niveaux`, n);
   }
 
@@ -190,7 +203,10 @@ export class ApiService {
     return this.http.get<Classe[]>(`${this.base}/annees-scolaires/${anneeId}/classes`);
   }
 
-  creerClasse(anneeId: number, c: { niveauId: number; nom: string; effectifMax: number }): Observable<Classe> {
+  creerClasse(
+    anneeId: number,
+    c: { niveauId: number; nom: string; effectifMax: number },
+  ): Observable<Classe> {
     return this.http.post<Classe>(`${this.base}/annees-scolaires/${anneeId}/classes`, c);
   }
 
@@ -212,7 +228,10 @@ export class ApiService {
   }
 
   activerPersonnel(id: number, actif: boolean): Observable<Personnel> {
-    return this.http.post<Personnel>(`${this.base}/personnel/${id}/${actif ? 'activation' : 'desactivation'}`, null);
+    return this.http.post<Personnel>(
+      `${this.base}/personnel/${id}/${actif ? 'activation' : 'desactivation'}`,
+      null,
+    );
   }
 
   // ---------- Élèves et inscriptions ----------
@@ -237,8 +256,15 @@ export class ApiService {
     return this.http.post<Inscription>(`${this.base}/classes/${classeId}/inscriptions`, eleve);
   }
 
-  corrigerCategorie(inscriptionId: number, categorie: string, motif: string): Observable<Inscription> {
-    return this.http.put<Inscription>(`${this.base}/inscriptions/${inscriptionId}/categorie`, { categorie, motif });
+  corrigerCategorie(
+    inscriptionId: number,
+    categorie: string,
+    motif: string,
+  ): Observable<Inscription> {
+    return this.http.put<Inscription>(`${this.base}/inscriptions/${inscriptionId}/categorie`, {
+      categorie,
+      motif,
+    });
   }
 
   // ---------- Imports Excel / CSV ----------

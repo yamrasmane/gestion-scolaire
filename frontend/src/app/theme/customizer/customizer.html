@@ -1,0 +1,66 @@
+<div
+  class="customizer-handle"
+  matTooltip="Déplacez-moi"
+  cdkDrag
+  (cdkDragStarted)="onDragStart($event)"
+>
+  <button matFab (click)="openPanel(customizerPanel)">
+    <mat-icon aria-label="Example icon-button with a settings icon">settings</mat-icon>
+  </button>
+</div>
+
+<ng-template #customizerPanel>
+  <h2 class="d-flex align-items-center justify-content-between m-t-0 f-w-400">
+    <span>Réglages de l'affichage</span>
+    <button matIconButton (click)="closePanel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </h2>
+  <h3 class="f-w-400">Thème</h3>
+  <form [formGroup]="form">
+    <div class="m-l-8">
+      <mat-radio-group formControlName="theme">
+        <mat-radio-button class="m-x-4" value="light">Clair</mat-radio-button>
+        <mat-radio-button class="m-x-4" value="dark">Sombre</mat-radio-button>
+        <mat-radio-button class="m-x-4" value="auto">Automatique</mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <h3 class="f-w-400">Bandeau</h3>
+    <div class="m-l-8">
+      <mat-slide-toggle
+        formControlName="showHeader"
+        [disableControl]="isHeaderPosAbove || isNavPosTop"
+      >
+        Visible
+      </mat-slide-toggle>
+      <h4 class="f-w-400">Position</h4>
+      <mat-radio-group formControlName="headerPos">
+        <mat-radio-button class="m-x-4" value="above" [disabled]="!isShowHeader || isNavPosTop">
+          Au-dessus
+        </mat-radio-button>
+        <mat-radio-button class="m-x-4" value="fixed">Fixe</mat-radio-button>
+        <mat-radio-button class="m-x-4" value="static">Statique</mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <mat-divider inset class="m-x-0 m-y-24" />
+    <h3 class="f-w-400">Navigation</h3>
+    <div class="m-l-8">
+      <mat-slide-toggle formControlName="showUserPanel">Afficher le profil</mat-slide-toggle>
+      <h4 class="f-w-400">Position</h4>
+      <mat-radio-group formControlName="navPos">
+        <mat-radio-button class="m-x-4" value="side">Latérale</mat-radio-button>
+        <mat-radio-button class="m-x-4" value="top" [disabled]="isHeaderPosAbove || !isShowHeader">
+          En haut
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <mat-divider inset class="m-x-0 m-y-24" />
+    <h3 class="f-w-400">Sens de lecture</h3>
+    <div class="m-l-8">
+      <mat-radio-group formControlName="dir">
+        <mat-radio-button class="m-x-4" value="ltr">Gauche à droite</mat-radio-button>
+        <mat-radio-button class="m-x-4" value="rtl">Droite à gauche</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </form>
+</ng-template>

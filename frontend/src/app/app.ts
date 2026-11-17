@@ -1,25 +1,22 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AnneeContexte } from './core/annee-contexte';
-import { AuthService } from './core/auth.service';
-import { DIRECTION } from './core/roles';
+import { Component, OnInit, AfterViewInit, inject } from '@angular/core';
+import { PreloaderService, SettingsService } from '@core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './app.html',
-  styleUrl: './app.scss',
+  template: ` <router-outlet /> `,
+  imports: [RouterOutlet],
 })
-export class App {
-  protected readonly auth = inject(AuthService);
-  protected readonly contexte = inject(AnneeContexte);
-  protected readonly direction = this.auth.aUnRole(...DIRECTION);
+export class App implements OnInit, AfterViewInit {
+  private readonly preloader = inject(PreloaderService);
+  private readonly settings = inject(SettingsService);
 
-  constructor() {
-    this.contexte.charger();
+  ngOnInit() {
+    this.settings.setDirection();
+    this.settings.setTheme();
   }
 
-  protected choisirAnnee(evenement: Event): void {
-    this.contexte.choisir(Number((evenement.target as HTMLSelectElement).value));
+  ngAfterViewInit() {
+    this.preloader.hide();
   }
 }

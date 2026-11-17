@@ -1,0 +1,21 @@
+<mat-toolbar>
+  @if (showToggle()) {
+    <button matIconButton (click)="toggleSidenav.emit()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
+
+  @if (showBranding()) {
+    <app-branding />
+  }
+
+  <span class="flex-fill"></span>
+
+  <app-annee-selecteur />
+
+  <button matIconButton class="hide-small" (click)="toggleFullscreen()" aria-label="Plein écran">
+    <mat-icon>fullscreen</mat-icon>
+  </button>
+
+  <app-user />
+</mat-toolbar>

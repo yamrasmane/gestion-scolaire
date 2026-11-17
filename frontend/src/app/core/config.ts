@@ -14,7 +14,8 @@ const parDefaut: ConfigApplication = {
   keycloak: { url: 'http://localhost:8081', realm: 'lycee', clientId: 'lycee-frontend' },
 };
 
-const surcharge = (globalThis as { __LYCEE_CONFIG__?: Partial<ConfigApplication> }).__LYCEE_CONFIG__ ?? {};
+const surcharge =
+  (globalThis as { __LYCEE_CONFIG__?: Partial<ConfigApplication> }).__LYCEE_CONFIG__ ?? {};
 
 export const config: ConfigApplication = {
   ...parDefaut,

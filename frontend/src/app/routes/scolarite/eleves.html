@@ -1,0 +1,217 @@
+<page-header title="Élèves et inscriptions" [subtitle]="contexte.annee()?.libelle ?? ''" />
+
+@if (!contexte.annee()) {
+  <p class="text-muted">Créez d'abord une année scolaire.</p>
+} @else {
+  <mat-card>
+    <mat-card-content>
+      @if (classes().length === 0) {
+        <p class="text-muted">
+          Aucune classe n'existe pour cette année : créez-les dans la page « Classes et niveaux ».
+        </p>
+      } @else {
+        <mat-form-field>
+          <mat-label>Classe</mat-label>
+          <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
+            @for (c of classes(); track c.id) {
+              <mat-option [value]="c.id">
+                {{ c.nom }} ({{ c.effectif }} / {{ c.effectifMax }})
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (erreur(); as message) {
+    <p class="alerte-erreur" role="alert">{{ message }}</p>
+  }
+
+  @if (classe(); as c) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ c.nom }}</mat-card-title>
+        <mat-card-subtitle>{{ inscriptions().length }} élève(s) inscrit(s)</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (inscriptions().length === 0) {
+          <p class="text-muted">Aucun élève n'est inscrit dans cette classe.</p>
+        } @else {
+          <div class="table-defilement">
+            <table mat-table [dataSource]="inscriptions()" class="w-full">
+              <ng-container matColumnDef="matricule">
+                <th mat-header-cell *matHeaderCellDef>Matricule</th>
+                <td mat-cell *matCellDef="let i">{{ i.eleve.matricule }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nom">
+                <th mat-header-cell *matHeaderCellDef>Nom et prénom</th>
+                <td mat-cell *matCellDef="let i">
+                  <strong>{{ i.eleve.nom }}</strong> {{ i.eleve.prenom }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="naissance">
+                <th mat-header-cell *matHeaderCellDef>Naissance</th>
+                <td mat-cell *matCellDef="let i">
+                  {{ i.eleve.dateNaissance | date: 'dd/MM/yyyy' }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="sexe">
+                <th mat-header-cell *matHeaderCellDef>Sexe</th>
+                <td mat-cell *matCellDef="let i">{{ i.eleve.sexe }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="categorie">
+                <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+                <td mat-cell *matCellDef="let i">
+                  <mat-chip
+                    [highlighted]="i.categorie === 'ANCIEN'"
+                    [matTooltip]="i.categorieForcee ? 'Corrigée : ' + i.motifCategorie : ''"
+                  >
+                    {{ i.categorie === 'ANCIEN' ? 'Ancien' : 'Nouveau' }}
+                    @if (i.categorieForcee) {
+                      <mat-icon matChipTrailingIcon>edit_note</mat-icon>
+                    }
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="redoublant">
+                <th mat-header-cell *matHeaderCellDef>Redoublant</th>
+                <td mat-cell *matCellDef="let i">{{ i.redoublant ? 'Oui' : 'Non' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let i">
+                  <button matButton (click)="ouvrirCorrection(i)">Corriger la catégorie</button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+            </table>
+          </div>
+        }
+
+        @if (correction; as corr) {
+          <div class="ligne-actions m-t-16">
+            <mat-form-field>
+              <mat-label>Catégorie</mat-label>
+              <mat-select [(ngModel)]="corr.categorie">
+                <mat-option value="NOUVEAU">Nouveau</mat-option>
+                <mat-option value="ANCIEN">Ancien</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-40">
+              <mat-label>Motif (obligatoire)</mat-label>
+              <input matInput maxlength="255" [(ngModel)]="corr.motif" />
+            </mat-form-field>
+            <button
+              matButton="filled"
+              [disabled]="!corr.motif.trim()"
+              (click)="enregistrerCorrection()"
+            >
+              Enregistrer
+            </button>
+            <button matButton (click)="correction = null">Annuler</button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    @if (peutInscrire) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Importer la liste de la classe (Excel ou CSV)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <app-import-fichier
+            [chemin]="'/classes/' + c.id + '/inscriptions/import'"
+            aide="Colonnes attendues : Matricule, Nom, Prénom, Date de naissance (JJ/MM/AAAA), Sexe (M ou F), et en option Parent, Contact, Redoublant (oui/non). La catégorie nouveau/ancien est calculée automatiquement."
+            (termine)="rafraichir()"
+          />
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Inscrire un élève</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form #formulaire="ngForm" (ngSubmit)="formulaire.valid && inscrire()">
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Matricule</mat-label>
+                <input
+                  matInput
+                  name="matricule"
+                  required
+                  maxlength="30"
+                  [(ngModel)]="nouveau.matricule"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Nom</mat-label>
+                <input matInput name="nom" required [(ngModel)]="nouveau.nom" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Prénom</mat-label>
+                <input matInput name="prenom" required [(ngModel)]="nouveau.prenom" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date de naissance</mat-label>
+                <input
+                  matInput
+                  name="naissance"
+                  type="date"
+                  required
+                  [(ngModel)]="nouveau.dateNaissance"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Sexe</mat-label>
+                <mat-select name="sexe" [(ngModel)]="nouveau.sexe">
+                  <mat-option value="F">Féminin</mat-option>
+                  <mat-option value="M">Masculin</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Parent ou tuteur</mat-label>
+                <input matInput name="parent" [(ngModel)]="nouveau.nomParent" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Contact du parent</mat-label>
+                <input matInput name="contact" [(ngModel)]="nouveau.contactParent" />
+              </mat-form-field>
+            </div>
+
+            <div class="ligne-actions m-b-16">
+              <mat-checkbox name="redoublant" [(ngModel)]="nouveau.redoublant">
+                Redoublant
+              </mat-checkbox>
+            </div>
+
+            <p class="text-muted">
+              Si le matricule existe déjà, la fiche de l'élève est réutilisée.
+            </p>
+
+            <button matButton="filled" type="submit" [disabled]="enCours() || formulaire.invalid">
+              <mat-icon>how_to_reg</mat-icon>
+              Inscrire
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+}

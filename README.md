@@ -5,7 +5,7 @@ Application web de gestion scolaire, académique et financière pour un établis
 | Dossier | Contenu |
 |---|---|
 | `backend/` | API REST Java 17 / Spring Boot 3 (Maven), PostgreSQL, Flyway, Hibernate Envers |
-| `frontend/` | Interface Angular 20 (connexion Keycloak) |
+| `frontend/` | Interface Angular 20 bâtie sur le gabarit [ng-matero](https://ng-matero.github.io/ng-matero/) (Angular Material, licence MIT), connexion Keycloak |
 | `docker/`, `docker-compose.yml` | PostgreSQL 16 et Keycloak 26 pour le développement |
 | `.github/workflows/ci.yml` | Compilation et tests automatiques à chaque envoi sur GitHub |
 
@@ -69,6 +69,8 @@ Au démarrage, l'API vérifie que les entités Java correspondent exactement au 
 | `CORS_ORIGINES` | `http://localhost:4200` | Origines autorisées pour l'interface |
 
 Côté interface, les adresses de l'API et de Keycloak sont dans `frontend/src/app/core/config.ts`.
+En production, elles peuvent être changées sans recompiler, en définissant `window.__LYCEE_CONFIG__`
+dans `index.html` (un exemple y est déjà écrit en commentaire).
 
 ## Repères dans le code
 
@@ -76,7 +78,23 @@ Côté interface, les adresses de l'API et de Keycloak sont dans `frontend/src/a
 - `backend/.../domain/` : les 22 entités ; `AbstractAuditingEntity` porte les colonnes d'audit.
 - `backend/.../domain/audit/` : table `revinfo` enrichie de l'utilisateur Keycloak et de l'adresse IP.
 - `backend/.../security/Roles.java` : expressions de droits utilisées dans `@PreAuthorize`.
-- `frontend/src/app/core/` : connexion Keycloak, intercepteur HTTP, garde par rôle.
+- `frontend/src/app/core/` : connexion Keycloak, intercepteur HTTP, gardes de route, menu latéral (`bootstrap/menu-lycee.ts`).
+- `frontend/src/app/routes/` : les écrans, un dossier par domaine.
+- `frontend/src/app/theme/` : coquille du gabarit (bandeau, menu, panneau de réglages).
+- `frontend/public/i18n/fr-FR.json` : libellés du menu et du gabarit.
+
+## Interface
+
+L'interface reprend le gabarit d'administration **ng-matero** (Angular Material, licence MIT) :
+menu latéral repliable, bandeau fixe, thème clair ou sombre, fil d'Ariane et panneau de réglages
+(bouton en bas à droite). Trois adaptations ont été faites :
+
+- la connexion par mot de passe du gabarit est remplacée par Keycloak ;
+- le menu est construit à partir des rôles de la personne connectée (`menu-lycee.ts`) ;
+- l'année scolaire de travail se choisit dans le bandeau et s'applique à toutes les pages.
+
+La police Roboto et les icônes Material sont servies par l'application : aucun appel à Internet
+au démarrage.
 
 ## Imports Excel / CSV
 

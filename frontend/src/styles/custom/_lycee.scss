@@ -1,0 +1,48 @@
+/** Styles propres à l'application (messages, tableaux, grilles de formulaire). */
+
+.text-muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.alerte-erreur,
+.alerte-succes {
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: var(--mat-sys-corner-small, 0.5rem);
+  font-size: 0.875rem;
+}
+
+.alerte-erreur {
+  color: var(--mat-sys-on-error-container);
+  background-color: var(--mat-sys-error-container);
+}
+
+.alerte-succes {
+  color: var(--mat-sys-on-tertiary-container, var(--mat-sys-on-secondary-container));
+  background-color: var(--mat-sys-tertiary-container, var(--mat-sys-secondary-container));
+}
+
+/** Tableau large sur petit écran : défilement horizontal plutôt que débordement. */
+.table-defilement {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/** Grille de saisie : les champs se replient tout seuls sur petit écran. */
+.grille-formulaire {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0 1rem;
+
+  .mat-mdc-form-field {
+    width: 100%;
+  }
+}
+
+/** Ligne d'actions sous un tableau ou un formulaire. */
+.ligne-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}

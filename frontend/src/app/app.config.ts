@@ -1,30 +1,109 @@
-import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import localeFr from '@angular/common/locales/fr';
 import {
   ApplicationConfig,
-  LOCALE_ID,
+  importProvidersFrom,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
-  provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 
+import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
+import { MAT_CARD_CONFIG } from '@angular/material/card';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { provideDateFnsDatetimeAdapter } from '@ng-matero/extensions-date-fns-adapter';
+import { FORMLY_CONFIG, provideFormlyCore } from '@ngx-formly/core';
+import { withFormlyMaterial } from '@ngx-formly/material';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import { provideHotToastConfig } from '@ngxpert/hot-toast';
+import { NgxPermissionsModule } from 'ngx-permissions';
+
+import {
+  AuthService,
+  BASE_URL,
+  interceptors,
+  SettingsService,
+  StartupService,
+  TranslateLangService,
+} from '@core';
+import { environment } from '@env/environment';
+import { formlyConfigFactory, PaginatorI18nService } from '@shared';
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth.interceptor';
-import { AuthService } from './core/auth.service';
-
-registerLocaleData(localeFr);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
-    { provide: LOCALE_ID, useValue: 'fr' },
-    // L'application ne s'affiche qu'une fois l'utilisateur connecté via Keycloak
+    { provide: BASE_URL, useValue: environment.baseUrl },
+    // Ordre important : la session Keycloak d'abord, puis la langue, puis le
+    // menu et les données communes (qui appellent l'API avec le jeton).
     provideAppInitializer(() => inject(AuthService).initialiser()),
+    provideAppInitializer(() => inject(TranslateLangService).load()),
+    provideAppInitializer(() => inject(StartupService).load()),
+    provideHttpClient(withInterceptors(interceptors)),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
+      withComponentInputBinding(),
+    ),
+    provideHotToastConfig(),
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({ prefix: 'i18n/', suffix: '.json' }),
+    }),
+    importProvidersFrom(NgxPermissionsModule.forRoot()),
+    provideFormlyCore([...withFormlyMaterial()]),
+    {
+      provide: FORMLY_CONFIG,
+      useFactory: formlyConfigFactory,
+      deps: [TranslateService],
+      multi: true,
+    },
+    {
+      provide: MatPaginatorIntl,
+      deps: [PaginatorI18nService],
+      useFactory: (paginatorI18nSrv: PaginatorI18nService) => paginatorI18nSrv.getPaginatorIntl(),
+    },
+    {
+      provide: MAT_DATE_LOCALE,
+      useFactory: () => inject(SettingsService).getLocale(),
+    },
+    {
+      provide: MAT_CARD_CONFIG,
+      useValue: {
+        appearance: 'outlined',
+      },
+    },
+    provideDateFnsAdapter({
+      parse: {
+        dateInput: 'dd/MM/yyyy',
+      },
+      display: {
+        dateInput: 'dd/MM/yyyy',
+        monthYearLabel: 'MMM yyyy',
+        dateA11yLabel: 'dd MMMM yyyy',
+        monthYearA11yLabel: 'MMMM yyyy',
+      },
+    }),
+    provideDateFnsDatetimeAdapter({
+      parse: {
+        dateInput: 'dd/MM/yyyy',
+        yearInput: 'yyyy',
+        monthInput: 'MMMM',
+        datetimeInput: 'dd/MM/yyyy HH:mm',
+        timeInput: 'HH:mm',
+      },
+      display: {
+        dateInput: 'dd/MM/yyyy',
+        yearInput: 'yyyy',
+        monthInput: 'MMMM',
+        datetimeInput: 'dd/MM/yyyy HH:mm',
+        timeInput: 'HH:mm',
+        monthYearLabel: 'MMMM yyyy',
+        dateA11yLabel: 'dd MMMM yyyy',
+        monthYearA11yLabel: 'MMMM yyyy',
+        popupHeaderDateLabel: 'E dd MMM',
+      },
+    }),
   ],
 };

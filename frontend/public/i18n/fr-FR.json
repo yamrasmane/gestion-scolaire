@@ -1,0 +1,47 @@
+{
+  "menu": {
+    "accueil": "Accueil",
+    "scolarite": "Scolarité",
+    "scolarite.eleves": "Élèves et inscriptions",
+    "scolarite.classes": "Classes et niveaux",
+    "parametrage": "Paramétrage",
+    "parametrage.annees": "Années scolaires",
+    "parametrage.trimestres": "Trimestres",
+    "personnel": "Personnel"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "min_length": "Ce champ doit contenir au moins {{number}} caractères",
+    "max_length": "Ce champ ne peut pas dépasser {{number}} caractères",
+    "min": "La valeur ne peut pas être inférieure à {{number}}",
+    "max": "La valeur ne peut pas dépasser {{number}}",
+    "exist": "{{value}} existe déjà",
+    "inconsistent": "Ne correspond pas à {{value}}",
+    "invalid_email": "Adresse électronique invalide"
+  },
+  "paginator": {
+    "items_per_page_label": "Lignes par page :",
+    "next_page_label": "Page suivante",
+    "previous_page_label": "Page précédente",
+    "first_page_label": "Première page",
+    "last_page_label": "Dernière page",
+    "range_page_label_1": "aucune ligne",
+    "range_page_label_2": "{{startIndex}} - {{endIndex}} sur {{length}}"
+  },
+  "fr_fr": "Français",
+  "system": "Système",
+  "name": "Nom",
+  "gender": "Sexe",
+  "mobile": "Téléphone",
+  "birthday": "Date de naissance",
+  "email": "Adresse électronique",
+  "operation": "Actions",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "ok": "Valider",
+  "close": "Fermer",
+  "profile": "Mon compte",
+  "edit_profile": "Modifier mon compte",
+  "logout": "Se déconnecter",
+  "restore_defaults": "Réinitialiser l'affichage"
+}

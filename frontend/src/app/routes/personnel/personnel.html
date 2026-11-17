@@ -1,0 +1,139 @@
+<page-header title="Personnel" />
+
+@if (erreur(); as message) {
+  <p class="alerte-erreur" role="alert">{{ message }}</p>
+}
+@if (information(); as message) {
+  <p class="alerte-succes">{{ message }}</p>
+}
+
+<mat-card>
+  <mat-card-content>
+    @if (membres().length === 0) {
+      <p class="text-muted">Aucun membre du personnel n'est encore enregistré.</p>
+    } @else {
+      <div class="table-defilement">
+        <table mat-table [dataSource]="membres()" class="w-full">
+          <ng-container matColumnDef="matricule">
+            <th mat-header-cell *matHeaderCellDef>Matricule</th>
+            <td mat-cell *matCellDef="let m">{{ m.matricule }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="nom">
+            <th mat-header-cell *matHeaderCellDef>Nom et prénom</th>
+            <td mat-cell *matCellDef="let m">
+              <strong>{{ m.nom }}</strong> {{ m.prenom }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Adresse électronique</th>
+            <td mat-cell *matCellDef="let m">{{ m.email }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="telephone">
+            <th mat-header-cell *matHeaderCellDef>Téléphone</th>
+            <td mat-cell *matCellDef="let m">{{ m.telephone }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Rôle</th>
+            <td mat-cell *matCellDef="let m">{{ libelleRole(m.role) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="etat">
+            <th mat-header-cell *matHeaderCellDef>État</th>
+            <td mat-cell *matCellDef="let m">
+              @if (m.actif) {
+                <mat-chip highlighted>Actif</mat-chip>
+              } @else {
+                <mat-chip>Inactif</mat-chip>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let m">
+              <button matButton (click)="basculer(m)">
+                {{ m.actif ? 'Désactiver' : 'Réactiver' }}
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+          <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+        </table>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Importer une liste (Excel ou CSV)</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <app-import-fichier
+      chemin="/personnel/import"
+      aide="Colonnes attendues : Matricule, Nom, Prénom, Email, Téléphone (facultatif), Rôle (Directeur, Censeur, Enseignant, Intendant, Econome ou Surveillant)."
+      (termine)="charger()"
+    />
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Ajouter une personne</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #formulaire="ngForm" (ngSubmit)="formulaire.valid && creer()">
+      <div class="grille-formulaire">
+        <mat-form-field>
+          <mat-label>Matricule</mat-label>
+          <input
+            matInput
+            name="matricule"
+            required
+            maxlength="30"
+            [(ngModel)]="nouveau.matricule"
+          />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Nom</mat-label>
+          <input matInput name="nom" required [(ngModel)]="nouveau.nom" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Prénom</mat-label>
+          <input matInput name="prenom" required [(ngModel)]="nouveau.prenom" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Adresse électronique</mat-label>
+          <input matInput name="email" type="email" required email [(ngModel)]="nouveau.email" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Téléphone</mat-label>
+          <input matInput name="telephone" [(ngModel)]="nouveau.telephone" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Rôle</mat-label>
+          <mat-select name="role" [(ngModel)]="nouveau.role">
+            @for (r of roles; track r[0]) {
+              <mat-option [value]="r[0]">{{ r[1] }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <button matButton="filled" type="submit" [disabled]="enCours() || formulaire.invalid">
+        <mat-icon>person_add</mat-icon>
+        Ajouter
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>
