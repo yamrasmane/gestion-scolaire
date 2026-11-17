@@ -76,7 +76,7 @@ public class PersonnelService {
         return new Resultat(Vue.de(personnel), avertissement);
     }
 
-    public Vue modifier(Long id, Modification saisie) {
+    public Vue modifier(UUID id, Modification saisie) {
         Personnel personnel = trouver(id);
         personnel.setNom(saisie.nom().trim());
         personnel.setPrenom(saisie.prenom().trim());
@@ -85,7 +85,7 @@ public class PersonnelService {
     }
 
     /** Active ou désactive une fiche et, s'il existe, son compte de connexion. */
-    public Vue definirActivation(Long id, boolean actif) {
+    public Vue definirActivation(UUID id, boolean actif) {
         Personnel personnel = trouver(id);
         personnel.setActif(actif);
         personnels.save(personnel);
@@ -102,7 +102,7 @@ public class PersonnelService {
     }
 
     /** Relance la création du compte de connexion lorsqu'elle avait échoué. */
-    public Resultat creerCompte(Long id) {
+    public Resultat creerCompte(UUID id) {
         Personnel personnel = trouver(id);
         String avertissement = provisionner(personnel);
         return new Resultat(Vue.de(personnel), avertissement);
@@ -215,7 +215,7 @@ public class PersonnelService {
         }
     }
 
-    private Personnel trouver(Long id) {
+    private Personnel trouver(UUID id) {
         return personnels.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Membre du personnel introuvable : " + id));
     }

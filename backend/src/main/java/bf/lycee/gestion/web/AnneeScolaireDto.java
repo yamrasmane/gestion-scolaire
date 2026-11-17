@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public final class AnneeScolaireDto {
 
@@ -26,7 +27,7 @@ public final class AnneeScolaireDto {
 
     /** Représentation renvoyée par l'API. */
     public record Vue(
-            Long id,
+            UUID id,
             String libelle,
             LocalDate dateDebut,
             LocalDate dateFin,

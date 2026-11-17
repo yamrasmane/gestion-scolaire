@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /** Échanges HTTP des modules notes, moyennes, classement et bulletins (SF-09 à SF-18). */
 public final class NotesDto {
@@ -20,25 +21,25 @@ public final class NotesDto {
 
     // ---------- Matières et enseignements (SF-09, SF-10) ----------
 
-    public record MatiereVue(Long id, String code, String libelle) {
+    public record MatiereVue(UUID id, String code, String libelle) {
     }
 
     public record MatiereSaisie(@NotBlank @Size(max = 20) String code,
                                 @NotBlank @Size(max = 100) String libelle) {
     }
 
-    public record EnseignementVue(Long id, Long classeId, String classeNom, Long matiereId,
-                                  String matiereCode, String matiereLibelle, Long enseignantId,
+    public record EnseignementVue(UUID id, UUID classeId, String classeNom, UUID matiereId,
+                                  String matiereCode, String matiereLibelle, UUID enseignantId,
                                   String enseignantNom, BigDecimal coefficient) {
     }
 
-    public record EnseignementSaisie(@NotNull Long matiereId, Long enseignantId,
+    public record EnseignementSaisie(@NotNull UUID matiereId, UUID enseignantId,
                                      @NotNull @Positive BigDecimal coefficient) {
     }
 
     // ---------- Évaluations et saisie des notes (SF-11, SF-12) ----------
 
-    public record EvaluationVue(Long id, Long enseignementId, Long trimestreId,
+    public record EvaluationVue(UUID id, UUID enseignementId, UUID trimestreId,
                                 CategorieEvaluation categorie, String libelle, LocalDate dateEval,
                                 BigDecimal bareme) {
     }
@@ -50,7 +51,7 @@ public final class NotesDto {
     }
 
     /** Une case de la grille de saisie. */
-    public record NoteSaisie(@NotNull Long inscriptionId, Long evaluationId,
+    public record NoteSaisie(@NotNull UUID inscriptionId, UUID evaluationId,
                              @DecimalMin("0") @DecimalMax("20") BigDecimal valeur,
                              boolean absent,
                              @Size(max = 255) String appreciation) {
@@ -59,18 +60,18 @@ public final class NotesDto {
     public record GrilleSaisie(@Valid List<NoteSaisie> notes) {
     }
 
-    public record NoteVue(Long inscriptionId, Long evaluationId, BigDecimal valeur, boolean absent,
+    public record NoteVue(UUID inscriptionId, UUID evaluationId, BigDecimal valeur, boolean absent,
                           String appreciation) {
     }
 
     /** Grille de saisie d'un enseignement pour un trimestre (SF-12). */
-    public record GrilleVue(Long enseignementId, String matiereLibelle, String classeNom,
-                            Long trimestreId, boolean avecComposition, BigDecimal poidsComposition,
+    public record GrilleVue(UUID enseignementId, String matiereLibelle, String classeNom,
+                            UUID trimestreId, boolean avecComposition, BigDecimal poidsComposition,
                             boolean trimestreCloture, List<EvaluationVue> evaluations,
                             List<LigneGrille> lignes) {
     }
 
-    public record LigneGrille(Long inscriptionId, String matricule, String nom, String prenom,
+    public record LigneGrille(UUID inscriptionId, String matricule, String nom, String prenom,
                               List<NoteVue> notes, BigDecimal moyenne, String mention) {
     }
 
@@ -87,7 +88,7 @@ public final class NotesDto {
                                      BigDecimal moyenneClasse, int effectif) {
     }
 
-    public record BulletinVue(Long inscriptionId, String matricule, String nom, String prenom,
+    public record BulletinVue(UUID inscriptionId, String matricule, String nom, String prenom,
                               boolean redoublant, String classeNom, String anneeScolaire,
                               int trimestreNumero, boolean avecComposition,
                               BigDecimal poidsComposition, List<LigneBulletin> lignes,
@@ -102,7 +103,7 @@ public final class NotesDto {
     }
 
     /** Ligne du classement général de la classe (SF-15, SF-16). */
-    public record LigneClassement(Long inscriptionId, String matricule, String nom, String prenom,
+    public record LigneClassement(UUID inscriptionId, String matricule, String nom, String prenom,
                                   BigDecimal moyenneGenerale, Integer rang, boolean exAequo,
                                   String mention, boolean bloqueImpaye) {
     }

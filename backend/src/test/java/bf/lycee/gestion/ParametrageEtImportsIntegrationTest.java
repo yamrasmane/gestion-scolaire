@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.UUID;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -50,8 +51,8 @@ class ParametrageEtImportsIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
-    private Long annee2025;
-    private Long annee2026;
+    private UUID annee2025;
+    private UUID annee2026;
 
     @BeforeEach
     void preparer() throws Exception {
@@ -66,23 +67,23 @@ class ParametrageEtImportsIntegrationTest {
                 .authorities(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    private Long creerAnnee(String libelle, String debut, String fin) throws Exception {
+    private UUID creerAnnee(String libelle, String debut, String fin) throws Exception {
         mvc.perform(post("/api/annees-scolaires").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"libelle\": \"%s\", \"dateDebut\": \"%s\", \"dateFin\": \"%s\"}"
                                 .formatted(libelle, debut, fin)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = ?", Long.class, libelle);
+        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = ?", UUID.class, libelle);
     }
 
-    private Long creerClasse(Long anneeId, String niveau, String nom, int effectifMax) throws Exception {
-        Long niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", Long.class, niveau);
+    private UUID creerClasse(UUID anneeId, String niveau, String nom, int effectifMax) throws Exception {
+        UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + anneeId + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": %d}"
                                 .formatted(niveauId, nom, effectifMax)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = ?",
-                Long.class, anneeId, nom);
+                UUID.class, anneeId, nom);
     }
 
     private static MockMultipartFile csv(String nom, String contenu) {
@@ -160,7 +161,7 @@ class ParametrageEtImportsIntegrationTest {
                 .andExpect(jsonPath("$.compositionParCycle.PREMIER.source").value("ANNEE"))
                 .andExpect(jsonPath("$.compositionParCycle.PREMIER.avecComposition").value(true))
                 .andExpect(jsonPath("$.compositionParCycle.SECOND.poidsComposition").value(2.0));
-        Long t1 = jdbc.queryForObject("SELECT id FROM trimestre", Long.class);
+        UUID t1 = jdbc.queryForObject("SELECT id FROM trimestre", UUID.class);
 
         // réglage du trimestre : composition désactivée pour tous
         mvc.perform(put("/api/trimestres/" + t1 + "/composition").with(DIRECTEUR)
@@ -202,8 +203,8 @@ class ParametrageEtImportsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(10)))
                 .andExpect(jsonPath("$[0].code").value("6EME"));
-        Long classe = creerClasse(annee2026, "6EME", "6ème A", 60);
-        Long sixieme = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", Long.class);
+        UUID classe = creerClasse(annee2026, "6EME", "6ème A", 60);
+        UUID sixieme = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", UUID.class);
         mvc.perform(post("/api/annees-scolaires/" + annee2026 + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"niveauId\": %d, \"nom\": \"6ÈME a\", \"effectifMax\": 50}".formatted(sixieme)))
@@ -310,7 +311,7 @@ class ParametrageEtImportsIntegrationTest {
                                  "email": "Awa.Ouedraogo@lycee.bf", "role": "INTENDANT"}"""))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.personnel.email").value("awa.ouedraogo@lycee.bf"));
-        Long id = jdbc.queryForObject("SELECT id FROM personnel", Long.class);
+        UUID id = jdbc.queryForObject("SELECT id FROM personnel", UUID.class);
         mvc.perform(post("/api/personnel").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"matricule": "P002", "nom": "X", "prenom": "Y",
@@ -327,8 +328,8 @@ class ParametrageEtImportsIntegrationTest {
 
     @Test
     void lImportDesElevesDeduitLaCategorieNouveauOuAncien() throws Exception {
-        Long sixieme2025 = creerClasse(annee2025, "6EME", "6ème A", 60);
-        Long cinquieme2026 = creerClasse(annee2026, "5EME", "5ème A", 60);
+        UUID sixieme2025 = creerClasse(annee2025, "6EME", "6ème A", 60);
+        UUID cinquieme2026 = creerClasse(annee2026, "5EME", "5ème A", 60);
 
         // Année 2025-2026 : Awa et Issa entrent en 6e
         MockMultipartFile liste2025 = excelEleves(
@@ -395,7 +396,7 @@ class ParametrageEtImportsIntegrationTest {
 
     @Test
     void lImportDesElevesRefuseLesLignesInvalidesEtLeDepassementDEffectif() throws Exception {
-        Long classe = creerClasse(annee2026, "6EME", "6ème B", 2);
+        UUID classe = creerClasse(annee2026, "6EME", "6ème B", 2);
         mvc.perform(multipart("/api/classes/" + classe + "/inscriptions/import")
                         .file(csv("eleves.csv", "matricule;nom;prenom;date_naissance;sexe\nE1;A;B;2014-01-01;M\n"))
                         .with(ENSEIGNANT))
@@ -421,7 +422,7 @@ class ParametrageEtImportsIntegrationTest {
 
     @Test
     void lInscriptionManuelleEtLaCorrectionDeCategorieSontTracees() throws Exception {
-        Long classe = creerClasse(annee2026, "2NDE_C", "2nde C1", 1);
+        UUID classe = creerClasse(annee2026, "2NDE_C", "2nde C1", 1);
         String awa = """
                 {"matricule": "E001", "nom": "OUEDRAOGO", "prenom": "Awa", "dateNaissance": "2010-03-25",
                  "sexe": "F", "nomParent": "M. OUEDRAOGO", "contactParent": "70000001", "redoublant": false}""";
@@ -432,7 +433,7 @@ class ParametrageEtImportsIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.categorie").value("NOUVEAU"))
                 .andExpect(jsonPath("$.categorieForcee").value(false));
-        Long inscription = jdbc.queryForObject("SELECT id FROM inscription", Long.class);
+        UUID inscription = jdbc.queryForObject("SELECT id FROM inscription", UUID.class);
 
         // déjà inscrite, puis classe complète pour un autre élève
         mvc.perform(post("/api/classes/" + classe + "/inscriptions").with(SURVEILLANT)

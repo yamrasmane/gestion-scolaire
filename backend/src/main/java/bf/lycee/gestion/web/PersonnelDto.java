@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 public final class PersonnelDto {
 
@@ -27,7 +28,7 @@ public final class PersonnelDto {
             @Size(max = 30) String telephone) {
     }
 
-    public record Vue(Long id, String matricule, String nom, String prenom, String email, String telephone,
+    public record Vue(UUID id, String matricule, String nom, String prenom, String email, String telephone,
                       RolePersonnel role, boolean actif, boolean compteCree) {
 
         public static Vue de(Personnel p) {

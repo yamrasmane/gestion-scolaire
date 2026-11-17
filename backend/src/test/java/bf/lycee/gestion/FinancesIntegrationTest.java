@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,16 +40,16 @@ class FinancesIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
-    private Long annee;
-    private Long classe6A;
-    private Long niveau6;
-    private Long inscription;
+    private UUID annee;
+    private UUID classe6A;
+    private UUID niveau6;
+    private UUID inscription;
 
     @BeforeEach
     void preparer() throws Exception {
         jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, audit.revinfo RESTART IDENTITY CASCADE");
         annee = creerAnnee("2026-2027", "2026-10-01", "2027-07-15");
-        niveau6 = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", Long.class);
+        niveau6 = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", UUID.class);
         classe6A = creerClasse("6EME", "6ème A");
         inscription = inscrire(classe6A, "EL-001", "Ouédraogo", "Awa");
     }
@@ -57,7 +58,7 @@ class FinancesIntegrationTest {
 
     @Test
     void le_tarif_de_la_classe_prime_sur_celui_du_niveau() throws Exception {
-        Long scolarite = typeFrais("SCOLARITE");
+        UUID scolarite = typeFrais("SCOLARITE");
         tarifNiveau(scolarite, niveau6, "TOUS", 90000);
         tarifClasse(scolarite, classe6A, "NOUVEAU", 80000);
 
@@ -135,7 +136,7 @@ class FinancesIntegrationTest {
 
     @Test
     void l_ecart_d_arrondi_est_porte_sur_la_derniere_tranche() throws Exception {
-        Long scolarite = typeFrais("SCOLARITE");
+        UUID scolarite = typeFrais("SCOLARITE");
         tarifNiveau(scolarite, niveau6, "TOUS", 100000);
         planTroisTranches();
         genererFrais();
@@ -196,7 +197,7 @@ class FinancesIntegrationTest {
         grilleComplete();
         planTroisTranches();
         genererFrais();
-        Long paiement = encaisser(15000);
+        UUID paiement = encaisser(15000);
 
         mvc.perform(post("/api/paiements/" + paiement + "/annulation").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -215,7 +216,7 @@ class FinancesIntegrationTest {
         grilleComplete();
         planTroisTranches();
         genererFrais();
-        Long paiement = encaisser(15000);
+        UUID paiement = encaisser(15000);
 
         mvc.perform(post("/api/paiements/" + paiement + "/annulation").with(ECONOME)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -228,7 +229,7 @@ class FinancesIntegrationTest {
         grilleComplete();
         planTroisTranches();
         genererFrais();
-        Long paiement = encaisser(15000);
+        UUID paiement = encaisser(15000);
 
         mvc.perform(get("/api/paiements/" + paiement + "/recu").with(ECONOME))
                 .andExpect(status().isOk())
@@ -243,9 +244,9 @@ class FinancesIntegrationTest {
         grilleComplete();
         planTroisTranches();
         genererFrais();
-        Long fraisScolarite = jdbc.queryForObject("""
+        UUID fraisScolarite = jdbc.queryForObject("""
                 SELECT f.id FROM frais_eleve f JOIN type_frais t ON t.id = f.type_frais_id
-                WHERE t.code = 'SCOLARITE'""", Long.class);
+                WHERE t.code = 'SCOLARITE'""", UUID.class);
 
         String remise = """
                 {"type": "MONTANT", "valeur": 40000, "motif": "Enfant du personnel"}""";
@@ -266,9 +267,9 @@ class FinancesIntegrationTest {
         grilleComplete();
         planTroisTranches();
         genererFrais();
-        Long frais = jdbc.queryForObject("""
+        UUID frais = jdbc.queryForObject("""
                 SELECT f.id FROM frais_eleve f JOIN type_frais t ON t.id = f.type_frais_id
-                WHERE t.code = 'SCOLARITE'""", Long.class);
+                WHERE t.code = 'SCOLARITE'""", UUID.class);
 
         mvc.perform(put("/api/frais-eleve/" + frais + "/remise").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -313,26 +314,26 @@ class FinancesIntegrationTest {
                 .authorities(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    private Long creerAnnee(String libelle, String debut, String fin) throws Exception {
+    private UUID creerAnnee(String libelle, String debut, String fin) throws Exception {
         mvc.perform(post("/api/annees-scolaires").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"libelle\": \"%s\", \"dateDebut\": \"%s\", \"dateFin\": \"%s\"}"
                                 .formatted(libelle, debut, fin)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = ?", Long.class, libelle);
+        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = ?", UUID.class, libelle);
     }
 
-    private Long creerClasse(String niveau, String nom) throws Exception {
-        Long niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", Long.class, niveau);
+    private UUID creerClasse(String niveau, String nom) throws Exception {
+        UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + annee + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": 60}"
                                 .formatted(niveauId, nom)))
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = ?",
-                Long.class, annee, nom);
+                UUID.class, annee, nom);
     }
 
-    private Long inscrire(Long classeId, String matricule, String nom, String prenom) throws Exception {
+    private UUID inscrire(UUID classeId, String matricule, String nom, String prenom) throws Exception {
         mvc.perform(post("/api/classes/" + classeId + "/inscriptions").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -342,14 +343,14 @@ class FinancesIntegrationTest {
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("""
                 SELECT i.id FROM inscription i JOIN eleve e ON e.id = i.eleve_id
-                WHERE e.matricule = ?""", Long.class, matricule);
+                WHERE e.matricule = ?""", UUID.class, matricule);
     }
 
-    private Long typeFrais(String code) {
-        return jdbc.queryForObject("SELECT id FROM type_frais WHERE code = ?", Long.class, code);
+    private UUID typeFrais(String code) {
+        return jdbc.queryForObject("SELECT id FROM type_frais WHERE code = ?", UUID.class, code);
     }
 
-    private void tarifNiveau(Long typeFraisId, Long niveauId, String categorie, int montant) throws Exception {
+    private void tarifNiveau(UUID typeFraisId, UUID niveauId, String categorie, int montant) throws Exception {
         mvc.perform(post("/api/annees-scolaires/" + annee + "/grille-tarifaire").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -358,7 +359,7 @@ class FinancesIntegrationTest {
                 .andExpect(status().isCreated());
     }
 
-    private void tarifClasse(Long typeFraisId, Long classeId, String categorie, int montant) throws Exception {
+    private void tarifClasse(UUID typeFraisId, UUID classeId, String categorie, int montant) throws Exception {
         mvc.perform(post("/api/annees-scolaires/" + annee + "/grille-tarifaire").with(INTENDANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -395,13 +396,13 @@ class FinancesIntegrationTest {
                 .andExpect(status().isOk());
     }
 
-    private Long encaisser(int montant) throws Exception {
+    private UUID encaisser(int montant) throws Exception {
         mvc.perform(post("/api/inscriptions/" + inscription + "/paiements").with(ECONOME)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"datePaiement": "%s", "montant": %d, "mode": "ESPECES"}"""
                                 .formatted(LocalDate.now(), montant)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT max(id) FROM paiement", Long.class);
+        return jdbc.queryForObject("SELECT max(id) FROM paiement", UUID.class);
     }
 }

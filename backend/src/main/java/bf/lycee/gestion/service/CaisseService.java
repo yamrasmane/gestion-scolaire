@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +60,7 @@ public class CaisseService {
     // ---------- Encaissement ----------
 
     /** Enregistre un règlement et l'impute sur les échéances (SF-28, SF-29). */
-    public FinancesDto.PaiementVue encaisser(Long inscriptionId, FinancesDto.EncaissementSaisie saisie) {
+    public FinancesDto.PaiementVue encaisser(UUID inscriptionId, FinancesDto.EncaissementSaisie saisie) {
         Inscription inscription = inscriptions.findById(inscriptionId)
                 .orElseThrow(() -> new IntrouvableException("Inscription introuvable : " + inscriptionId));
 
@@ -101,7 +102,7 @@ public class CaisseService {
      * Annule un paiement : le reçu est conservé, le montant est dé-imputé
      * (SF-30). Un paiement n'est jamais supprimé.
      */
-    public FinancesDto.PaiementVue annuler(Long paiementId, FinancesDto.AnnulationSaisie saisie) {
+    public FinancesDto.PaiementVue annuler(UUID paiementId, FinancesDto.AnnulationSaisie saisie) {
         Paiement paiement = paiement(paiementId);
         if (paiement.getStatut() == StatutPaiement.ANNULE) {
             throw new RegleMetierException("Ce paiement est déjà annulé");
@@ -122,7 +123,7 @@ public class CaisseService {
 
     /** Données du reçu, imprimables depuis le navigateur (SF-30). */
     @Transactional(readOnly = true)
-    public FinancesDto.Recu recu(Long paiementId, boolean duplicata) {
+    public FinancesDto.Recu recu(UUID paiementId, boolean duplicata) {
         Paiement paiement = paiement(paiementId);
         Inscription inscription = paiement.getInscription();
         FinancesDto.PaiementVue vue = facturation.versVue(paiement);
@@ -142,9 +143,9 @@ public class CaisseService {
      * classe. {@code limite} borne les échéances prises en compte (par défaut, ce jour).
      */
     @Transactional
-    public List<FinancesDto.ImpayeVue> impayes(Long anneeId, Long classeId, LocalDate limite) {
+    public List<FinancesDto.ImpayeVue> impayes(UUID anneeId, UUID classeId, LocalDate limite) {
         LocalDate borne = limite != null ? limite : LocalDate.now();
-        List<Long> classeIds = classeId != null
+        List<UUID> classeIds = classeId != null
                 ? List.of(classeId)
                 : classes.findByAnneeScolaireIdOrderByNom(anneeId).stream().map(Classe::getId).toList();
         if (classeIds.isEmpty()) {
@@ -192,8 +193,8 @@ public class CaisseService {
 
     /** Tableau de bord du recouvrement d'une année scolaire (SF-32). */
     @Transactional
-    public FinancesDto.Recouvrement recouvrement(Long anneeId) {
-        List<Long> classeIds = classes.findByAnneeScolaireIdOrderByNom(anneeId).stream()
+    public FinancesDto.Recouvrement recouvrement(UUID anneeId) {
+        List<UUID> classeIds = classes.findByAnneeScolaireIdOrderByNom(anneeId).stream()
                 .map(Classe::getId).toList();
         BigDecimal attendu = BigDecimal.ZERO;
         BigDecimal encaisse = BigDecimal.ZERO;
@@ -202,7 +203,7 @@ public class CaisseService {
         int enRetard = 0;
 
         List<Inscription> liste = new ArrayList<>();
-        for (Long classeId : classeIds) {
+        for (UUID classeId : classeIds) {
             liste.addAll(inscriptions.findByClasseIdOrderByEleveNomAscElevePrenomAsc(classeId));
         }
         LocalDate aujourdHui = LocalDate.now();
@@ -245,7 +246,7 @@ public class CaisseService {
         return comptes.connecte();
     }
 
-    private Paiement paiement(Long id) {
+    private Paiement paiement(UUID id) {
         return paiements.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Paiement introuvable : " + id));
     }

@@ -5,6 +5,7 @@ import bf.lycee.gestion.security.Roles;
 import bf.lycee.gestion.service.EleveService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,14 +38,14 @@ public class EleveController {
     }
 
     @GetMapping("/classes/{classeId}/inscriptions")
-    public List<EleveDto.InscriptionVue> inscriptions(@PathVariable Long classeId) {
+    public List<EleveDto.InscriptionVue> inscriptions(@PathVariable UUID classeId) {
         return service.inscriptionsDeLaClasse(classeId);
     }
 
     @PostMapping("/classes/{classeId}/inscriptions")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.SCOLARITE)
-    public EleveDto.InscriptionVue inscrire(@PathVariable Long classeId,
+    public EleveDto.InscriptionVue inscrire(@PathVariable UUID classeId,
                                             @Valid @RequestBody EleveDto.InscriptionManuelle saisie) {
         return service.inscrire(classeId, saisie);
     }
@@ -53,7 +54,7 @@ public class EleveController {
     @PostMapping(path = "/classes/{classeId}/inscriptions/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(Roles.SCOLARITE)
     public RapportImport<EleveDto.LigneImport> importer(
-            @PathVariable Long classeId,
+            @PathVariable UUID classeId,
             @RequestPart("fichier") MultipartFile fichier,
             @RequestParam(defaultValue = "true") boolean simulation) {
         return service.importer(classeId, fichier, simulation);
@@ -61,7 +62,7 @@ public class EleveController {
 
     @PutMapping("/inscriptions/{id}/categorie")
     @PreAuthorize(Roles.INTENDANT)
-    public EleveDto.InscriptionVue corrigerCategorie(@PathVariable Long id,
+    public EleveDto.InscriptionVue corrigerCategorie(@PathVariable UUID id,
                                                      @Valid @RequestBody EleveDto.CorrectionCategorie correction) {
         return service.corrigerCategorie(id, correction);
     }

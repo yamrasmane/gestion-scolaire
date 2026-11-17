@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,7 +87,7 @@ public class FacturationService {
      * l'échéancier (SF-24). Renvoie les anomalies rencontrées : un frais
      * obligatoire sans tarif n'interrompt pas le traitement, il est signalé.
      */
-    public List<String> genererFrais(Long inscriptionId) {
+    public List<String> genererFrais(UUID inscriptionId) {
         Inscription inscription = inscription(inscriptionId);
         List<String> anomalies = new ArrayList<>();
 
@@ -114,7 +115,7 @@ public class FacturationService {
     }
 
     /** Ajoute un frais facultatif depuis la fiche financière (SF-24). */
-    public FinancesDto.FraisVue ajouterFraisFacultatif(Long inscriptionId, Long typeFraisId) {
+    public FinancesDto.FraisVue ajouterFraisFacultatif(UUID inscriptionId, UUID typeFraisId) {
         Inscription inscription = inscription(inscriptionId);
         TypeFrais type = typesFrais.findById(typeFraisId)
                 .orElseThrow(() -> new IntrouvableException("Type de frais introuvable : " + typeFraisId));
@@ -135,7 +136,7 @@ public class FacturationService {
     }
 
     /** Remise ou exonération sur un frais, motif obligatoire (SF-25). */
-    public FinancesDto.FraisVue appliquerRemise(Long fraisId, FinancesDto.RemiseSaisie saisie,
+    public FinancesDto.FraisVue appliquerRemise(UUID fraisId, FinancesDto.RemiseSaisie saisie,
                                                 boolean estDirecteur) {
         FraisEleve frais = frais(fraisId);
         if (saisie.type() == null || saisie.valeur() == null || saisie.valeur().signum() == 0) {
@@ -166,7 +167,7 @@ public class FacturationService {
     }
 
     /** Retire un frais facultatif, tant qu'aucun paiement ne lui est imputé. */
-    public void supprimerFrais(Long fraisId) {
+    public void supprimerFrais(UUID fraisId) {
         FraisEleve frais = frais(fraisId);
         if (frais.getTypeFrais().isObligatoire()) {
             throw new RegleMetierException("Un frais obligatoire ne peut pas être retiré de la fiche");
@@ -304,7 +305,7 @@ public class FacturationService {
      *
      * @return le montant effectivement imputé
      */
-    public BigDecimal imputer(bf.lycee.gestion.domain.Paiement paiement, BigDecimal montant, Long typeFraisId) {
+    public BigDecimal imputer(bf.lycee.gestion.domain.Paiement paiement, BigDecimal montant, UUID typeFraisId) {
         List<EcheanceEleve> candidates = echeances
                 .findByFraisEleveInscriptionIdOrderByDateEcheanceAsc(paiement.getInscription().getId()).stream()
                 .filter(e -> typeFraisId == null || e.getFraisEleve().getTypeFrais().getId().equals(typeFraisId))
@@ -335,7 +336,7 @@ public class FacturationService {
     // ---------- Consultation ----------
 
     @Transactional
-    public FinancesDto.FicheFinanciere situation(Long inscriptionId) {
+    public FinancesDto.FicheFinanciere situation(UUID inscriptionId) {
         Inscription inscription = inscription(inscriptionId);
         List<FraisEleve> frais = fraisEleves
                 .findByInscriptionIdOrderByTypeFraisPrioriteImputation(inscriptionId);
@@ -379,13 +380,13 @@ public class FacturationService {
     }
 
     @Transactional(readOnly = true)
-    public List<EcheanceEleve> echeancesDe(Long inscriptionId) {
+    public List<EcheanceEleve> echeancesDe(UUID inscriptionId) {
         return echeances.findByFraisEleveInscriptionIdOrderByDateEcheanceAsc(inscriptionId);
     }
 
     /** Reste à payer de l'inscription, utilisé par la caisse (SF-28). */
     @Transactional(readOnly = true)
-    public BigDecimal resteAPayer(Long inscriptionId) {
+    public BigDecimal resteAPayer(UUID inscriptionId) {
         return echeances.findByFraisEleveInscriptionIdOrderByDateEcheanceAsc(inscriptionId).stream()
                 .map(FacturationService::reste)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -454,12 +455,12 @@ public class FacturationService {
         return frais.stream().map(champ).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private Inscription inscription(Long id) {
+    private Inscription inscription(UUID id) {
         return inscriptions.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Inscription introuvable : " + id));
     }
 
-    private FraisEleve frais(Long id) {
+    private FraisEleve frais(UUID id) {
         return fraisEleves.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Frais introuvable : " + id));
     }

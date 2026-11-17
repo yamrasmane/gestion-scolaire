@@ -15,6 +15,7 @@ import bf.lycee.gestion.web.TrimestreDto.Vue;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,14 +36,14 @@ public class TrimestreService {
     }
 
     @Transactional(readOnly = true)
-    public List<Vue> lister(Long anneeId) {
+    public List<Vue> lister(UUID anneeId) {
         List<ConfigCompositionCycle> configs = configsCycle.findByTrimestreAnneeScolaireId(anneeId);
         return trimestres.findByAnneeScolaireIdOrderByNumero(anneeId).stream()
                 .map(t -> vue(t, configs))
                 .toList();
     }
 
-    public Vue creer(Long anneeId, Creation saisie) {
+    public Vue creer(UUID anneeId, Creation saisie) {
         AnneeScolaire annee = annees.findById(anneeId)
                 .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + anneeId));
         if (!saisie.dateFin().isAfter(saisie.dateDebut())) {
@@ -73,7 +74,7 @@ public class TrimestreService {
     }
 
     /** Réglage de la composition au niveau du trimestre ; valeurs nulles = héritées de l'année. */
-    public Vue reglerComposition(Long trimestreId, ReglageTrimestre reglage) {
+    public Vue reglerComposition(UUID trimestreId, ReglageTrimestre reglage) {
         Trimestre trimestre = modifiable(trimestreId);
         trimestre.setAvecComposition(reglage.avecComposition());
         trimestre.setPoidsComposition(reglage.poidsComposition());
@@ -81,7 +82,7 @@ public class TrimestreService {
     }
 
     /** Réglage propre à un cycle pour ce trimestre. */
-    public Vue reglerCompositionCycle(Long trimestreId, Cycle cycle, ReglageCycle reglage) {
+    public Vue reglerCompositionCycle(UUID trimestreId, Cycle cycle, ReglageCycle reglage) {
         Trimestre trimestre = modifiable(trimestreId);
         ConfigCompositionCycle config = configsCycle.findByTrimestreIdAndCycle(trimestreId, cycle)
                 .orElseGet(() -> {
@@ -97,7 +98,7 @@ public class TrimestreService {
     }
 
     /** Supprime le réglage propre au cycle : le cycle suit de nouveau le trimestre ou l'année. */
-    public Vue supprimerReglageCycle(Long trimestreId, Cycle cycle) {
+    public Vue supprimerReglageCycle(UUID trimestreId, Cycle cycle) {
         Trimestre trimestre = modifiable(trimestreId);
         configsCycle.findByTrimestreIdAndCycle(trimestreId, cycle).ifPresent(config -> {
             configsCycle.delete(config);
@@ -107,13 +108,13 @@ public class TrimestreService {
     }
 
     /** Clôture : verrouille la saisie des notes et le réglage de la composition. */
-    public Vue cloturer(Long trimestreId) {
+    public Vue cloturer(UUID trimestreId) {
         Trimestre trimestre = trouver(trimestreId);
         trimestre.setCloture(true);
         return vue(trimestres.save(trimestre));
     }
 
-    public Vue rouvrir(Long trimestreId) {
+    public Vue rouvrir(UUID trimestreId) {
         Trimestre trimestre = trouver(trimestreId);
         trimestre.setCloture(false);
         return vue(trimestres.save(trimestre));
@@ -140,12 +141,12 @@ public class TrimestreService {
         return new CompositionEffective(annee.isAvecCompositionDefaut(), annee.getPoidsCompositionDefaut(), "ANNEE");
     }
 
-    private Trimestre trouver(Long id) {
+    private Trimestre trouver(UUID id) {
         return trimestres.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Trimestre introuvable : " + id));
     }
 
-    private Trimestre modifiable(Long id) {
+    private Trimestre modifiable(UUID id) {
         Trimestre trimestre = trouver(id);
         if (trimestre.isCloture()) {
             throw new RegleMetierException("Le trimestre " + trimestre.getNumero()

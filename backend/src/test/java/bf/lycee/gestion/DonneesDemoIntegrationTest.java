@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,9 +43,9 @@ class DonneesDemoIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
-    private Long anneeCourante;
-    private Long premierTrimestre;
-    private Long sixiemeA;
+    private UUID anneeCourante;
+    private UUID premierTrimestre;
+    private UUID sixiemeA;
 
     @BeforeAll
     void charger() throws Exception {
@@ -58,13 +59,13 @@ class DonneesDemoIntegrationTest {
         jdbc.execute(script);
 
         anneeCourante = jdbc.queryForObject(
-                "SELECT id FROM annee_scolaire WHERE actif", Long.class);
+                "SELECT id FROM annee_scolaire WHERE actif", UUID.class);
         premierTrimestre = jdbc.queryForObject(
                 "SELECT id FROM trimestre WHERE annee_scolaire_id = ? AND numero = 1",
-                Long.class, anneeCourante);
+                UUID.class, anneeCourante);
         sixiemeA = jdbc.queryForObject(
                 "SELECT id FROM classe WHERE annee_scolaire_id = ? AND nom = '6ème A'",
-                Long.class, anneeCourante);
+                UUID.class, anneeCourante);
 
         // Le jeu de données doit être chargé en entier : sinon, les vérifications
         // qui suivent échoueraient sans dire ce qui manque.
@@ -109,11 +110,11 @@ class DonneesDemoIntegrationTest {
 
     @Test
     void le_bulletin_reprend_la_deliberation_enregistree() throws Exception {
-        Long inscription = jdbc.queryForObject("""
+        UUID inscription = jdbc.queryForObject("""
                 SELECT b.inscription_id FROM bulletin b
                 JOIN inscription i ON i.id = b.inscription_id
                 WHERE i.classe_id = ? AND b.mention IS NOT NULL
-                ORDER BY b.rang LIMIT 1""", Long.class, sixiemeA);
+                ORDER BY b.rang LIMIT 1""", UUID.class, sixiemeA);
 
         mvc.perform(get("/api/inscriptions/" + inscription + "/trimestres/" + premierTrimestre
                         + "/bulletin").with(DIRECTEUR))
@@ -126,12 +127,12 @@ class DonneesDemoIntegrationTest {
 
     @Test
     void la_fiche_financiere_est_coherente_avec_les_reglements() throws Exception {
-        Long inscription = jdbc.queryForObject("""
+        UUID inscription = jdbc.queryForObject("""
                 SELECT f.inscription_id FROM frais_eleve f
                 JOIN echeance_eleve e ON e.frais_eleve_id = f.id
                 GROUP BY f.inscription_id
                 HAVING sum(e.montant_paye) > 0 AND sum(e.montant_du - e.montant_paye) > 0
-                LIMIT 1""", Long.class);
+                LIMIT 1""", UUID.class);
 
         mvc.perform(get("/api/inscriptions/" + inscription + "/finances").with(DIRECTEUR))
                 .andExpect(status().isOk())
@@ -176,8 +177,8 @@ class DonneesDemoIntegrationTest {
 
     @Test
     void un_reglement_annule_conserve_son_recu_sans_imputation() throws Exception {
-        Long paiement = jdbc.queryForObject(
-                "SELECT id FROM paiement WHERE statut = 'ANNULE' LIMIT 1", Long.class);
+        UUID paiement = jdbc.queryForObject(
+                "SELECT id FROM paiement WHERE statut = 'ANNULE' LIMIT 1", UUID.class);
 
         mvc.perform(get("/api/paiements/" + paiement + "/recu").with(DIRECTEUR)
                         .param("duplicata", "true"))

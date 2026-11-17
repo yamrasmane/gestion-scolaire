@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -54,13 +55,13 @@ public class EvaluationService {
     // ---------- Évaluations ----------
 
     @Transactional(readOnly = true)
-    public List<NotesDto.EvaluationVue> lister(Long enseignementId, Long trimestreId) {
+    public List<NotesDto.EvaluationVue> lister(UUID enseignementId, UUID trimestreId) {
         return evaluations
                 .findByEnseignementIdAndTrimestreIdOrderByCategorieAscLibelleAsc(enseignementId, trimestreId)
                 .stream().map(EvaluationService::versVue).toList();
     }
 
-    public NotesDto.EvaluationVue creer(Long enseignementId, Long trimestreId,
+    public NotesDto.EvaluationVue creer(UUID enseignementId, UUID trimestreId,
                                         NotesDto.EvaluationSaisie saisie) {
         Enseignement enseignement = enseignement(enseignementId);
         Trimestre trimestre = trimestre(trimestreId);
@@ -95,7 +96,7 @@ public class EvaluationService {
         return versVue(evaluation);
     }
 
-    public void supprimer(Long evaluationId) {
+    public void supprimer(UUID evaluationId) {
         Evaluation evaluation = evaluation(evaluationId);
         verifierAcces(evaluation.getEnseignement());
         verifierOuvert(evaluation.getTrimestre());
@@ -107,20 +108,20 @@ public class EvaluationService {
     // ---------- Grille de saisie (SF-12) ----------
 
     @Transactional(readOnly = true)
-    public NotesDto.GrilleVue grille(Long enseignementId, Long trimestreId) {
+    public NotesDto.GrilleVue grille(UUID enseignementId, UUID trimestreId) {
         Enseignement enseignement = enseignement(enseignementId);
         Trimestre trimestre = trimestre(trimestreId);
         CompositionEffective composition = compositionDe(enseignement, trimestre);
 
         List<Evaluation> epreuves = evaluations
                 .findByEnseignementIdAndTrimestreIdOrderByCategorieAscLibelleAsc(enseignementId, trimestreId);
-        Map<Long, List<Note>> notesParEleve = notesParInscription(epreuves);
+        Map<UUID, List<Note>> notesParEleve = notesParInscription(epreuves);
 
         List<NotesDto.LigneGrille> lignes = new ArrayList<>();
         for (Inscription inscription : inscriptions
                 .findByClasseIdOrderByEleveNomAscElevePrenomAsc(enseignement.getClasse().getId())) {
             List<Note> sesNotes = notesParEleve.getOrDefault(inscription.getId(), List.of());
-            Map<Long, Note> parEvaluation = new HashMap<>();
+            Map<UUID, Note> parEvaluation = new HashMap<>();
             sesNotes.forEach(n -> parEvaluation.put(n.getEvaluation().getId(), n));
 
             List<NotesDto.NoteVue> vues = epreuves.stream()
@@ -148,7 +149,7 @@ public class EvaluationService {
     }
 
     /** Enregistre la grille : une note par élève et par épreuve (SF-12). */
-    public NotesDto.GrilleVue enregistrer(Long enseignementId, Long trimestreId,
+    public NotesDto.GrilleVue enregistrer(UUID enseignementId, UUID trimestreId,
                                           NotesDto.GrilleSaisie saisie) {
         Enseignement enseignement = enseignement(enseignementId);
         Trimestre trimestre = trimestre(trimestreId);
@@ -190,12 +191,12 @@ public class EvaluationService {
 
     // ---------- Outils ----------
 
-    Map<Long, List<Note>> notesParInscription(List<Evaluation> epreuves) {
-        Map<Long, List<Note>> parEleve = new HashMap<>();
+    Map<UUID, List<Note>> notesParInscription(List<Evaluation> epreuves) {
+        Map<UUID, List<Note>> parEleve = new HashMap<>();
         if (epreuves.isEmpty()) {
             return parEleve;
         }
-        List<Long> ids = epreuves.stream().map(Evaluation::getId).toList();
+        List<UUID> ids = epreuves.stream().map(Evaluation::getId).toList();
         for (Note note : notes.findByEvaluationIdIn(ids)) {
             parEleve.computeIfAbsent(note.getInscription().getId(), cle -> new ArrayList<>()).add(note);
         }
@@ -221,8 +222,8 @@ public class EvaluationService {
         if (direction) {
             return;
         }
-        Long titulaire = enseignement.getEnseignant() == null ? null : enseignement.getEnseignant().getId();
-        Long connecte = comptes.connecte().map(personnel -> personnel.getId()).orElse(null);
+        UUID titulaire = enseignement.getEnseignant() == null ? null : enseignement.getEnseignant().getId();
+        UUID connecte = comptes.connecte().map(personnel -> personnel.getId()).orElse(null);
         if (titulaire == null || !titulaire.equals(connecte)) {
             throw new RegleMetierException("Vous n'êtes pas le professeur titulaire de cette matière");
         }
@@ -235,17 +236,17 @@ public class EvaluationService {
         }
     }
 
-    private Enseignement enseignement(Long id) {
+    private Enseignement enseignement(UUID id) {
         return enseignements.findWithDetailsById(id)
                 .orElseThrow(() -> new IntrouvableException("Enseignement introuvable : " + id));
     }
 
-    private Trimestre trimestre(Long id) {
+    private Trimestre trimestre(UUID id) {
         return trimestres.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Trimestre introuvable : " + id));
     }
 
-    private Evaluation evaluation(Long id) {
+    private Evaluation evaluation(UUID id) {
         return evaluations.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Épreuve introuvable : " + id));
     }

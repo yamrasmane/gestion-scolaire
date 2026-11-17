@@ -6,6 +6,7 @@ import bf.lycee.gestion.service.EvaluationService;
 import bf.lycee.gestion.service.MatiereService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +52,7 @@ public class NotesController {
     }
 
     @GetMapping("/classes/{classeId}/enseignements")
-    public List<NotesDto.EnseignementVue> enseignements(@PathVariable Long classeId) {
+    public List<NotesDto.EnseignementVue> enseignements(@PathVariable UUID classeId) {
         return matieres.listerEnseignements(classeId);
     }
 
@@ -59,37 +60,37 @@ public class NotesController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.DIRECTION)
     public NotesDto.EnseignementVue ajouterEnseignement(
-            @PathVariable Long classeId, @Valid @RequestBody NotesDto.EnseignementSaisie saisie) {
+            @PathVariable UUID classeId, @Valid @RequestBody NotesDto.EnseignementSaisie saisie) {
         return matieres.ajouterEnseignement(classeId, saisie);
     }
 
     @PutMapping("/enseignements/{enseignementId}")
     @PreAuthorize(Roles.DIRECTION)
     public NotesDto.EnseignementVue modifierEnseignement(
-            @PathVariable Long enseignementId, @Valid @RequestBody NotesDto.EnseignementSaisie saisie) {
+            @PathVariable UUID enseignementId, @Valid @RequestBody NotesDto.EnseignementSaisie saisie) {
         return matieres.modifierEnseignement(enseignementId, saisie);
     }
 
     @DeleteMapping("/enseignements/{enseignementId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(Roles.DIRECTION)
-    public void supprimerEnseignement(@PathVariable Long enseignementId) {
+    public void supprimerEnseignement(@PathVariable UUID enseignementId) {
         matieres.supprimerEnseignement(enseignementId);
     }
 
     // ---------- Évaluations et notes (SF-11, SF-12) ----------
 
     @GetMapping("/enseignements/{enseignementId}/trimestres/{trimestreId}/evaluations")
-    public List<NotesDto.EvaluationVue> evaluations(@PathVariable Long enseignementId,
-                                                    @PathVariable Long trimestreId) {
+    public List<NotesDto.EvaluationVue> evaluations(@PathVariable UUID enseignementId,
+                                                    @PathVariable UUID trimestreId) {
         return evaluations.lister(enseignementId, trimestreId);
     }
 
     @PostMapping("/enseignements/{enseignementId}/trimestres/{trimestreId}/evaluations")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(SAISIE_NOTES)
-    public NotesDto.EvaluationVue creerEvaluation(@PathVariable Long enseignementId,
-                                                  @PathVariable Long trimestreId,
+    public NotesDto.EvaluationVue creerEvaluation(@PathVariable UUID enseignementId,
+                                                  @PathVariable UUID trimestreId,
                                                   @Valid @RequestBody NotesDto.EvaluationSaisie saisie) {
         return evaluations.creer(enseignementId, trimestreId, saisie);
     }
@@ -97,19 +98,19 @@ public class NotesController {
     @DeleteMapping("/evaluations/{evaluationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(SAISIE_NOTES)
-    public void supprimerEvaluation(@PathVariable Long evaluationId) {
+    public void supprimerEvaluation(@PathVariable UUID evaluationId) {
         evaluations.supprimer(evaluationId);
     }
 
     @GetMapping("/enseignements/{enseignementId}/trimestres/{trimestreId}/grille")
-    public NotesDto.GrilleVue grille(@PathVariable Long enseignementId, @PathVariable Long trimestreId) {
+    public NotesDto.GrilleVue grille(@PathVariable UUID enseignementId, @PathVariable UUID trimestreId) {
         return evaluations.grille(enseignementId, trimestreId);
     }
 
     @PutMapping("/enseignements/{enseignementId}/trimestres/{trimestreId}/grille")
     @PreAuthorize(SAISIE_NOTES)
-    public NotesDto.GrilleVue enregistrerGrille(@PathVariable Long enseignementId,
-                                                @PathVariable Long trimestreId,
+    public NotesDto.GrilleVue enregistrerGrille(@PathVariable UUID enseignementId,
+                                                @PathVariable UUID trimestreId,
                                                 @Valid @RequestBody NotesDto.GrilleSaisie saisie) {
         return evaluations.enregistrer(enseignementId, trimestreId, saisie);
     }
@@ -117,29 +118,29 @@ public class NotesController {
     // ---------- Classement et bulletins (SF-15 à SF-18) ----------
 
     @GetMapping("/classes/{classeId}/trimestres/{trimestreId}/classement")
-    public List<NotesDto.LigneClassement> classement(@PathVariable Long classeId,
-                                                     @PathVariable Long trimestreId) {
+    public List<NotesDto.LigneClassement> classement(@PathVariable UUID classeId,
+                                                     @PathVariable UUID trimestreId) {
         return bulletins.classement(classeId, trimestreId);
     }
 
     @GetMapping("/inscriptions/{inscriptionId}/trimestres/{trimestreId}/bulletin")
-    public NotesDto.BulletinVue bulletin(@PathVariable Long inscriptionId,
-                                         @PathVariable Long trimestreId) {
+    public NotesDto.BulletinVue bulletin(@PathVariable UUID inscriptionId,
+                                         @PathVariable UUID trimestreId) {
         return bulletins.bulletin(inscriptionId, trimestreId);
     }
 
     /** Délibération : fige les moyennes et les rangs de la classe (SF-17). */
     @PostMapping("/classes/{classeId}/trimestres/{trimestreId}/deliberation")
     @PreAuthorize(Roles.DIRECTION)
-    public List<NotesDto.LigneClassement> deliberer(@PathVariable Long classeId,
-                                                    @PathVariable Long trimestreId) {
+    public List<NotesDto.LigneClassement> deliberer(@PathVariable UUID classeId,
+                                                    @PathVariable UUID trimestreId) {
         return bulletins.figer(classeId, trimestreId);
     }
 
     @PutMapping("/inscriptions/{inscriptionId}/trimestres/{trimestreId}/decision")
     @PreAuthorize(Roles.DIRECTION)
-    public NotesDto.BulletinVue decision(@PathVariable Long inscriptionId,
-                                         @PathVariable Long trimestreId,
+    public NotesDto.BulletinVue decision(@PathVariable UUID inscriptionId,
+                                         @PathVariable UUID trimestreId,
                                          @Valid @RequestBody NotesDto.DecisionConseil decision) {
         return bulletins.enregistrerDecision(inscriptionId, trimestreId, decision);
     }

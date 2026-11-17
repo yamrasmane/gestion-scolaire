@@ -4,9 +4,10 @@ import bf.lycee.gestion.domain.AnneeScolaire;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AnneeScolaireRepository extends JpaRepository<AnneeScolaire, Long> {
+public interface AnneeScolaireRepository extends JpaRepository<AnneeScolaire, UUID> {
 
     Optional<AnneeScolaire> findByActifTrue();
 

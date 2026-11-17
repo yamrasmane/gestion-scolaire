@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /** Échanges HTTP des modules financiers (SF-21 à SF-32). */
 public final class FinancesDto {
@@ -26,7 +27,7 @@ public final class FinancesDto {
 
     // ---------- Types de frais (SF-21) ----------
 
-    public record TypeFraisVue(Long id, String code, String libelle, boolean obligatoire,
+    public record TypeFraisVue(UUID id, String code, String libelle, boolean obligatoire,
                                boolean fractionnable, Integer prioriteImputation, boolean actif) {
     }
 
@@ -39,28 +40,28 @@ public final class FinancesDto {
 
     // ---------- Grille tarifaire (SF-22) ----------
 
-    public record TarifVue(Long id, Long typeFraisId, String typeFraisCode, String typeFraisLibelle,
-                           Long niveauId, String niveauCode, Long classeId, String classeNom,
+    public record TarifVue(UUID id, UUID typeFraisId, String typeFraisCode, String typeFraisLibelle,
+                           UUID niveauId, String niveauCode, UUID classeId, String classeNom,
                            CategorieTarif categorie, BigDecimal montant) {
     }
 
-    public record TarifSaisie(@NotNull Long typeFraisId, Long niveauId, Long classeId,
+    public record TarifSaisie(@NotNull UUID typeFraisId, UUID niveauId, UUID classeId,
                               @NotNull CategorieTarif categorie,
                               @NotNull @PositiveOrZero BigDecimal montant) {
     }
 
     /** Reconduction de la grille d'une autre année, avec hausse éventuelle (SF-22). */
-    public record DuplicationGrille(@NotNull Long anneeSourceId, BigDecimal haussePourcentage) {
+    public record DuplicationGrille(@NotNull UUID anneeSourceId, BigDecimal haussePourcentage) {
     }
 
     // ---------- Plans de paiement (SF-26) ----------
 
-    public record TrancheVue(Long id, Integer numero, String libelle, LocalDate dateEcheance,
+    public record TrancheVue(UUID id, Integer numero, String libelle, LocalDate dateEcheance,
                              BigDecimal pourcentage, BigDecimal montant) {
     }
 
-    public record PlanVue(Long id, String libelle, Long niveauId, String niveauCode,
-                          Long classeId, String classeNom, CategorieEleve categorie,
+    public record PlanVue(UUID id, String libelle, UUID niveauId, String niveauCode,
+                          UUID classeId, String classeNom, CategorieEleve categorie,
                           ModeRepartition modeRepartition, boolean parDefaut,
                           BigDecimal montantMinInscription, List<TrancheVue> tranches) {
     }
@@ -70,7 +71,7 @@ public final class FinancesDto {
                                 BigDecimal pourcentage, BigDecimal montant) {
     }
 
-    public record PlanSaisie(@NotBlank @Size(max = 100) String libelle, Long niveauId, Long classeId,
+    public record PlanSaisie(@NotBlank @Size(max = 100) String libelle, UUID niveauId, UUID classeId,
                              CategorieEleve categorie, @NotNull ModeRepartition modeRepartition,
                              boolean parDefaut, BigDecimal montantMinInscription,
                              @NotEmpty @Valid List<TrancheSaisie> tranches) {
@@ -78,29 +79,29 @@ public final class FinancesDto {
 
     // ---------- Fiche financière de l'élève (SF-24, SF-25, SF-27, SF-31) ----------
 
-    public record FraisVue(Long id, Long typeFraisId, String typeFraisCode, String typeFraisLibelle,
+    public record FraisVue(UUID id, UUID typeFraisId, String typeFraisCode, String typeFraisLibelle,
                            boolean obligatoire, boolean fractionnable, BigDecimal montantBrut,
                            TypeRemise remiseType, BigDecimal remiseValeur, BigDecimal montantRemise,
                            BigDecimal montantNet, String motifRemise, String remiseValideePar) {
     }
 
-    public record EcheanceVue(Long id, Long fraisEleveId, String typeFraisLibelle, Integer trancheNumero,
+    public record EcheanceVue(UUID id, UUID fraisEleveId, String typeFraisLibelle, Integer trancheNumero,
                               String trancheLibelle, LocalDate dateEcheance, BigDecimal montantDu,
                               BigDecimal montantPaye, BigDecimal reste, StatutEcheance statut,
                               boolean derogatoire) {
     }
 
-    public record ImputationVue(Long echeanceId, String typeFraisLibelle, String trancheLibelle,
+    public record ImputationVue(UUID echeanceId, String typeFraisLibelle, String trancheLibelle,
                                 BigDecimal montant) {
     }
 
-    public record PaiementVue(Long id, String numeroRecu, LocalDate datePaiement, BigDecimal montant,
+    public record PaiementVue(UUID id, String numeroRecu, LocalDate datePaiement, BigDecimal montant,
                               ModePaiement mode, String reference, String payeur, String caissier,
                               StatutPaiement statut, String motifAnnulation, String annulePar,
                               List<ImputationVue> imputations) {
     }
 
-    public record FicheFinanciere(Long inscriptionId, String matricule, String nom, String prenom,
+    public record FicheFinanciere(UUID inscriptionId, String matricule, String nom, String prenom,
                                   String classeNom, CategorieEleve categorie, String planPaiement,
                                   BigDecimal totalBrut, BigDecimal totalRemise, BigDecimal totalNet,
                                   BigDecimal totalPaye, BigDecimal resteAPayer,
@@ -109,7 +110,7 @@ public final class FinancesDto {
                                   List<PaiementVue> paiements) {
     }
 
-    public record FraisFacultatifSaisie(@NotNull Long typeFraisId) {
+    public record FraisFacultatifSaisie(@NotNull UUID typeFraisId) {
     }
 
     public record RemiseSaisie(TypeRemise type, @PositiveOrZero BigDecimal valeur,
@@ -124,7 +125,7 @@ public final class FinancesDto {
                                      @Size(max = 100) String reference,
                                      @Size(max = 150) String payeur,
                                      /* Imputation manuelle sur un seul frais (SF-29) ; sinon automatique. */
-                                     Long typeFraisId) {
+                                     UUID typeFraisId) {
     }
 
     public record AnnulationSaisie(@NotBlank @Size(max = 255) String motif) {
@@ -140,7 +141,7 @@ public final class FinancesDto {
 
     // ---------- Impayés et journal de caisse (SF-31, SF-32) ----------
 
-    public record ImpayeVue(Long inscriptionId, String matricule, String nom, String prenom,
+    public record ImpayeVue(UUID inscriptionId, String matricule, String nom, String prenom,
                             String classeNom, String typeFraisLibelle, String trancheLibelle,
                             LocalDate dateEcheance, BigDecimal montantDu, BigDecimal montantPaye,
                             BigDecimal reste, StatutEcheance statut) {

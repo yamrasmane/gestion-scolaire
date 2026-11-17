@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public final class EleveDto {
 
@@ -34,7 +35,7 @@ public final class EleveDto {
             @NotBlank @Size(max = 255) String motif) {
     }
 
-    public record EleveVue(Long id, String matricule, String nom, String prenom, LocalDate dateNaissance,
+    public record EleveVue(UUID id, String matricule, String nom, String prenom, LocalDate dateNaissance,
                            Sexe sexe, String nomParent, String contactParent) {
 
         public static EleveVue de(Eleve e) {
@@ -43,7 +44,7 @@ public final class EleveDto {
         }
     }
 
-    public record InscriptionVue(Long id, EleveVue eleve, Long classeId, CategorieEleve categorie,
+    public record InscriptionVue(UUID id, EleveVue eleve, UUID classeId, CategorieEleve categorie,
                                  boolean categorieForcee, String motifCategorie, boolean redoublant,
                                  LocalDate dateInscription, StatutInscription statut) {
 

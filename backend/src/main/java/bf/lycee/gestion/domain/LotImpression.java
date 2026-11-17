@@ -31,7 +31,7 @@ public class LotImpression extends AbstractAuditingEntity {
     @Column(nullable = false, length = 15)
     private CibleLot cible;
 
-    private Long cibleId;
+    private UUID cibleId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 15)

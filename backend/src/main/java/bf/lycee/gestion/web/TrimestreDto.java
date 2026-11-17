@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 public final class TrimestreDto {
 
@@ -40,8 +41,8 @@ public final class TrimestreDto {
     }
 
     public record Vue(
-            Long id,
-            Long anneeScolaireId,
+            UUID id,
+            UUID anneeScolaireId,
             Integer numero,
             LocalDate dateDebut,
             LocalDate dateFin,

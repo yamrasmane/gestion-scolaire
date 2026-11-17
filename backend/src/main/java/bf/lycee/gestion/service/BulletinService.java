@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +65,7 @@ public class BulletinService {
     // ---------- API ----------
 
     @Transactional(readOnly = true)
-    public List<NotesDto.LigneClassement> classement(Long classeId, Long trimestreId) {
+    public List<NotesDto.LigneClassement> classement(UUID classeId, UUID trimestreId) {
         ResultatClasse resultat = calculer(classeId, trimestreId);
         return resultat.eleves().stream()
                 .sorted(Comparator.comparing((ResultatEleve e) -> e.rang() == null ? Integer.MAX_VALUE : e.rang())
@@ -78,7 +79,7 @@ public class BulletinService {
     }
 
     @Transactional(readOnly = true)
-    public NotesDto.BulletinVue bulletin(Long inscriptionId, Long trimestreId) {
+    public NotesDto.BulletinVue bulletin(UUID inscriptionId, UUID trimestreId) {
         Inscription inscription = inscriptions.findById(inscriptionId)
                 .orElseThrow(() -> new IntrouvableException("Inscription introuvable : " + inscriptionId));
         ResultatClasse resultat = calculer(inscription.getClasse().getId(), trimestreId);
@@ -90,7 +91,7 @@ public class BulletinService {
     }
 
     /** Délibération : fige les résultats de la classe pour le trimestre (SF-17). */
-    public List<NotesDto.LigneClassement> figer(Long classeId, Long trimestreId) {
+    public List<NotesDto.LigneClassement> figer(UUID classeId, UUID trimestreId) {
         ResultatClasse resultat = calculer(classeId, trimestreId);
         for (ResultatEleve eleve : resultat.eleves()) {
             Bulletin bulletin = bulletins
@@ -116,7 +117,7 @@ public class BulletinService {
     }
 
     /** Décision du conseil de classe : mention et appréciation (SF-18). */
-    public NotesDto.BulletinVue enregistrerDecision(Long inscriptionId, Long trimestreId,
+    public NotesDto.BulletinVue enregistrerDecision(UUID inscriptionId, UUID trimestreId,
                                                     NotesDto.DecisionConseil decision) {
         Bulletin bulletin = bulletins.findByInscriptionIdAndTrimestreId(inscriptionId, trimestreId)
                 .orElseThrow(() -> new RegleMetierException(
@@ -128,7 +129,7 @@ public class BulletinService {
 
     // ---------- Calcul ----------
 
-    private ResultatClasse calculer(Long classeId, Long trimestreId) {
+    private ResultatClasse calculer(UUID classeId, UUID trimestreId) {
         Trimestre trimestre = trimestres.findById(trimestreId)
                 .orElseThrow(() -> new IntrouvableException("Trimestre introuvable : " + trimestreId));
         List<Enseignement> matieres = enseignements.findByClasseIdOrderByMatiereLibelle(classeId);
@@ -139,12 +140,12 @@ public class BulletinService {
                 : evaluationService.compositionDe(matieres.get(0), trimestre);
 
         // Notes du trimestre, rangées par élève puis par matière.
-        Map<Long, Map<Long, List<Note>>> notesParEleve = new HashMap<>();
+        Map<UUID, Map<UUID, List<Note>>> notesParEleve = new HashMap<>();
         if (!matieres.isEmpty()) {
-            List<Long> ids = matieres.stream().map(Enseignement::getId).toList();
+            List<UUID> ids = matieres.stream().map(Enseignement::getId).toList();
             List<Evaluation> epreuves = evaluations.findByTrimestreIdAndEnseignementIdIn(trimestreId, ids);
             if (!epreuves.isEmpty()) {
-                Map<Long, Evaluation> parId = new HashMap<>();
+                Map<UUID, Evaluation> parId = new HashMap<>();
                 epreuves.forEach(e -> parId.put(e.getId(), e));
                 for (Note note : notes.findByEvaluationIdIn(parId.keySet())) {
                     Evaluation epreuve = parId.get(note.getEvaluation().getId());
@@ -157,9 +158,9 @@ public class BulletinService {
         }
 
         // Moyenne de chaque matière pour chaque élève.
-        Map<Long, Map<Long, CalculMoyennes.ResultatMatiere>> resultats = new LinkedHashMap<>();
+        Map<UUID, Map<UUID, CalculMoyennes.ResultatMatiere>> resultats = new LinkedHashMap<>();
         for (Inscription inscription : eleves) {
-            Map<Long, CalculMoyennes.ResultatMatiere> parMatiere = new LinkedHashMap<>();
+            Map<UUID, CalculMoyennes.ResultatMatiere> parMatiere = new LinkedHashMap<>();
             for (Enseignement enseignement : matieres) {
                 List<Note> sesNotes = notesParEleve
                         .getOrDefault(inscription.getId(), Map.of())
@@ -171,7 +172,7 @@ public class BulletinService {
         }
 
         // Rang par matière (SF-15, SF-16).
-        Map<Long, Map<Long, CalculMoyennes.Rang>> rangsParMatiere = new HashMap<>();
+        Map<UUID, Map<UUID, CalculMoyennes.Rang>> rangsParMatiere = new HashMap<>();
         for (Enseignement enseignement : matieres) {
             List<Inscription> tries = new ArrayList<>(eleves);
             tries.sort(comparateurMoyenne(resultats, enseignement.getId()));
@@ -179,7 +180,7 @@ public class BulletinService {
                     .map(i -> resultats.get(i.getId()).get(enseignement.getId()).moyenne())
                     .toList();
             List<CalculMoyennes.Rang> rangs = CalculMoyennes.rangs(moyennes);
-            Map<Long, CalculMoyennes.Rang> parEleve = new HashMap<>();
+            Map<UUID, CalculMoyennes.Rang> parEleve = new HashMap<>();
             for (int i = 0; i < tries.size(); i++) {
                 parEleve.put(tries.get(i).getId(), rangs.get(i));
             }
@@ -248,7 +249,7 @@ public class BulletinService {
     }
 
     private static Comparator<Inscription> comparateurMoyenne(
-            Map<Long, Map<Long, CalculMoyennes.ResultatMatiere>> resultats, Long enseignementId) {
+            Map<UUID, Map<UUID, CalculMoyennes.ResultatMatiere>> resultats, UUID enseignementId) {
         return Comparator.comparing(
                 (Inscription i) -> resultats.get(i.getId()).get(enseignementId).moyenne(),
                 Comparator.nullsLast(Comparator.reverseOrder()));

@@ -8,6 +8,7 @@ import bf.lycee.gestion.service.TarifService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -58,14 +59,14 @@ public class FinancesController {
 
     @PutMapping("/types-frais/{id}")
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.TypeFraisVue modifierTypeFrais(@PathVariable Long id,
+    public FinancesDto.TypeFraisVue modifierTypeFrais(@PathVariable UUID id,
                                                       @Valid @RequestBody FinancesDto.TypeFraisSaisie saisie) {
         return tarifs.modifierType(id, saisie);
     }
 
     @PostMapping("/types-frais/{id}/activation")
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.TypeFraisVue activerTypeFrais(@PathVariable Long id,
+    public FinancesDto.TypeFraisVue activerTypeFrais(@PathVariable UUID id,
                                                      @RequestParam(defaultValue = "true") boolean actif) {
         return tarifs.activerType(id, actif);
     }
@@ -73,21 +74,21 @@ public class FinancesController {
     // ---------- Grille tarifaire (SF-22) ----------
 
     @GetMapping("/annees-scolaires/{anneeId}/grille-tarifaire")
-    public List<FinancesDto.TarifVue> grille(@PathVariable Long anneeId) {
+    public List<FinancesDto.TarifVue> grille(@PathVariable UUID anneeId) {
         return tarifs.listerGrille(anneeId);
     }
 
     @PostMapping("/annees-scolaires/{anneeId}/grille-tarifaire")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.TarifVue ajouterTarif(@PathVariable Long anneeId,
+    public FinancesDto.TarifVue ajouterTarif(@PathVariable UUID anneeId,
                                              @Valid @RequestBody FinancesDto.TarifSaisie saisie) {
         return tarifs.ajouterTarif(anneeId, saisie);
     }
 
     @PutMapping("/grille-tarifaire/{tarifId}")
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.TarifVue modifierTarif(@PathVariable Long tarifId,
+    public FinancesDto.TarifVue modifierTarif(@PathVariable UUID tarifId,
                                               @Valid @RequestBody FinancesDto.TarifSaisie saisie) {
         return tarifs.modifierTarif(tarifId, saisie);
     }
@@ -95,20 +96,20 @@ public class FinancesController {
     @DeleteMapping("/grille-tarifaire/{tarifId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(Roles.INTENDANT)
-    public void supprimerTarif(@PathVariable Long tarifId) {
+    public void supprimerTarif(@PathVariable UUID tarifId) {
         tarifs.supprimerTarif(tarifId);
     }
 
     @DeleteMapping("/annees-scolaires/{anneeId}/grille-tarifaire")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(Roles.INTENDANT)
-    public void viderGrille(@PathVariable Long anneeId) {
+    public void viderGrille(@PathVariable UUID anneeId) {
         tarifs.viderGrille(anneeId);
     }
 
     @PostMapping("/annees-scolaires/{anneeId}/grille-tarifaire/duplication")
     @PreAuthorize(Roles.INTENDANT)
-    public List<FinancesDto.TarifVue> dupliquerGrille(@PathVariable Long anneeId,
+    public List<FinancesDto.TarifVue> dupliquerGrille(@PathVariable UUID anneeId,
                                                       @Valid @RequestBody FinancesDto.DuplicationGrille saisie) {
         return tarifs.dupliquerGrille(anneeId, saisie);
     }
@@ -116,21 +117,21 @@ public class FinancesController {
     // ---------- Plans de paiement (SF-26) ----------
 
     @GetMapping("/annees-scolaires/{anneeId}/plans-paiement")
-    public List<FinancesDto.PlanVue> plans(@PathVariable Long anneeId) {
+    public List<FinancesDto.PlanVue> plans(@PathVariable UUID anneeId) {
         return plans.lister(anneeId);
     }
 
     @PostMapping("/annees-scolaires/{anneeId}/plans-paiement")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.PlanVue creerPlan(@PathVariable Long anneeId,
+    public FinancesDto.PlanVue creerPlan(@PathVariable UUID anneeId,
                                          @Valid @RequestBody FinancesDto.PlanSaisie saisie) {
         return plans.creer(anneeId, saisie);
     }
 
     @PutMapping("/plans-paiement/{planId}")
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.PlanVue modifierPlan(@PathVariable Long planId,
+    public FinancesDto.PlanVue modifierPlan(@PathVariable UUID planId,
                                             @Valid @RequestBody FinancesDto.PlanSaisie saisie) {
         return plans.modifier(planId, saisie);
     }
@@ -138,7 +139,7 @@ public class FinancesController {
     @DeleteMapping("/plans-paiement/{planId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(Roles.INTENDANT)
-    public void supprimerPlan(@PathVariable Long planId) {
+    public void supprimerPlan(@PathVariable UUID planId) {
         plans.supprimer(planId);
     }
 
@@ -146,28 +147,28 @@ public class FinancesController {
 
     @GetMapping("/inscriptions/{inscriptionId}/finances")
     @PreAuthorize(Roles.FINANCES_LECTURE)
-    public FinancesDto.FicheFinanciere fiche(@PathVariable Long inscriptionId) {
+    public FinancesDto.FicheFinanciere fiche(@PathVariable UUID inscriptionId) {
         return facturation.situation(inscriptionId);
     }
 
     /** Génère ou recalcule les frais et l'échéancier de l'élève (SF-24). */
     @PostMapping("/inscriptions/{inscriptionId}/finances/generation")
     @PreAuthorize(Roles.INTENDANT)
-    public List<String> genererFrais(@PathVariable Long inscriptionId) {
+    public List<String> genererFrais(@PathVariable UUID inscriptionId) {
         return facturation.genererFrais(inscriptionId);
     }
 
     @PostMapping("/inscriptions/{inscriptionId}/finances/frais")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.FraisVue ajouterFrais(@PathVariable Long inscriptionId,
+    public FinancesDto.FraisVue ajouterFrais(@PathVariable UUID inscriptionId,
                                              @Valid @RequestBody FinancesDto.FraisFacultatifSaisie saisie) {
         return facturation.ajouterFraisFacultatif(inscriptionId, saisie.typeFraisId());
     }
 
     @PutMapping("/frais-eleve/{fraisId}/remise")
     @PreAuthorize(Roles.INTENDANT + " or " + Roles.DIRECTION)
-    public FinancesDto.FraisVue appliquerRemise(@PathVariable Long fraisId,
+    public FinancesDto.FraisVue appliquerRemise(@PathVariable UUID fraisId,
                                                 @Valid @RequestBody FinancesDto.RemiseSaisie saisie,
                                                 Authentication authentification) {
         boolean estDirecteur = authentification.getAuthorities().stream()
@@ -178,7 +179,7 @@ public class FinancesController {
     @DeleteMapping("/frais-eleve/{fraisId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(Roles.INTENDANT)
-    public void supprimerFrais(@PathVariable Long fraisId) {
+    public void supprimerFrais(@PathVariable UUID fraisId) {
         facturation.supprimerFrais(fraisId);
     }
 
@@ -187,21 +188,21 @@ public class FinancesController {
     @PostMapping("/inscriptions/{inscriptionId}/paiements")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.CAISSE)
-    public FinancesDto.PaiementVue encaisser(@PathVariable Long inscriptionId,
+    public FinancesDto.PaiementVue encaisser(@PathVariable UUID inscriptionId,
                                              @Valid @RequestBody FinancesDto.EncaissementSaisie saisie) {
         return caisse.encaisser(inscriptionId, saisie);
     }
 
     @PostMapping("/paiements/{paiementId}/annulation")
     @PreAuthorize(Roles.INTENDANT)
-    public FinancesDto.PaiementVue annuler(@PathVariable Long paiementId,
+    public FinancesDto.PaiementVue annuler(@PathVariable UUID paiementId,
                                            @Valid @RequestBody FinancesDto.AnnulationSaisie saisie) {
         return caisse.annuler(paiementId, saisie);
     }
 
     @GetMapping("/paiements/{paiementId}/recu")
     @PreAuthorize(Roles.FINANCES_LECTURE)
-    public FinancesDto.Recu recu(@PathVariable Long paiementId,
+    public FinancesDto.Recu recu(@PathVariable UUID paiementId,
                                  @RequestParam(defaultValue = "false") boolean duplicata) {
         return caisse.recu(paiementId, duplicata);
     }
@@ -209,8 +210,8 @@ public class FinancesController {
     @GetMapping("/annees-scolaires/{anneeId}/impayes")
     @PreAuthorize(Roles.FINANCES_LECTURE)
     public List<FinancesDto.ImpayeVue> impayes(
-            @PathVariable Long anneeId,
-            @RequestParam(required = false) Long classeId,
+            @PathVariable UUID anneeId,
+            @RequestParam(required = false) UUID classeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate limite) {
         return caisse.impayes(anneeId, classeId, limite);
     }
@@ -224,7 +225,7 @@ public class FinancesController {
 
     @GetMapping("/annees-scolaires/{anneeId}/recouvrement")
     @PreAuthorize(Roles.FINANCES_LECTURE)
-    public FinancesDto.Recouvrement recouvrement(@PathVariable Long anneeId) {
+    public FinancesDto.Recouvrement recouvrement(@PathVariable UUID anneeId) {
         return caisse.recouvrement(anneeId);
     }
 }

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +46,11 @@ public class PlanPaiementService {
     }
 
     @Transactional(readOnly = true)
-    public List<FinancesDto.PlanVue> lister(Long anneeId) {
+    public List<FinancesDto.PlanVue> lister(UUID anneeId) {
         return plans.findByAnneeScolaireIdOrderByLibelle(anneeId).stream().map(this::versVue).toList();
     }
 
-    public FinancesDto.PlanVue creer(Long anneeId, FinancesDto.PlanSaisie saisie) {
+    public FinancesDto.PlanVue creer(UUID anneeId, FinancesDto.PlanSaisie saisie) {
         AnneeScolaire annee = annees.findById(anneeId)
                 .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + anneeId));
         if (plans.existsByAnneeScolaireIdAndLibelleIgnoreCase(anneeId, saisie.libelle().trim())) {
@@ -63,7 +64,7 @@ public class PlanPaiementService {
         return versVue(plan);
     }
 
-    public FinancesDto.PlanVue modifier(Long planId, FinancesDto.PlanSaisie saisie) {
+    public FinancesDto.PlanVue modifier(UUID planId, FinancesDto.PlanSaisie saisie) {
         PlanPaiement plan = plan(planId);
         if (!plan.getLibelle().equalsIgnoreCase(saisie.libelle().trim())
                 && plans.existsByAnneeScolaireIdAndLibelleIgnoreCase(
@@ -75,7 +76,7 @@ public class PlanPaiementService {
         return versVue(plan);
     }
 
-    public void supprimer(Long planId) {
+    public void supprimer(UUID planId) {
         PlanPaiement plan = plan(planId);
         tranches.deleteByPlanPaiementId(planId);
         plans.delete(plan);
@@ -91,7 +92,7 @@ public class PlanPaiementService {
         if (inscription.getPlanPaiement() != null) {
             return Optional.of(inscription.getPlanPaiement());
         }
-        Long anneeId = inscription.getAnneeScolaire().getId();
+        UUID anneeId = inscription.getAnneeScolaire().getId();
         Classe classe = inscription.getClasse();
         List<PlanPaiement> candidats = plans.findByAnneeScolaireIdOrderByLibelle(anneeId);
 
@@ -105,7 +106,7 @@ public class PlanPaiementService {
     }
 
     @Transactional(readOnly = true)
-    public List<TranchePaiement> tranchesDuPlan(Long planId) {
+    public List<TranchePaiement> tranchesDuPlan(UUID planId) {
         return tranches.findByPlanPaiementIdOrderByNumero(planId);
     }
 
@@ -206,7 +207,7 @@ public class PlanPaiementService {
         return plan.getNiveau() != null && plan.getNiveau().getId().equals(classe.getNiveau().getId());
     }
 
-    private PlanPaiement plan(Long id) {
+    private PlanPaiement plan(UUID id) {
         return plans.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Plan de paiement introuvable : " + id));
     }

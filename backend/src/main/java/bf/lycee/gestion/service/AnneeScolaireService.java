@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
@@ -61,7 +62,7 @@ public class AnneeScolaireService {
     }
 
     /** Active une année et désactive la précédente : une seule année active à la fois. */
-    public AnneeScolaire activer(Long id) {
+    public AnneeScolaire activer(UUID id) {
         AnneeScolaire annee = repository.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + id));
         if (annee.isActif()) {
@@ -78,7 +79,7 @@ public class AnneeScolaireService {
 
     /** Piste d'audit d'une année scolaire (SF-20), de la plus ancienne révision à la plus récente. */
     @Transactional(readOnly = true)
-    public List<AnneeScolaireDto.Historique> historique(Long id) {
+    public List<AnneeScolaireDto.Historique> historique(UUID id) {
         List<?> lignes = AuditReaderFactory.get(entityManager)
                 .createQuery()
                 .forRevisionsOfEntity(AnneeScolaire.class, false, true)

@@ -17,6 +17,7 @@ import bf.lycee.gestion.web.ReferentielDto.NiveauVue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,7 @@ public class ReferentielService {
         return NiveauVue.de(niveaux.save(niveau));
     }
 
-    public NiveauVue modifierNiveau(Long id, NiveauModification saisie) {
+    public NiveauVue modifierNiveau(UUID id, NiveauModification saisie) {
         Niveau niveau = niveaux.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Niveau introuvable : " + id));
         niveau.setLibelle(saisie.libelle().trim());
@@ -70,17 +71,17 @@ public class ReferentielService {
     // ---------- Classes ----------
 
     @Transactional(readOnly = true)
-    public List<ClasseVue> listerClasses(Long anneeId) {
-        Map<Long, Long> effectifs = new HashMap<>();
+    public List<ClasseVue> listerClasses(UUID anneeId) {
+        Map<UUID, Long> effectifs = new HashMap<>();
         for (Object[] ligne : inscriptions.effectifsParClasse(anneeId, StatutInscription.ACTIVE)) {
-            effectifs.put((Long) ligne[0], (Long) ligne[1]);
+            effectifs.put((UUID) ligne[0], (Long) ligne[1]);
         }
         return classes.findByAnneeScolaireIdOrderByNom(anneeId).stream()
                 .map(c -> ClasseVue.de(c, effectifs.getOrDefault(c.getId(), 0L)))
                 .toList();
     }
 
-    public ClasseVue creerClasse(Long anneeId, ClasseCreation saisie) {
+    public ClasseVue creerClasse(UUID anneeId, ClasseCreation saisie) {
         AnneeScolaire annee = annees.findById(anneeId)
                 .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + anneeId));
         Niveau niveau = niveaux.findById(saisie.niveauId())
@@ -97,7 +98,7 @@ public class ReferentielService {
         return ClasseVue.de(classes.save(classe), 0);
     }
 
-    public ClasseVue modifierClasse(Long id, ClasseModification saisie) {
+    public ClasseVue modifierClasse(UUID id, ClasseModification saisie) {
         Classe classe = classes.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Classe introuvable : " + id));
         String nom = saisie.nom().trim();

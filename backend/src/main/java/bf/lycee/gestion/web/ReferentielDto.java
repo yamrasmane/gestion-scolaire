@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 public final class ReferentielDto {
 
@@ -28,7 +29,7 @@ public final class ReferentielDto {
             @NotNull @Min(0) Integer ordre) {
     }
 
-    public record NiveauVue(Long id, String code, String libelle, Cycle cycle, Integer ordre) {
+    public record NiveauVue(UUID id, String code, String libelle, Cycle cycle, Integer ordre) {
 
         public static NiveauVue de(Niveau n) {
             return new NiveauVue(n.getId(), n.getCode(), n.getLibelle(), n.getCycle(), n.getOrdre());
@@ -36,7 +37,7 @@ public final class ReferentielDto {
     }
 
     public record ClasseCreation(
-            @NotNull Long niveauId,
+            @NotNull UUID niveauId,
             @NotBlank @Size(max = 50) String nom,
             @NotNull @Min(1) Integer effectifMax) {
     }
@@ -46,7 +47,7 @@ public final class ReferentielDto {
             @NotNull @Min(1) Integer effectifMax) {
     }
 
-    public record ClasseVue(Long id, Long anneeScolaireId, Long niveauId, String niveauCode, Cycle cycle,
+    public record ClasseVue(UUID id, UUID anneeScolaireId, UUID niveauId, String niveauCode, Cycle cycle,
                             String nom, Integer effectifMax, long effectif) {
 
         public static ClasseVue de(Classe c, long effectif) {

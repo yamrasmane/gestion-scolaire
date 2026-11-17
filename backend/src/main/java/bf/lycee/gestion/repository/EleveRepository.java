@@ -4,12 +4,13 @@ import bf.lycee.gestion.domain.Eleve;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface EleveRepository extends JpaRepository<Eleve, Long> {
+public interface EleveRepository extends JpaRepository<Eleve, UUID> {
 
     Optional<Eleve> findByMatricule(String matricule);
 

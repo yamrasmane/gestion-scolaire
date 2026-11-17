@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +67,7 @@ public class TarifService {
         return versVue(typesFrais.save(type));
     }
 
-    public FinancesDto.TypeFraisVue modifierType(Long id, FinancesDto.TypeFraisSaisie saisie) {
+    public FinancesDto.TypeFraisVue modifierType(UUID id, FinancesDto.TypeFraisSaisie saisie) {
         TypeFrais type = type(id);
         String code = saisie.code().trim().toUpperCase();
         if (!type.getCode().equalsIgnoreCase(code) && typesFrais.existsByCodeIgnoreCase(code)) {
@@ -77,7 +78,7 @@ public class TarifService {
         return versVue(type);
     }
 
-    public FinancesDto.TypeFraisVue activerType(Long id, boolean actif) {
+    public FinancesDto.TypeFraisVue activerType(UUID id, boolean actif) {
         TypeFrais type = type(id);
         type.setActif(actif);
         return versVue(type);
@@ -86,7 +87,7 @@ public class TarifService {
     // ---------- Grille tarifaire ----------
 
     @Transactional(readOnly = true)
-    public List<FinancesDto.TarifVue> listerGrille(Long anneeId) {
+    public List<FinancesDto.TarifVue> listerGrille(UUID anneeId) {
         return grilles.findByAnneeScolaireId(anneeId).stream()
                 .map(TarifService::versVue)
                 .sorted((a, b) -> {
@@ -96,28 +97,28 @@ public class TarifService {
                 .toList();
     }
 
-    public FinancesDto.TarifVue ajouterTarif(Long anneeId, FinancesDto.TarifSaisie saisie) {
+    public FinancesDto.TarifVue ajouterTarif(UUID anneeId, FinancesDto.TarifSaisie saisie) {
         GrilleTarifaire tarif = new GrilleTarifaire();
         tarif.setAnneeScolaire(annee(anneeId));
         appliquer(tarif, saisie);
         return versVue(grilles.save(tarif));
     }
 
-    public FinancesDto.TarifVue modifierTarif(Long tarifId, FinancesDto.TarifSaisie saisie) {
+    public FinancesDto.TarifVue modifierTarif(UUID tarifId, FinancesDto.TarifSaisie saisie) {
         GrilleTarifaire tarif = grilles.findById(tarifId)
                 .orElseThrow(() -> new IntrouvableException("Tarif introuvable : " + tarifId));
         appliquer(tarif, saisie);
         return versVue(tarif);
     }
 
-    public void supprimerTarif(Long tarifId) {
+    public void supprimerTarif(UUID tarifId) {
         GrilleTarifaire tarif = grilles.findById(tarifId)
                 .orElseThrow(() -> new IntrouvableException("Tarif introuvable : " + tarifId));
         grilles.delete(tarif);
     }
 
     /** Vide la grille d'une année, avant de la reconduire depuis une autre (SF-22). */
-    public void viderGrille(Long anneeId) {
+    public void viderGrille(UUID anneeId) {
         grilles.deleteAll(grilles.findByAnneeScolaireId(anneeId));
     }
 
@@ -126,7 +127,7 @@ public class TarifService {
      * pourcentage (SF-22). Les tarifs visant une classe précise ne sont repris
      * que si une classe de même nom existe dans l'année de destination.
      */
-    public List<FinancesDto.TarifVue> dupliquerGrille(Long anneeCibleId, FinancesDto.DuplicationGrille saisie) {
+    public List<FinancesDto.TarifVue> dupliquerGrille(UUID anneeCibleId, FinancesDto.DuplicationGrille saisie) {
         AnneeScolaire cible = annee(anneeCibleId);
         if (grilles.countByAnneeScolaireId(anneeCibleId) > 0) {
             throw new RegleMetierException("La grille de " + cible.getLibelle()
@@ -167,8 +168,8 @@ public class TarifService {
      * puis niveau + catégorie, puis niveau + TOUS. Vide si aucun tarif n'est défini.
      */
     @Transactional(readOnly = true)
-    public Optional<BigDecimal> resoudreTarif(Long anneeId, Classe classe, CategorieEleve categorie,
-                                              Long typeFraisId) {
+    public Optional<BigDecimal> resoudreTarif(UUID anneeId, Classe classe, CategorieEleve categorie,
+                                              UUID typeFraisId) {
         List<GrilleTarifaire> candidats = grilles.findByAnneeScolaireId(anneeId).stream()
                 .filter(g -> g.getTypeFrais().getId().equals(typeFraisId))
                 .toList();
@@ -221,12 +222,12 @@ public class TarifService {
                 .orElseThrow(() -> new IntrouvableException("Classe introuvable : " + saisie.classeId())));
     }
 
-    private TypeFrais type(Long id) {
+    private TypeFrais type(UUID id) {
         return typesFrais.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Type de frais introuvable : " + id));
     }
 
-    private AnneeScolaire annee(Long id) {
+    private AnneeScolaire annee(UUID id) {
         return annees.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + id));
     }

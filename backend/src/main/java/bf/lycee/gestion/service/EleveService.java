@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,13 +79,13 @@ public class EleveService {
     }
 
     @Transactional(readOnly = true)
-    public List<InscriptionVue> inscriptionsDeLaClasse(Long classeId) {
+    public List<InscriptionVue> inscriptionsDeLaClasse(UUID classeId) {
         return inscriptions.findByClasseIdOrderByEleveNomAscElevePrenomAsc(classeId).stream()
                 .map(InscriptionVue::de).toList();
     }
 
     /** Inscription manuelle : crée la fiche élève si le matricule est inconnu. */
-    public InscriptionVue inscrire(Long classeId, InscriptionManuelle saisie) {
+    public InscriptionVue inscrire(UUID classeId, InscriptionManuelle saisie) {
         Classe classe = classe(classeId);
         AnneeScolaire annee = classe.getAnneeScolaire();
         String matricule = saisie.matricule().trim();
@@ -110,7 +111,7 @@ public class EleveService {
     }
 
     /** Correction manuelle de la catégorie nouveau / ancien, avec motif (SF-23). */
-    public InscriptionVue corrigerCategorie(Long inscriptionId, CorrectionCategorie correction) {
+    public InscriptionVue corrigerCategorie(UUID inscriptionId, CorrectionCategorie correction) {
         Inscription inscription = inscriptions.findById(inscriptionId)
                 .orElseThrow(() -> new IntrouvableException("Inscription introuvable : " + inscriptionId));
         inscription.setCategorie(correction.categorie());
@@ -123,7 +124,7 @@ public class EleveService {
      * Import de la liste d'une classe. En simulation, le fichier est seulement
      * analysé. Si une ligne est en erreur, rien n'est importé.
      */
-    public RapportImport<LigneImport> importer(Long classeId, MultipartFile fichier, boolean simulation) {
+    public RapportImport<LigneImport> importer(UUID classeId, MultipartFile fichier, boolean simulation) {
         Classe classe = classe(classeId);
         AnneeScolaire annee = classe.getAnneeScolaire();
         Optional<AnneeScolaire> precedente = anneePrecedente(annee);
@@ -132,7 +133,7 @@ public class EleveService {
         Map<String, Eleve> connus = new HashMap<>();
         eleves.findByMatriculeIn(lignes.stream().map(l -> l.get("matricule")).toList())
                 .forEach(e -> connus.put(e.getMatricule(), e));
-        Map<Long, String> dejaInscrits = verifierNonInscrit(connus.values(), annee);
+        Map<UUID, String> dejaInscrits = verifierNonInscrit(connus.values(), annee);
 
         List<RapportImport.Erreur> erreurs = new ArrayList<>();
         List<LigneImport> apercu = new ArrayList<>();
@@ -240,9 +241,9 @@ public class EleveService {
     }
 
     /** @return pour les élèves déjà inscrits cette année : identifiant de l'élève → nom de sa classe */
-    private Map<Long, String> verifierNonInscrit(java.util.Collection<Eleve> candidats, AnneeScolaire annee) {
-        Map<Long, String> dejaInscrits = new HashMap<>();
-        List<Long> ids = candidats.stream().map(Eleve::getId).toList();
+    private Map<UUID, String> verifierNonInscrit(java.util.Collection<Eleve> candidats, AnneeScolaire annee) {
+        Map<UUID, String> dejaInscrits = new HashMap<>();
+        List<UUID> ids = candidats.stream().map(Eleve::getId).toList();
         if (!ids.isEmpty()) {
             for (Inscription i : inscriptions.findByAnneeScolaireIdAndEleveIdIn(annee.getId(), ids)) {
                 dejaInscrits.put(i.getEleve().getId(), i.getClasse().getNom());
@@ -251,7 +252,7 @@ public class EleveService {
         return dejaInscrits;
     }
 
-    private Classe classe(Long id) {
+    private Classe classe(UUID id) {
         return classes.findById(id).orElseThrow(() -> new IntrouvableException("Classe introuvable : " + id));
     }
 

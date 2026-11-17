@@ -10,6 +10,7 @@ import bf.lycee.gestion.repository.MatiereRepository;
 import bf.lycee.gestion.repository.PersonnelRepository;
 import bf.lycee.gestion.web.NotesDto;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,13 +52,13 @@ public class MatiereService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotesDto.EnseignementVue> listerEnseignements(Long classeId) {
+    public List<NotesDto.EnseignementVue> listerEnseignements(UUID classeId) {
         return enseignements.findByClasseIdOrderByMatiereLibelle(classeId).stream()
                 .map(MatiereService::versVue)
                 .toList();
     }
 
-    public NotesDto.EnseignementVue ajouterEnseignement(Long classeId, NotesDto.EnseignementSaisie saisie) {
+    public NotesDto.EnseignementVue ajouterEnseignement(UUID classeId, NotesDto.EnseignementSaisie saisie) {
         Classe classe = classes.findById(classeId)
                 .orElseThrow(() -> new IntrouvableException("Classe introuvable : " + classeId));
         if (enseignements.existsByClasseIdAndMatiereId(classeId, saisie.matiereId())) {
@@ -70,7 +71,7 @@ public class MatiereService {
         return versVue(enseignement);
     }
 
-    public NotesDto.EnseignementVue modifierEnseignement(Long enseignementId,
+    public NotesDto.EnseignementVue modifierEnseignement(UUID enseignementId,
                                                          NotesDto.EnseignementSaisie saisie) {
         Enseignement enseignement = enseignements.findById(enseignementId)
                 .orElseThrow(() -> new IntrouvableException("Enseignement introuvable : " + enseignementId));
@@ -83,7 +84,7 @@ public class MatiereService {
         return versVue(enseignement);
     }
 
-    public void supprimerEnseignement(Long enseignementId) {
+    public void supprimerEnseignement(UUID enseignementId) {
         Enseignement enseignement = enseignements.findById(enseignementId)
                 .orElseThrow(() -> new IntrouvableException("Enseignement introuvable : " + enseignementId));
         enseignements.delete(enseignement);

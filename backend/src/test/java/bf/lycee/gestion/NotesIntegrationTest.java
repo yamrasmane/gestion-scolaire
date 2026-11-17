@@ -1,5 +1,6 @@
 package bf.lycee.gestion;
 
+import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,13 +35,13 @@ class NotesIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
-    private Long annee;
-    private Long classe;
-    private Long trimestre;
-    private Long maths;
-    private Long francais;
-    private Long awa;
-    private Long salif;
+    private UUID annee;
+    private UUID classe;
+    private UUID trimestre;
+    private UUID maths;
+    private UUID francais;
+    private UUID awa;
+    private UUID salif;
 
     @BeforeEach
     void preparer() throws Exception {
@@ -85,7 +86,7 @@ class NotesIntegrationTest {
 
     @Test
     void les_notes_ne_sont_plus_modifiables_apres_la_cloture_du_trimestre() throws Exception {
-        Long devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
         mvc.perform(post("/api/trimestres/" + trimestre + "/cloture").with(DIRECTEUR))
                 .andExpect(status().isOk());
 
@@ -100,8 +101,8 @@ class NotesIntegrationTest {
     @Test
     void sans_composition_la_moyenne_est_celle_des_devoirs() throws Exception {
         reglerComposition(false, null);
-        Long devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        Long devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
+        UUID devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
 
         saisir(maths, note(awa, devoir1, "12", false), note(awa, devoir2, "16", false));
 
@@ -114,9 +115,9 @@ class NotesIntegrationTest {
     @Test
     void avec_composition_la_note_de_composition_pese_son_poids() throws Exception {
         reglerComposition(true, "2");
-        Long devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        Long devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
-        Long composition = creerEvaluation(maths, "COMPOSITION", "Composition");
+        UUID devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
+        UUID composition = creerEvaluation(maths, "COMPOSITION", "Composition");
 
         // Devoirs 12 et 16 (moyenne 14), composition 17 : (14 + 2 × 17) / 3 = 16,00
         saisir(maths, note(awa, devoir1, "12", false), note(awa, devoir2, "16", false),
@@ -130,8 +131,8 @@ class NotesIntegrationTest {
     @Test
     void une_absence_est_exclue_du_calcul_et_signalee_pour_la_composition() throws Exception {
         reglerComposition(true, "2");
-        Long devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        Long devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
+        UUID devoir1 = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoir2 = creerEvaluation(maths, "DEVOIR", "Devoir 2");
         creerEvaluation(maths, "COMPOSITION", "Composition");
 
         // Absent au second devoir : la moyenne ne retient que le premier.
@@ -156,8 +157,8 @@ class NotesIntegrationTest {
     @Test
     void la_moyenne_generale_est_ponderee_par_les_coefficients() throws Exception {
         reglerComposition(false, null);
-        Long devoirMaths = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        Long devoirFrancais = creerEvaluation(francais, "DEVOIR", "Devoir 1");
+        UUID devoirMaths = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoirFrancais = creerEvaluation(francais, "DEVOIR", "Devoir 1");
 
         saisir(maths, note(awa, devoirMaths, "14", false));
         saisir(francais, note(awa, devoirFrancais, "10", false));
@@ -175,8 +176,8 @@ class NotesIntegrationTest {
     @Test
     void les_eleves_a_egalite_partagent_le_meme_rang() throws Exception {
         reglerComposition(false, null);
-        Long devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        Long troisieme = inscrire("EL-003", "ZONGO", "Ali");
+        UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID troisieme = inscrire("EL-003", "ZONGO", "Ali");
 
         saisir(maths, note(awa, devoir, "15", false), note(salif, devoir, "15", false),
                 note(troisieme, devoir, "9", false));
@@ -194,7 +195,7 @@ class NotesIntegrationTest {
     @Test
     void la_deliberation_fige_les_resultats_et_le_conseil_decide_de_la_mention() throws Exception {
         reglerComposition(false, null);
-        Long devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
         saisir(maths, note(awa, devoir, "17", false));
 
         mvc.perform(post("/api/classes/" + classe + "/trimestres/" + trimestre + "/deliberation")
@@ -229,50 +230,50 @@ class NotesIntegrationTest {
                 .authorities(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    private String evaluationsDe(Long enseignement) {
+    private String evaluationsDe(UUID enseignement) {
         return "/api/enseignements/" + enseignement + "/trimestres/" + trimestre + "/evaluations";
     }
 
-    private String grilleDe(Long enseignement) {
+    private String grilleDe(UUID enseignement) {
         return "/api/enseignements/" + enseignement + "/trimestres/" + trimestre + "/grille";
     }
 
-    private Long creerAnnee() throws Exception {
+    private UUID creerAnnee() throws Exception {
         mvc.perform(post("/api/annees-scolaires").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"libelle": "2026-2027", "dateDebut": "2026-10-01",
                                  "dateFin": "2027-07-15"}"""))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2026-2027'", Long.class);
+        return jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2026-2027'", UUID.class);
     }
 
-    private Long creerClasse(String niveau, String nom) throws Exception {
-        Long niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", Long.class, niveau);
+    private UUID creerClasse(String niveau, String nom) throws Exception {
+        UUID niveauId = jdbc.queryForObject("SELECT id FROM niveau WHERE code = ?", UUID.class, niveau);
         mvc.perform(post("/api/annees-scolaires/" + annee + "/classes").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"niveauId\": %d, \"nom\": \"%s\", \"effectifMax\": 60}"
                                 .formatted(niveauId, nom)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM classe WHERE nom = ?", Long.class, nom);
+        return jdbc.queryForObject("SELECT id FROM classe WHERE nom = ?", UUID.class, nom);
     }
 
-    private Long creerTrimestre(int numero, String debut, String fin) throws Exception {
+    private UUID creerTrimestre(int numero, String debut, String fin) throws Exception {
         mvc.perform(post("/api/annees-scolaires/" + annee + "/trimestres").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"numero\": %d, \"dateDebut\": \"%s\", \"dateFin\": \"%s\"}"
                                 .formatted(numero, debut, fin)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM trimestre WHERE numero = ?", Long.class, numero);
+        return jdbc.queryForObject("SELECT id FROM trimestre WHERE numero = ?", UUID.class, numero);
     }
 
-    private Long creerMatiere(String code, String libelle) throws Exception {
+    private UUID creerMatiere(String code, String libelle) throws Exception {
         mvc.perform(post("/api/matieres").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"code\": \"%s\", \"libelle\": \"%s\"}".formatted(code, libelle)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT id FROM matiere WHERE code = ?", Long.class, code);
+        return jdbc.queryForObject("SELECT id FROM matiere WHERE code = ?", UUID.class, code);
     }
 
-    private Long creerEnseignement(Long matiereId, int coefficient) throws Exception {
+    private UUID creerEnseignement(UUID matiereId, int coefficient) throws Exception {
         mvc.perform(post("/api/classes/" + classe + "/enseignements").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"matiereId\": %d, \"coefficient\": %d}"
@@ -280,10 +281,10 @@ class NotesIntegrationTest {
                 .andExpect(status().isCreated());
         return jdbc.queryForObject(
                 "SELECT id FROM enseignement WHERE classe_id = ? AND matiere_id = ?",
-                Long.class, classe, matiereId);
+                UUID.class, classe, matiereId);
     }
 
-    private Long inscrire(String matricule, String nom, String prenom) throws Exception {
+    private UUID inscrire(String matricule, String nom, String prenom) throws Exception {
         mvc.perform(post("/api/classes/" + classe + "/inscriptions").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -293,10 +294,10 @@ class NotesIntegrationTest {
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("""
                 SELECT i.id FROM inscription i JOIN eleve e ON e.id = i.eleve_id
-                WHERE e.matricule = ?""", Long.class, matricule);
+                WHERE e.matricule = ?""", UUID.class, matricule);
     }
 
-    private Long creerEvaluation(Long enseignement, String categorie, String libelle) throws Exception {
+    private UUID creerEvaluation(UUID enseignement, String categorie, String libelle) throws Exception {
         mvc.perform(post(evaluationsDe(enseignement)).with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"categorie\": \"%s\", \"libelle\": \"%s\"}"
@@ -304,7 +305,7 @@ class NotesIntegrationTest {
                 .andExpect(status().isCreated());
         return jdbc.queryForObject("""
                 SELECT id FROM evaluation WHERE enseignement_id = ? AND libelle = ?""",
-                Long.class, enseignement, libelle);
+                UUID.class, enseignement, libelle);
     }
 
     private void reglerComposition(boolean avec, String poids) throws Exception {
@@ -315,13 +316,13 @@ class NotesIntegrationTest {
                 .andExpect(status().isOk());
     }
 
-    private static String note(Long inscription, Long evaluation, String valeur, boolean absent) {
+    private static String note(UUID inscription, UUID evaluation, String valeur, boolean absent) {
         return """
                 {"inscriptionId": %d, "evaluationId": %d, "valeur": %s, "absent": %s}"""
                 .formatted(inscription, evaluation, valeur == null ? "null" : valeur, absent);
     }
 
-    private void saisir(Long enseignement, String... notes) throws Exception {
+    private void saisir(UUID enseignement, String... notes) throws Exception {
         mvc.perform(put(grilleDe(enseignement)).with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"notes\": [%s]}".formatted(String.join(",", notes))))
                 .andExpect(status().isOk());

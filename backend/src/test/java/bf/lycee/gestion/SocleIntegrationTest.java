@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import bf.lycee.gestion.repository.AnneeScolaireRepository;
+import java.util.UUID;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,8 +144,8 @@ class SocleIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(ANNEE_2026)).andExpect(status().isCreated());
         mvc.perform(post("/api/annees-scolaires").with(directeur)
                 .contentType(MediaType.APPLICATION_JSON).content(ANNEE_2027)).andExpect(status().isCreated());
-        Long id2026 = jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2026-2027'", Long.class);
-        Long id2027 = jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2027-2028'", Long.class);
+        UUID id2026 = jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2026-2027'", UUID.class);
+        UUID id2027 = jdbc.queryForObject("SELECT id FROM annee_scolaire WHERE libelle = '2027-2028'", UUID.class);
 
         mvc.perform(get("/api/annees-scolaires/active").with(directeur)).andExpect(status().isNotFound());
 

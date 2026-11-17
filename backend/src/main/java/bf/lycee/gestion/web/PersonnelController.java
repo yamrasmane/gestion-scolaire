@@ -5,6 +5,7 @@ import bf.lycee.gestion.security.Roles;
 import bf.lycee.gestion.service.PersonnelService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,22 +45,22 @@ public class PersonnelController {
     }
 
     @PutMapping("/{id}")
-    public PersonnelDto.Vue modifier(@PathVariable Long id, @Valid @RequestBody PersonnelDto.Modification saisie) {
+    public PersonnelDto.Vue modifier(@PathVariable UUID id, @Valid @RequestBody PersonnelDto.Modification saisie) {
         return service.modifier(id, saisie);
     }
 
     @PostMapping("/{id}/activation")
-    public PersonnelDto.Vue activer(@PathVariable Long id) {
+    public PersonnelDto.Vue activer(@PathVariable UUID id) {
         return service.definirActivation(id, true);
     }
 
     @PostMapping("/{id}/desactivation")
-    public PersonnelDto.Vue desactiver(@PathVariable Long id) {
+    public PersonnelDto.Vue desactiver(@PathVariable UUID id) {
         return service.definirActivation(id, false);
     }
 
     @PostMapping("/{id}/compte")
-    public PersonnelDto.Resultat creerCompte(@PathVariable Long id) {
+    public PersonnelDto.Resultat creerCompte(@PathVariable UUID id) {
         return service.creerCompte(id);
     }
 
