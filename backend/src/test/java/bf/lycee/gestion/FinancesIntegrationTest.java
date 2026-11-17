@@ -403,6 +403,7 @@ class FinancesIntegrationTest {
                                 {"datePaiement": "%s", "montant": %d, "mode": "ESPECES"}"""
                                 .formatted(LocalDate.now(), montant)))
                 .andExpect(status().isCreated());
-        return jdbc.queryForObject("SELECT max(id) FROM paiement", UUID.class);
+        return jdbc.queryForObject(
+                "SELECT id FROM paiement ORDER BY created_at DESC, numero_recu DESC LIMIT 1", UUID.class);
     }
 }

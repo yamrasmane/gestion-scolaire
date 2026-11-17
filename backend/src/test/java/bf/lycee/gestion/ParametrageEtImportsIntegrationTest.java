@@ -214,7 +214,7 @@ class ParametrageEtImportsIntegrationTest {
         mvc.perform(get("/api/annees-scolaires/" + annee2026 + "/classes").with(ENSEIGNANT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(classe))
+                .andExpect(jsonPath("$[0].id").value(classe.toString()))
                 .andExpect(jsonPath("$[0].niveauCode").value("6EME"))
                 .andExpect(jsonPath("$[0].cycle").value("PREMIER"))
                 .andExpect(jsonPath("$[0].effectif").value(0));

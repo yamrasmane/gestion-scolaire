@@ -69,8 +69,8 @@ class DonneesDemoIntegrationTest {
 
         // Le jeu de données doit être chargé en entier : sinon, les vérifications
         // qui suivent échoueraient sans dire ce qui manque.
-        assertThat(compter("classe WHERE annee_scolaire_id = " + anneeCourante)).isEqualTo(8);
-        assertThat(compter("inscription WHERE annee_scolaire_id = " + anneeCourante)).isEqualTo(144);
+        assertThat(compter("classe WHERE annee_scolaire_id = '" + anneeCourante + "'")).isEqualTo(8);
+        assertThat(compter("inscription WHERE annee_scolaire_id = '" + anneeCourante + "'")).isEqualTo(144);
         assertThat(compter("note")).isGreaterThan(3000);
         assertThat(compter("echeance_eleve")).isGreaterThan(800);
         assertThat(compter("paiement WHERE statut = 'VALIDE'")).isGreaterThan(100);
