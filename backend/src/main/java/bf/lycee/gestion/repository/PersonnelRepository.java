@@ -3,6 +3,7 @@ package bf.lycee.gestion.repository;
 import bf.lycee.gestion.domain.Personnel;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PersonnelRepository extends JpaRepository<Personnel, Long> {
@@ -16,4 +17,8 @@ public interface PersonnelRepository extends JpaRepository<Personnel, Long> {
     List<Personnel> findByMatriculeIn(Collection<String> matricules);
 
     List<Personnel> findByEmailIn(Collection<String> emails);
+
+    Optional<Personnel> findByKeycloakId(java.util.UUID keycloakId);
+
+    Optional<Personnel> findByEmailIgnoreCase(String email);
 }

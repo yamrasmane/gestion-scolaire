@@ -40,6 +40,9 @@ management:
         include: health
 
 app:
+  finances:
+    # Au-delà de ce montant de remise (FCFA), seul le Directeur peut valider (SF-25).
+    seuil-remise: ${SEUIL_REMISE:25000}
   cors:
     origines-autorisees: ${CORS_ORIGINES:http://localhost:4200}
   keycloak:
