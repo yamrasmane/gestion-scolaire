@@ -46,7 +46,7 @@ class FinancesIntegrationTest {
 
     @BeforeEach
     void preparer() throws Exception {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve RESTART IDENTITY CASCADE");
+        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, revinfo RESTART IDENTITY CASCADE");
         annee = creerAnnee("2026-2027", "2026-10-01", "2027-07-15");
         niveau6 = jdbc.queryForObject("SELECT id FROM niveau WHERE code = '6EME'", Long.class);
         classe6A = creerClasse("6EME", "6ème A");

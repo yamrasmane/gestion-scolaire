@@ -55,7 +55,7 @@ class ParametrageEtImportsIntegrationTest {
 
     @BeforeEach
     void preparer() throws Exception {
-        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve RESTART IDENTITY CASCADE");
+        jdbc.execute("TRUNCATE TABLE annee_scolaire, personnel, eleve, revinfo RESTART IDENTITY CASCADE");
         annee2025 = creerAnnee("2025-2026", "2025-10-01", "2026-07-15");
         annee2026 = creerAnnee("2026-2027", "2026-10-01", "2027-07-15");
     }
