@@ -14,7 +14,11 @@
     "finances.journal": "Journal de caisse",
     "parametrage.types_frais": "Types de frais",
     "parametrage.grille": "Grille tarifaire",
-    "parametrage.plans": "Plans de paiement"
+    "parametrage.plans": "Plans de paiement",
+    "notes": "Notes",
+    "notes.saisie": "Saisie des notes",
+    "notes.classement": "Classement et bulletins",
+    "parametrage.matieres": "Matières et coefficients"
   },
   "validation": {
     "required": "Ce champ est obligatoire",

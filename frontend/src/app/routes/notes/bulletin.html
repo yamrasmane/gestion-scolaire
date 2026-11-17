@@ -1,0 +1,157 @@
+@if (erreur(); as message) {
+  <p class="alerte-erreur">{{ message }}</p>
+}
+
+@if (bulletin(); as b) {
+  <div class="feuille">
+    <div class="barre-outils">
+      <button matButton="filled" (click)="imprimer()">
+        <mat-icon>print</mat-icon>
+        Imprimer
+      </button>
+    </div>
+
+    <article class="bulletin">
+      <header>
+        <div>
+          <h1>Bulletin de notes</h1>
+          <p class="sous-titre">{{ b.anneeScolaire }} — Trimestre {{ b.trimestreNumero }}</p>
+        </div>
+        @if (b.bloqueImpaye) {
+          <p class="mention bloque">Remise suspendue — scolarité impayée</p>
+        }
+      </header>
+
+      <table class="identite">
+        <tr>
+          <th>Élève</th>
+          <td>{{ b.nom }} {{ b.prenom }}</td>
+          <th>Matricule</th>
+          <td>{{ b.matricule }}</td>
+        </tr>
+        <tr>
+          <th>Classe</th>
+          <td>{{ b.classeNom }} ({{ b.statistiques.effectif }} élèves)</td>
+          <th>Redoublant</th>
+          <td>{{ b.redoublant ? 'Oui' : 'Non' }}</td>
+        </tr>
+      </table>
+
+      <table class="matieres">
+        <thead>
+          <tr>
+            <th>Matière</th>
+            <th>Devoirs</th>
+            @if (b.avecComposition) {
+              <th>Moy. devoirs</th>
+              <th>Composition</th>
+            }
+            <th>Moyenne /20</th>
+            <th>Coeff.</th>
+            <th>Moy. coeff.</th>
+            <th>Rang</th>
+            <th>Appréciation — professeur</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of b.lignes; track l.matiereCode) {
+            <tr>
+              <td>{{ l.matiereLibelle }}</td>
+              <td>{{ l.notesDevoirs.join(' · ') }}</td>
+              @if (b.avecComposition) {
+                <td>{{ l.moyenneDevoirs }}</td>
+                <td>{{ l.composition }}</td>
+              }
+              <td class="centre">
+                @if (l.nonClasse) {
+                  NC
+                } @else {
+                  <strong>{{ l.moyenne }}</strong>
+                }
+              </td>
+              <td class="centre">{{ l.coefficient }}</td>
+              <td class="centre">{{ l.moyenneCoefficientee }}</td>
+              <td class="centre">
+                @if (l.rang) {
+                  {{ l.rang }}{{ l.exAequo ? ' ex' : '' }}
+                }
+              </td>
+              <td>
+                {{ l.appreciation }}
+                @if (l.enseignant) {
+                  <span class="prof">{{ l.enseignant }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="2">Bilan du trimestre</th>
+            @if (b.avecComposition) {
+              <th colspan="2"></th>
+            }
+            <th class="centre">{{ b.moyenneGenerale }}</th>
+            <th class="centre">{{ b.totalCoefficients }}</th>
+            <th class="centre">{{ b.totalPoints }}</th>
+            <th class="centre">
+              @if (b.rang) {
+                {{ b.rang }}{{ b.exAequo ? ' ex' : '' }} / {{ b.statistiques.effectif }}
+              }
+            </th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="bilan">
+        <div>
+          <span class="libelle">Moyenne générale</span>
+          <span class="valeur">
+            @if (b.moyenneGenerale === null) {
+              Non classé
+            } @else {
+              {{ b.moyenneGenerale }} / 20
+            }
+          </span>
+        </div>
+        <div>
+          <span class="libelle">Rang</span>
+          <span class="valeur">
+            @if (b.rang) {
+              {{ b.rang }}{{ b.exAequo ? ' ex æquo' : '' }} sur {{ b.statistiques.effectif }}
+            } @else {
+              —
+            }
+          </span>
+        </div>
+        <div>
+          <span class="libelle">Moyenne de la classe</span>
+          <span class="valeur">{{ b.statistiques.moyenneClasse }}</span>
+        </div>
+        <div>
+          <span class="libelle">Plus forte / plus faible</span>
+          <span class="valeur">
+            {{ b.statistiques.plusForteMoyenne }} / {{ b.statistiques.plusFaibleMoyenne }}
+          </span>
+        </div>
+      </div>
+
+      <section class="conseil">
+        <h2>Décision du conseil de classe</h2>
+        <p class="decision">{{ b.mention || '—' }}</p>
+        @if (b.appreciationConseil) {
+          <p>{{ b.appreciationConseil }}</p>
+        }
+        @for (observation of b.observations; track observation) {
+          <p class="observation">{{ observation }}</p>
+        }
+      </section>
+
+      <footer>
+        <div class="signature">Le professeur principal</div>
+        <div class="signature">Le chef d'établissement</div>
+      </footer>
+    </article>
+  </div>
+}

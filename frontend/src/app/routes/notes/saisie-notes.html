@@ -1,0 +1,212 @@
+<page-header title="Saisie des notes" [subtitle]="contexte.annee()?.libelle ?? ''" />
+
+@if (!contexte.annee()) {
+  <p class="text-muted">Créez d'abord une année scolaire.</p>
+} @else {
+  <mat-card>
+    <mat-card-content>
+      <div class="grille-formulaire">
+        <mat-form-field>
+          <mat-label>Classe</mat-label>
+          <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
+            @for (c of classes(); track c.id) {
+              <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Trimestre</mat-label>
+          <mat-select [ngModel]="trimestreId()" (ngModelChange)="choisirTrimestre($event)">
+            @for (t of trimestres(); track t.id) {
+              <mat-option [value]="t.id">
+                Trimestre {{ t.numero }}{{ t.cloture ? ' (clôturé)' : '' }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (classeId()) {
+          <mat-form-field>
+            <mat-label>Matière</mat-label>
+            <mat-select [ngModel]="enseignementId()" (ngModelChange)="choisirMatiere($event)">
+              @for (e of enseignements(); track e.id) {
+                <mat-option [value]="e.id">
+                  {{ e.matiereLibelle }} (coef. {{ e.coefficient }})
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      </div>
+
+      @if (classeId() && enseignements().length === 0) {
+        <p class="text-muted">
+          Aucune matière n'est affectée à cette classe. Rendez-vous dans Paramétrage &gt; Matières
+          et coefficients.
+        </p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (erreur(); as message) {
+    <p class="alerte-erreur" role="alert">{{ message }}</p>
+  }
+  @if (information(); as message) {
+    <p class="alerte-succes">{{ message }}</p>
+  }
+
+  @if (grille(); as g) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ g.matiereLibelle }} — {{ g.classeNom }}</mat-card-title>
+        <mat-card-subtitle>
+          @if (g.avecComposition) {
+            Composition activée, poids {{ g.poidsComposition }} : moyenne = (moyenne des devoirs +
+            {{ g.poidsComposition }} × composition) ÷
+            {{ 1 + g.poidsComposition }}
+          } @else {
+            Sans composition : la moyenne est celle des devoirs
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        @if (g.trimestreCloture) {
+          <p class="alerte-erreur">
+            Ce trimestre est clôturé : les notes sont consultables mais plus modifiables.
+          </p>
+        }
+
+        @if (g.evaluations.length === 0) {
+          <p class="text-muted">Aucune épreuve n'est encore créée pour ce trimestre.</p>
+        } @else {
+          <div class="table-defilement">
+            <table class="grille-notes">
+              <thead>
+                <tr>
+                  <th class="eleve">Élève</th>
+                  @for (e of g.evaluations; track e.id) {
+                    <th>
+                      {{ e.libelle }}
+                      @if (e.categorie === 'COMPOSITION') {
+                        <mat-chip highlighted>Compo</mat-chip>
+                      }
+                      @if (modifiable()) {
+                        <button
+                          matIconButton
+                          aria-label="Supprimer l'épreuve"
+                          (click)="supprimerEvaluation(e.id)"
+                        >
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      }
+                    </th>
+                  }
+                  <th>Moyenne</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of g.lignes; track ligne.inscriptionId) {
+                  <tr>
+                    <td class="eleve">
+                      <strong>{{ ligne.nom }}</strong> {{ ligne.prenom }}
+                      <span class="text-muted">{{ ligne.matricule }}</span>
+                    </td>
+                    @for (e of g.evaluations; track e.id) {
+                      <td class="note">
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          step="0.25"
+                          [disabled]="!modifiable() || saisie(ligne.inscriptionId, e.id).absent"
+                          [(ngModel)]="saisie(ligne.inscriptionId, e.id).valeur"
+                          [name]="'n' + ligne.inscriptionId + '-' + e.id"
+                          aria-label="Note"
+                        />
+                        <mat-checkbox
+                          [disabled]="!modifiable()"
+                          [(ngModel)]="saisie(ligne.inscriptionId, e.id).absent"
+                          [name]="'a' + ligne.inscriptionId + '-' + e.id"
+                          matTooltip="Absent : la note est exclue du calcul"
+                        >
+                          abs.
+                        </mat-checkbox>
+                      </td>
+                    }
+                    <td class="moyenne">
+                      @if (ligne.moyenne === null) {
+                        <span class="text-muted">NC</span>
+                      } @else {
+                        <strong>{{ ligne.moyenne }}</strong>
+                      }
+                      @if (ligne.mention) {
+                        <div class="text-muted">{{ ligne.mention }}</div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+
+      @if (modifiable() && g.evaluations.length > 0) {
+        <mat-card-actions>
+          <button matButton="filled" [disabled]="enCours()" (click)="enregistrer()">
+            <mat-icon>save</mat-icon>
+            Enregistrer les notes
+          </button>
+        </mat-card-actions>
+      }
+    </mat-card>
+
+    @if (modifiable()) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Ajouter une épreuve</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Type</mat-label>
+              <mat-select name="categorie" [(ngModel)]="nouvelleEvaluation.categorie">
+                <mat-option value="DEVOIR">Devoir</mat-option>
+                @if (g.avecComposition) {
+                  <mat-option value="COMPOSITION">Composition</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Libellé</mat-label>
+              <input
+                matInput
+                name="libelle"
+                placeholder="Devoir 1"
+                [(ngModel)]="nouvelleEvaluation.libelle"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Date</mat-label>
+              <input
+                matInput
+                type="date"
+                name="dateEval"
+                [(ngModel)]="nouvelleEvaluation.dateEval"
+              />
+            </mat-form-field>
+          </div>
+
+          <button matButton="filled" [disabled]="enCours()" (click)="creerEvaluation()">
+            <mat-icon>add</mat-icon>
+            Ajouter l'épreuve
+          </button>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+}

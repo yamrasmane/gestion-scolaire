@@ -13,8 +13,13 @@ Application web de gestion scolaire, académique et financière pour un établis
 
 - **Lot 1 — Socle (fait)** : schéma complet des 22 tables et de leurs tables d'audit, sécurité par rôles Keycloak, audit à deux niveaux, gestion des années scolaires, squelette Angular avec connexion.
 - **Lot 2 — Paramétrage (fait)** : trimestres et option Composition (par année, trimestre ou cycle), niveaux, classes, personnel, élèves, inscriptions, imports Excel/CSV en deux étapes.
-- Lot 3 — Finances : types de frais, grille tarifaire nouveau/ancien, plans de tranches, encaissement, reçus, impayés.
-- Lot 4 — Notes : évaluations, saisie, moyennes, classement, bulletins PDF.
+- **Lot 3 — Finances (fait)** : catalogue des frais, grille tarifaire par niveau ou classe et par
+  catégorie nouveau/ancien (avec reconduction d'une année sur l'autre), plans de paiement par
+  tranches, échéancier par élève, remises, encaissement et imputation, reçus, annulations,
+  impayés et journal de caisse.
+- **Lot 4 — Notes (fait)** : matières et coefficients par classe, évaluations (devoirs et
+  composition), grille de saisie des notes, moyennes avec ou sans composition, moyenne générale
+  pondérée, classement avec ex æquo, bulletins imprimables et délibération.
 
 ## Démarrer en développement
 
@@ -95,6 +100,28 @@ menu latéral repliable, bandeau fixe, thème clair ou sombre, fil d'Ariane et p
 
 La police Roboto et les icônes Material sont servies par l'application : aucun appel à Internet
 au démarrage.
+
+## Règles de calcul
+
+**Moyenne d'une matière** (SF-13) : seules les notes saisies et non marquées « absent » comptent.
+Sans composition, c'est la moyenne des devoirs. Avec composition et un poids *p* :
+`(moyenne des devoirs + p × composition) / (1 + p)`. Sans aucune note, la matière est « non
+classée » et sort du calcul.
+
+**Moyenne générale** (SF-14) : `Σ(moyenne × coefficient) / Σ(coefficient)`, arrondie à deux
+décimales, les matières non classées exclues.
+
+**Classement** (SF-15, SF-16) : rang par matière et au général, par compétition standard — deux
+élèves à égalité partagent le rang, le suivant prend le rang suivant du nombre d'ex æquo.
+
+**Échéancier** (SF-27) : les frais non fractionnables sont dus en totalité à la première tranche ;
+les autres sont répartis selon le plan, l'écart d'arrondi étant porté sur la dernière tranche.
+
+**Imputation d'un règlement** (SF-29) : l'échéance la plus ancienne d'abord, puis, à date égale,
+selon l'ordre de priorité des types de frais. Le caissier peut aussi imputer sur un frais précis.
+
+**Reçus et bulletins** : ils s'impriment depuis le navigateur (impression ou enregistrement en
+PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 
 ## Imports Excel / CSV
 

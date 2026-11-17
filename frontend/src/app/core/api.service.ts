@@ -294,6 +294,127 @@ export interface Recouvrement {
   elevesEnRetard: number;
 }
 
+// ---------- Notes et bulletins (lot 4) ----------
+
+export type CategorieEvaluation = 'DEVOIR' | 'COMPOSITION';
+
+export interface Matiere {
+  id: number;
+  code: string;
+  libelle: string;
+}
+
+export interface Enseignement {
+  id: number;
+  classeId: number;
+  classeNom: string;
+  matiereId: number;
+  matiereCode: string;
+  matiereLibelle: string;
+  enseignantId: number | null;
+  enseignantNom: string | null;
+  coefficient: number;
+}
+
+export interface Evaluation {
+  id: number;
+  enseignementId: number;
+  trimestreId: number;
+  categorie: CategorieEvaluation;
+  libelle: string;
+  dateEval: string | null;
+  bareme: number;
+}
+
+export interface NoteVue {
+  inscriptionId: number;
+  evaluationId: number;
+  valeur: number | null;
+  absent: boolean;
+  appreciation: string | null;
+}
+
+export interface LigneGrille {
+  inscriptionId: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  notes: NoteVue[];
+  moyenne: number | null;
+  mention: string | null;
+}
+
+export interface Grille {
+  enseignementId: number;
+  matiereLibelle: string;
+  classeNom: string;
+  trimestreId: number;
+  avecComposition: boolean;
+  poidsComposition: number;
+  trimestreCloture: boolean;
+  evaluations: Evaluation[];
+  lignes: LigneGrille[];
+}
+
+export interface LigneBulletin {
+  matiereCode: string;
+  matiereLibelle: string;
+  enseignant: string | null;
+  notesDevoirs: number[];
+  moyenneDevoirs: number | null;
+  composition: number | null;
+  moyenne: number | null;
+  coefficient: number;
+  moyenneCoefficientee: number | null;
+  rang: number | null;
+  exAequo: boolean;
+  nonClasse: boolean;
+  appreciation: string | null;
+}
+
+export interface StatistiquesClasse {
+  plusForteMoyenne: number | null;
+  plusFaibleMoyenne: number | null;
+  moyenneClasse: number | null;
+  effectif: number;
+}
+
+export interface Bulletin {
+  inscriptionId: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  redoublant: boolean;
+  classeNom: string;
+  anneeScolaire: string;
+  trimestreNumero: number;
+  avecComposition: boolean;
+  poidsComposition: number;
+  lignes: LigneBulletin[];
+  totalCoefficients: number | null;
+  totalPoints: number | null;
+  moyenneGenerale: number | null;
+  rang: number | null;
+  exAequo: boolean;
+  mention: string | null;
+  appreciationConseil: string | null;
+  bloqueImpaye: boolean;
+  statistiques: StatistiquesClasse;
+  observations: string[];
+}
+
+export interface LigneClassement {
+  inscriptionId: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  moyenneGenerale: number | null;
+  rang: number | null;
+  exAequo: boolean;
+  mention: string | null;
+  bloqueImpaye: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -586,6 +707,112 @@ export class ApiService {
 
   recouvrement(anneeId: number): Observable<Recouvrement> {
     return this.http.get<Recouvrement>(`${this.base}/annees-scolaires/${anneeId}/recouvrement`);
+  }
+
+  // ---------- Notes et bulletins (SF-09 à SF-18) ----------
+
+  matieres(): Observable<Matiere[]> {
+    return this.http.get<Matiere[]>(`${this.base}/matieres`);
+  }
+
+  creerMatiere(saisie: { code: string; libelle: string }): Observable<Matiere> {
+    return this.http.post<Matiere>(`${this.base}/matieres`, saisie);
+  }
+
+  enseignements(classeId: number): Observable<Enseignement[]> {
+    return this.http.get<Enseignement[]>(`${this.base}/classes/${classeId}/enseignements`);
+  }
+
+  ajouterEnseignement(
+    classeId: number,
+    saisie: { matiereId: number; enseignantId: number | null; coefficient: number },
+  ): Observable<Enseignement> {
+    return this.http.post<Enseignement>(`${this.base}/classes/${classeId}/enseignements`, saisie);
+  }
+
+  modifierEnseignement(
+    enseignementId: number,
+    saisie: { matiereId: number; enseignantId: number | null; coefficient: number },
+  ): Observable<Enseignement> {
+    return this.http.put<Enseignement>(`${this.base}/enseignements/${enseignementId}`, saisie);
+  }
+
+  supprimerEnseignement(enseignementId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/enseignements/${enseignementId}`);
+  }
+
+  evaluations(enseignementId: number, trimestreId: number): Observable<Evaluation[]> {
+    return this.http.get<Evaluation[]>(
+      `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/evaluations`,
+    );
+  }
+
+  creerEvaluation(
+    enseignementId: number,
+    trimestreId: number,
+    saisie: { categorie: CategorieEvaluation; libelle: string; dateEval: string | null },
+  ): Observable<Evaluation> {
+    return this.http.post<Evaluation>(
+      `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/evaluations`,
+      saisie,
+    );
+  }
+
+  supprimerEvaluation(evaluationId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/evaluations/${evaluationId}`);
+  }
+
+  grille(enseignementId: number, trimestreId: number): Observable<Grille> {
+    return this.http.get<Grille>(
+      `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/grille`,
+    );
+  }
+
+  enregistrerGrille(
+    enseignementId: number,
+    trimestreId: number,
+    notes: {
+      inscriptionId: number;
+      evaluationId: number;
+      valeur: number | null;
+      absent: boolean;
+      appreciation: string | null;
+    }[],
+  ): Observable<Grille> {
+    return this.http.put<Grille>(
+      `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/grille`,
+      { notes },
+    );
+  }
+
+  classement(classeId: number, trimestreId: number): Observable<LigneClassement[]> {
+    return this.http.get<LigneClassement[]>(
+      `${this.base}/classes/${classeId}/trimestres/${trimestreId}/classement`,
+    );
+  }
+
+  deliberer(classeId: number, trimestreId: number): Observable<LigneClassement[]> {
+    return this.http.post<LigneClassement[]>(
+      `${this.base}/classes/${classeId}/trimestres/${trimestreId}/deliberation`,
+      null,
+    );
+  }
+
+  bulletin(inscriptionId: number, trimestreId: number): Observable<Bulletin> {
+    return this.http.get<Bulletin>(
+      `${this.base}/inscriptions/${inscriptionId}/trimestres/${trimestreId}/bulletin`,
+    );
+  }
+
+  enregistrerDecision(
+    inscriptionId: number,
+    trimestreId: number,
+    decision: { mention: string | null; appreciationConseil: string | null },
+  ): Observable<Bulletin> {
+    return this.http.put<Bulletin>(
+      `${this.base}/inscriptions/${inscriptionId}/trimestres/${trimestreId}/decision`,
+      decision,
+    );
   }
 
   /** @param chemin chemin de l'API d'import, par exemple `/personnel/import` */

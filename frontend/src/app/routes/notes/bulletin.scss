@@ -1,0 +1,153 @@
+.feuille {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  font-family: Roboto, sans-serif;
+  color: #000;
+  background: #fff;
+}
+
+.bulletin {
+  padding: 1.5rem;
+  border: 1px solid #999;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #000;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.sous-titre {
+  margin: 0.25rem 0 0;
+  font-weight: 500;
+}
+
+.mention {
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid #b00;
+  color: #b00;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.identite {
+  margin: 1rem 0;
+}
+
+.identite th,
+.identite td {
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+}
+
+.identite th {
+  width: 6rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.matieres th,
+.matieres td {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  text-align: left;
+  border: 1px solid #bbb;
+}
+
+.matieres thead th {
+  background: #eee;
+}
+
+.matieres .centre {
+  text-align: center;
+}
+
+.prof {
+  display: block;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.bilan {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: #f4f4f4;
+}
+
+.bilan .libelle {
+  display: block;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.bilan .valeur {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.conseil {
+  margin-top: 1rem;
+}
+
+.decision {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.observation {
+  margin: 0.25rem 0;
+  font-size: 0.8125rem;
+  color: #555;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+}
+
+.signature {
+  width: 14rem;
+  padding-top: 3rem;
+  text-align: center;
+  border-top: 1px solid #999;
+  font-size: 0.875rem;
+}
+
+@media print {
+  .barre-outils {
+    display: none;
+  }
+
+  .feuille {
+    padding: 0;
+  }
+
+  .bulletin {
+    border: none;
+  }
+}

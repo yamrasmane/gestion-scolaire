@@ -24,6 +24,16 @@ export const MENU_LYCEE: Menu[] = [
     ],
   },
   {
+    route: 'notes',
+    name: 'notes',
+    type: 'sub',
+    icon: 'grading',
+    children: [
+      { route: 'saisie', name: 'saisie', type: 'link' },
+      { route: 'classement', name: 'classement', type: 'link' },
+    ],
+  },
+  {
     route: 'finances',
     name: 'finances',
     type: 'sub',
@@ -43,6 +53,12 @@ export const MENU_LYCEE: Menu[] = [
     children: [
       { route: 'annees-scolaires', name: 'annees', type: 'link' },
       { route: 'trimestres', name: 'trimestres', type: 'link' },
+      {
+        route: 'matieres',
+        name: 'matieres',
+        type: 'link',
+        permissions: { only: DIRECTION },
+      },
       {
         route: 'finances/types-frais',
         name: 'types_frais',

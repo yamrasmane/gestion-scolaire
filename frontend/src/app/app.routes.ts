@@ -11,6 +11,12 @@ import { Error500 } from './routes/sessions/error-500';
 export const routes: Routes = [
   { path: 'connexion-impossible', component: ConnexionImpossible },
   {
+    // Bulletin imprimable, hors coquille d'administration (SF-17).
+    path: 'bulletin/:inscriptionId/:trimestreId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./routes/notes/bulletin').then((m) => m.Bulletin),
+  },
+  {
     // Reçu imprimable, hors coquille d'administration (SF-30).
     path: 'recu/:paiementId',
     canActivate: [authGuard],
@@ -56,6 +62,25 @@ export const routes: Routes = [
               import('./routes/parametrage/trimestres').then((m) => m.Trimestres),
           },
         ],
+      },
+      {
+        path: 'notes',
+        children: [
+          { path: '', redirectTo: 'saisie', pathMatch: 'full' },
+          {
+            path: 'saisie',
+            loadComponent: () => import('./routes/notes/saisie-notes').then((m) => m.SaisieNotes),
+          },
+          {
+            path: 'classement',
+            loadComponent: () => import('./routes/notes/classement').then((m) => m.Classement),
+          },
+        ],
+      },
+      {
+        path: 'parametrage/matieres',
+        canActivate: [roleGuard(...DIRECTION)],
+        loadComponent: () => import('./routes/notes/matieres').then((m) => m.Matieres),
       },
       {
         path: 'finances',
