@@ -8,23 +8,33 @@
       <div class="grille-formulaire">
         <mat-form-field>
           <mat-label>Classe</mat-label>
-          <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
-            @for (c of classes(); track c.id) {
-              <mat-option [value]="c.id">{{ c.nom }}</mat-option>
-            }
-          </mat-select>
+          <mtx-select
+            [ngModel]="classeId()"
+            (ngModelChange)="choisirClasse($event)"
+            [items]="classes()"
+            bindValue="id"
+            bindLabel="nom"
+            placeholder="Choisir une classe"
+            notFoundText="Aucune classe ne correspond"
+            [searchable]="true"
+            [clearable]="false"
+          />
         </mat-form-field>
 
         @if (classeId()) {
           <mat-form-field>
             <mat-label>Élève</mat-label>
-            <mat-select [ngModel]="inscriptionId()" (ngModelChange)="choisirEleve($event)">
-              @for (i of inscriptions(); track i.id) {
-                <mat-option [value]="i.id">
-                  {{ i.eleve.nom }} {{ i.eleve.prenom }} ({{ i.eleve.matricule }})
-                </mat-option>
-              }
-            </mat-select>
+            <mtx-select
+              [ngModel]="inscriptionId()"
+              (ngModelChange)="choisirEleve($event)"
+              [items]="elevesAffiches()"
+              bindValue="id"
+              bindLabel="libelle"
+              placeholder="Nom, prénom ou matricule"
+              notFoundText="Aucun élève ne correspond"
+              [searchable]="true"
+              [clearable]="false"
+            />
           </mat-form-field>
         }
       </div>
@@ -165,7 +175,14 @@
           <div class="grille-formulaire">
             <mat-form-field>
               <mat-label>Date</mat-label>
-              <input matInput type="date" name="date" [(ngModel)]="paiement.datePaiement" />
+              <input
+                matInput
+                name="date"
+                [matDatepicker]="calendrierPaiement"
+                [(ngModel)]="paiement.datePaiement"
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierPaiement" />
+              <mat-datepicker #calendrierPaiement />
             </mat-form-field>
 
             <mat-form-field>

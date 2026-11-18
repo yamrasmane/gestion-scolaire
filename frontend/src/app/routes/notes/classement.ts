@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AnneeContexte } from '@core/annee-contexte';
@@ -29,11 +30,17 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
           <div class="grille-formulaire">
             <mat-form-field>
               <mat-label>Classe</mat-label>
-              <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
-                @for (c of classes(); track c.id) {
-                  <mat-option [value]="c.id">{{ c.nom }}</mat-option>
-                }
-              </mat-select>
+              <mtx-select
+                [ngModel]="classeId()"
+                (ngModelChange)="choisirClasse($event)"
+                [items]="classes()"
+                bindValue="id"
+                bindLabel="nom"
+                placeholder="Choisir une classe"
+                notFoundText="Aucune classe ne correspond"
+                [searchable]="true"
+                [clearable]="false"
+              />
             </mat-form-field>
 
             <mat-form-field>
@@ -153,6 +160,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatChipsModule,
     MatFormFieldModule,
     MatSelectModule,
+    MtxSelectModule,
     MatTooltipModule,
     PageHeader,
     AnneeRequise,

@@ -1,0 +1,20 @@
+/**
+ * Police d'icônes Material, servie depuis le projet (aucun appel à Google).
+ * `@fontsource/material-icons` n'apporte que le `@font-face` : la classe
+ * `.material-icons`, que `mat-icon` pose sur chaque icône, se déclare ici.
+ */
+.material-icons {
+  display: inline-block;
+  font-family: 'Material Icons', sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+  white-space: nowrap;
+  letter-spacing: normal;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}

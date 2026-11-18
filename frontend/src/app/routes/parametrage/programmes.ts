@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { Observable } from 'rxjs';
 
 import { AnneeContexte } from '@core/annee-contexte';
@@ -41,6 +42,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MtxSelectModule,
     PageHeader,
     AnneeRequise,
   ],

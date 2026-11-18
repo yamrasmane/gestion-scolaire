@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,8 +28,11 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { AuthService } from '@core/authentication';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
+
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
+import { aujourdhui, enIso } from '@shared/composants/dates';
 
 /** Fiche financière de l'élève et encaissement (SF-28 à SF-31). */
 @Component({
@@ -48,6 +52,8 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatSelectModule,
     MatExpansionModule,
     MatTooltipModule,
+    MatDatepickerModule,
+    MtxSelectModule,
     PageHeader,
     AnneeRequise,
   ],
@@ -90,6 +96,13 @@ export class Encaissement {
 
   protected readonly classes = signal<Classe[]>([]);
   protected readonly inscriptions = signal<Inscription[]>([]);
+  /** Libellé « NOM Prénom (matricule) » : c'est sur lui que porte la recherche. */
+  protected readonly elevesAffiches = computed(() =>
+    this.inscriptions().map((i) => ({
+      id: i.id,
+      libelle: `${i.eleve.nom} ${i.eleve.prenom} (${i.eleve.matricule})`,
+    })),
+  );
   protected readonly classeId = signal<string | null>(null);
   protected readonly inscriptionId = signal<string | null>(null);
   protected readonly fiche = signal<FicheFinanciere | null>(null);
@@ -134,7 +147,7 @@ export class Encaissement {
     this.classeId.set(id);
     this.inscriptionId.set(null);
     this.fiche.set(null);
-    this.api.inscriptions(id).subscribe({
+    this.api.toutesLesInscriptions(id).subscribe({
       next: (inscriptions) => this.inscriptions.set(inscriptions),
       error: (e) => this.erreur.set(messageErreur(e)),
     });
@@ -238,7 +251,7 @@ export class Encaissement {
     }
     this.executer(
       this.api.encaisser(id, {
-        datePaiement: this.paiement.datePaiement,
+        datePaiement: enIso(this.paiement.datePaiement) ?? aujourdhui(),
         montant: this.paiement.montant,
         mode: this.paiement.mode,
         reference: this.paiement.reference || null,
@@ -303,7 +316,7 @@ export class Encaissement {
 
   private vide() {
     return {
-      datePaiement: new Date().toISOString().slice(0, 10),
+      datePaiement: new Date() as Date | null,
       montant: null as number | null,
       mode: 'ESPECES' as ModePaiement,
       reference: '',

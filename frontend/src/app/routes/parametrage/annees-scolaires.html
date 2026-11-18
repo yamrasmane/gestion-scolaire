@@ -85,12 +85,16 @@
 
           <mat-form-field>
             <mat-label>Date de début</mat-label>
-            <input matInput type="date" formControlName="dateDebut" />
+            <input matInput [matDatepicker]="calendrierDebut" formControlName="dateDebut" />
+            <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
+            <mat-datepicker #calendrierDebut />
           </mat-form-field>
 
           <mat-form-field>
             <mat-label>Date de fin</mat-label>
-            <input matInput type="date" formControlName="dateFin" />
+            <input matInput [matDatepicker]="calendrierFin" formControlName="dateFin" />
+            <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
+            <mat-datepicker #calendrierFin />
           </mat-form-field>
 
           <mat-form-field>

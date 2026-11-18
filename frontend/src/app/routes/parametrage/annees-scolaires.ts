@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -15,6 +16,7 @@ import { AnneeScolaire, ApiService, messageErreur } from '@core/api.service';
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { enIso } from '@shared/composants/dates';
 
 @Component({
   selector: 'app-annees-scolaires',
@@ -30,6 +32,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatFormFieldModule,
     MatInputModule,
     MatCheckboxModule,
+    MatDatepickerModule,
     PageHeader,
   ],
 })
@@ -51,8 +54,10 @@ export class AnneesScolaires {
 
   protected readonly formulaire = this.fb.nonNullable.group({
     libelle: ['', [Validators.required, Validators.pattern(/^\d{4}-\d{4}$/)]],
-    dateDebut: ['', Validators.required],
-    dateFin: ['', Validators.required],
+    // Le calendrier Material travaille avec des objets Date ; la conversion
+    // vers « 2026-10-01 » se fait à l'envoi.
+    dateDebut: [null as Date | null, Validators.required],
+    dateFin: [null as Date | null, Validators.required],
     avecCompositionDefaut: [true],
     poidsCompositionDefaut: [2, [Validators.required, Validators.min(0.01)]],
     bloquerBulletinImpaye: [false],
@@ -67,12 +72,19 @@ export class AnneesScolaires {
       this.formulaire.markAllAsTouched();
       return;
     }
-    this.executer(this.api.creerAnneeScolaire(this.formulaire.getRawValue()), () =>
-      this.formulaire.reset({
-        avecCompositionDefaut: true,
-        poidsCompositionDefaut: 2,
-        bloquerBulletinImpaye: false,
+    const saisie = this.formulaire.getRawValue();
+    this.executer(
+      this.api.creerAnneeScolaire({
+        ...saisie,
+        dateDebut: enIso(saisie.dateDebut) ?? '',
+        dateFin: enIso(saisie.dateFin) ?? '',
       }),
+      () =>
+        this.formulaire.reset({
+          avecCompositionDefaut: true,
+          poidsCompositionDefaut: 2,
+          bloquerBulletinImpaye: false,
+        }),
     );
   }
 

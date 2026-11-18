@@ -137,12 +137,28 @@
 
             <mat-form-field>
               <mat-label>Date de début</mat-label>
-              <input matInput name="debut" type="date" required [(ngModel)]="nouveau.dateDebut" />
+              <input
+                matInput
+                name="debut"
+                required
+                [matDatepicker]="calendrierDebut"
+                [(ngModel)]="nouveau.dateDebut"
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
+              <mat-datepicker #calendrierDebut />
             </mat-form-field>
 
             <mat-form-field>
               <mat-label>Date de fin</mat-label>
-              <input matInput name="fin" type="date" required [(ngModel)]="nouveau.dateFin" />
+              <input
+                matInput
+                name="fin"
+                required
+                [matDatepicker]="calendrierFin"
+                [(ngModel)]="nouveau.dateFin"
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
+              <mat-datepicker #calendrierFin />
             </mat-form-field>
           </div>
 

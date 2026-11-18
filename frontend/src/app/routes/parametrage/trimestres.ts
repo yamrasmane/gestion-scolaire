@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +24,7 @@ import {
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
@@ -42,6 +44,7 @@ type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
     MatInputModule,
     MatSelectModule,
     MatCheckboxModule,
+    MatDatepickerModule,
     PageHeader,
     AnneeRequise,
   ],
@@ -62,7 +65,7 @@ export class Trimestres {
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
 
-  protected nouveau = { numero: 1, dateDebut: '', dateFin: '' };
+  protected nouveau = { numero: 1, dateDebut: null as Date | null, dateFin: null as Date | null };
   /** Saisies en cours, par trimestre. */
   protected choix: Record<string, { mode: ChoixTrimestre; poids: number }> = {};
   protected cycleEnEdition: {
@@ -103,7 +106,13 @@ export class Trimestres {
   protected creer(): void {
     const anneeId = this.contexte.anneeId();
     if (anneeId && this.nouveau.dateDebut && this.nouveau.dateFin) {
-      this.executer(this.api.creerTrimestre(anneeId, this.nouveau));
+      this.executer(
+        this.api.creerTrimestre(anneeId, {
+          numero: this.nouveau.numero,
+          dateDebut: enIso(this.nouveau.dateDebut) ?? '',
+          dateFin: enIso(this.nouveau.dateFin) ?? '',
+        }),
+      );
     }
   }
 
@@ -179,8 +188,8 @@ export class Trimestres {
         const numeros = trimestres.map((t) => t.numero);
         this.nouveau = {
           numero: [1, 2, 3].find((n) => !numeros.includes(n)) ?? 1,
-          dateDebut: '',
-          dateFin: '',
+          dateDebut: null,
+          dateFin: null,
         };
         this.trimestres.set(trimestres);
       },

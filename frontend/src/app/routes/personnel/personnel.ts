@@ -6,12 +6,15 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 
 import { ApiService, Personnel as Membre, messageErreur } from '@core/api.service';
 import { LIBELLES_ROLES, Role } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { EtatListe } from '@shared/composants/etat-liste';
 import { ImportFichier } from '@shared/composants/import-fichier';
 
 @Component({
@@ -27,6 +30,8 @@ import { ImportFichier } from '@shared/composants/import-fichier';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSortModule,
+    MatPaginatorModule,
     PageHeader,
     ImportFichier,
   ],
@@ -45,6 +50,11 @@ export class Personnel {
     'actions',
   ];
   protected readonly membres = signal<Membre[]>([]);
+  /** Page, taille et tri de la liste : la pagination se fait côté serveur. */
+  protected readonly liste = new EtatListe(25, 'nom,asc');
+  protected readonly recherche = signal('');
+  protected readonly roleFiltre = signal<string | null>(null);
+  protected readonly actifFiltre = signal<boolean | null>(null);
   protected readonly erreur = signal('');
   protected readonly information = signal('');
   protected readonly enCours = signal(false);
@@ -128,11 +138,49 @@ export class Personnel {
     });
   }
 
-  protected charger(): void {
-    this.api.personnel().subscribe({
-      next: (membres) => this.membres.set(membres),
-      error: (e) => this.erreur.set(messageErreur(e)),
+  /** Recherche au clavier : on attend une pause avant d'appeler l'API. */
+  protected chercher(terme: string): void {
+    this.recherche.set(terme);
+    this.liste.differer(() => {
+      this.liste.auDebut();
+      this.charger();
     });
+  }
+
+  protected filtrer(): void {
+    this.liste.auDebut();
+    this.charger();
+  }
+
+  protected viderFiltres(): void {
+    this.recherche.set('');
+    this.roleFiltre.set(null);
+    this.actifFiltre.set(null);
+    this.filtrer();
+  }
+
+  protected readonly filtresActifs = () =>
+    this.recherche() !== '' || this.roleFiltre() !== null || this.actifFiltre() !== null;
+
+  protected charger(): void {
+    this.liste.chargement.set(true);
+    this.api
+      .personnel({
+        ...this.liste.parametres(),
+        recherche: this.recherche(),
+        role: this.roleFiltre(),
+        actif: this.actifFiltre(),
+      })
+      .subscribe({
+        next: (page) => {
+          this.membres.set(this.liste.recevoir(page));
+          this.liste.chargement.set(false);
+        },
+        error: (e) => {
+          this.erreur.set(messageErreur(e));
+          this.liste.chargement.set(false);
+        },
+      });
   }
 
   private vide() {

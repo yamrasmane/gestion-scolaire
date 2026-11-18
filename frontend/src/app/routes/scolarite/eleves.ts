@@ -5,12 +5,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
 
 import { AnneeContexte } from '@core/annee-contexte';
 import { ApiService, Classe, Inscription, messageErreur } from '@core/api.service';
@@ -18,6 +22,8 @@ import { AuthService } from '@core/authentication';
 import { SCOLARITE } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
+import { enIso } from '@shared/composants/dates';
+import { EtatListe } from '@shared/composants/etat-liste';
 import { ImportFichier } from '@shared/composants/import-fichier';
 
 @Component({
@@ -36,6 +42,10 @@ import { ImportFichier } from '@shared/composants/import-fichier';
     MatSelectModule,
     MatCheckboxModule,
     MatTooltipModule,
+    MatDatepickerModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MtxSelectModule,
     PageHeader,
     AnneeRequise,
     ImportFichier,
@@ -59,6 +69,11 @@ export class Eleves {
     () => this.classes().find((c) => c.id === this.classeId()) ?? null,
   );
   protected readonly inscriptions = signal<Inscription[]>([]);
+  /** Page, taille et tri : la pagination se fait côté serveur. */
+  protected readonly liste = new EtatListe(25, 'eleve.nom,asc');
+  protected readonly recherche = signal('');
+  protected readonly statutFiltre = signal<string | null>('ACTIVE');
+  protected readonly redoublantFiltre = signal<boolean | null>(null);
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
 
@@ -82,8 +97,33 @@ export class Eleves {
     this.classeId.set(id);
     this.correction = null;
     this.erreur.set('');
+    this.liste.auDebut();
     this.chargerInscriptions();
   }
+
+  /** Recherche au clavier : on attend une pause avant d'appeler l'API. */
+  protected chercher(terme: string): void {
+    this.recherche.set(terme);
+    this.liste.differer(() => {
+      this.liste.auDebut();
+      this.chargerInscriptions();
+    });
+  }
+
+  protected filtrer(): void {
+    this.liste.auDebut();
+    this.chargerInscriptions();
+  }
+
+  protected viderFiltres(): void {
+    this.recherche.set('');
+    this.statutFiltre.set(null);
+    this.redoublantFiltre.set(null);
+    this.filtrer();
+  }
+
+  protected readonly filtresActifs = () =>
+    this.recherche() !== '' || this.statutFiltre() !== 'ACTIVE' || this.redoublantFiltre() !== null;
 
   protected inscrire(): void {
     const classeId = this.classeId();
@@ -92,17 +132,23 @@ export class Eleves {
     }
     this.enCours.set(true);
     this.erreur.set('');
-    this.api.inscrire(classeId, this.nouveau).subscribe({
-      next: () => {
-        this.nouveau = this.vide();
-        this.enCours.set(false);
-        this.rafraichir();
-      },
-      error: (e) => {
-        this.erreur.set(messageErreur(e));
-        this.enCours.set(false);
-      },
-    });
+    // Le calendrier rend un objet Date : l'API attend « 2012-03-15 ».
+    this.api
+      .inscrire(classeId, {
+        ...this.nouveau,
+        dateNaissance: enIso(this.nouveau.dateNaissance) ?? '',
+      })
+      .subscribe({
+        next: () => {
+          this.nouveau = this.vide();
+          this.enCours.set(false);
+          this.rafraichir();
+        },
+        error: (e) => {
+          this.erreur.set(messageErreur(e));
+          this.enCours.set(false);
+        },
+      });
   }
 
   protected ouvrirCorrection(i: Inscription): void {
@@ -144,16 +190,31 @@ export class Eleves {
     });
   }
 
-  private chargerInscriptions(): void {
+  protected chargerInscriptions(): void {
     const classeId = this.classeId();
     if (!classeId) {
       this.inscriptions.set([]);
+      this.liste.total.set(0);
       return;
     }
-    this.api.inscriptions(classeId).subscribe({
-      next: (inscriptions) => this.inscriptions.set(inscriptions),
-      error: (e) => this.erreur.set(messageErreur(e)),
-    });
+    this.liste.chargement.set(true);
+    this.api
+      .inscriptions(classeId, {
+        ...this.liste.parametres(),
+        recherche: this.recherche(),
+        statut: this.statutFiltre(),
+        redoublant: this.redoublantFiltre(),
+      })
+      .subscribe({
+        next: (page) => {
+          this.inscriptions.set(this.liste.recevoir(page));
+          this.liste.chargement.set(false);
+        },
+        error: (e) => {
+          this.erreur.set(messageErreur(e));
+          this.liste.chargement.set(false);
+        },
+      });
   }
 
   private vide() {
@@ -161,7 +222,7 @@ export class Eleves {
       matricule: '',
       nom: '',
       prenom: '',
-      dateNaissance: '',
+      dateNaissance: null as Date | null,
       sexe: 'F',
       nomParent: '',
       contactParent: '',

@@ -194,10 +194,12 @@
               <mat-label>Date</mat-label>
               <input
                 matInput
-                type="date"
                 name="dateEval"
+                [matDatepicker]="calendrierEval"
                 [(ngModel)]="nouvelleEvaluation.dateEval"
               />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierEval" />
+              <mat-datepicker #calendrierEval />
             </mat-form-field>
           </div>
 

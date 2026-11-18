@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { Observable } from 'rxjs';
 
 import { AnneeContexte } from '@core/annee-contexte';
@@ -33,6 +34,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MtxSelectModule,
     PageHeader,
   ],
 })
@@ -51,13 +53,17 @@ export class Matieres {
 
   protected readonly colonnesCatalogue = ['code', 'libelle', 'actions'];
   protected readonly matiereModifiee = signal<string | null>(null);
+  /** « NOM Prénom » : c'est sur ce libellé que porte la recherche. */
+  protected readonly professeurs = computed(() =>
+    this.enseignants().map((p) => ({ id: p.id, libelle: `${p.nom} ${p.prenom}` })),
+  );
   protected nouvelleMatiere = { code: '', libelle: '' };
   protected matiereSaisie = { code: '', libelle: '' };
   protected affectation = this.videAffectation();
 
   constructor() {
     this.chargerMatieres();
-    this.api.personnel().subscribe({
+    this.api.tousLesPersonnels().subscribe({
       next: (personnel) => this.enseignants.set(personnel.filter((p) => p.actif)),
       error: () => undefined,
     });

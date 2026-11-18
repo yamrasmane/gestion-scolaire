@@ -116,6 +116,25 @@ d'un professeur — ses classes, ses matières et son total de coefficients.
 Les **fiches du personnel** (« Personnel ») se modifient en place : nom, prénom, adresse, téléphone
 et rôle. Changer le rôle met aussi à jour les droits du compte Keycloak lié, s'il existe.
 
+## Listes, recherche et saisie
+
+Les listes longues (élèves d'une classe, personnel, impayés, journal de caisse) sont **paginées par
+l'API** : le navigateur ne reçoit qu'une page à la fois (25 lignes par défaut, 10 à 100 au choix).
+Les réponses ont toutes la même forme — `contenu`, `page`, `taille`, `total`, `pages` — et acceptent
+les paramètres `page`, `size` et `sort` (par exemple `sort=nom,desc`).
+
+Chaque tableau porte une **barre de recherche multicritère** : une recherche libre (matricule, nom,
+adresse, téléphone selon la liste) et des filtres qui se cumulent — rôle et état du compte pour le
+personnel, statut et redoublants pour les inscriptions, sexe et intervalle de naissance pour les
+élèves, classe et date limite pour les impayés. Le tri des colonnes et la recherche sont faits en
+base, jamais sur la page affichée. L'export CSV des impayés redemande à l'API toutes les lignes de
+la recherche, pas seulement la page à l'écran.
+
+Les listes déroulantes qui peuvent être longues (classes, élèves, matières, professeurs) **se
+cherchent au clavier**, et toutes les dates se saisissent dans un **calendrier** en français.
+L'interface s'adapte au téléphone : sur petit écran, chaque ligne de tableau devient une fiche dont
+les valeurs portent le nom de leur colonne.
+
 ## Règles de calcul
 
 **Moyenne d'une matière** (SF-13) : seules les notes saisies et non marquées « absent » comptent.

@@ -123,3 +123,89 @@
 .champ-etroit {
   width: 6rem;
 }
+
+/**
+ * Barre de recherche multicritère au-dessus d'un tableau : la recherche libre
+ * prend la place disponible, les filtres se replient sous elle sur petit écran.
+ */
+.barre-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  align-items: center;
+
+  .filtre-recherche {
+    flex: 1 1 18rem;
+    min-width: 12rem;
+  }
+
+  .filtre {
+    flex: 0 1 12rem;
+    min-width: 9rem;
+  }
+
+  .bouton-filtre {
+    margin-bottom: 1.34375em; // aligné sur le bas des champs
+  }
+}
+
+/** Cellule d'un tableau qui ne contient que des boutons. */
+.cellule-actions {
+  white-space: nowrap;
+}
+
+/**
+ * Tableaux sur téléphone : chaque ligne devient une fiche et chaque cellule
+ * porte en regard l'intitulé de sa colonne (attribut `data-libelle`).
+ */
+@media (width <= 599px) {
+  .table-defilement {
+    overflow-x: visible;
+  }
+
+  table.mat-mdc-table {
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr.mat-mdc-row,
+    td.mat-mdc-cell {
+      display: block;
+      width: auto;
+    }
+
+    tr.mat-mdc-row {
+      height: auto;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    td.mat-mdc-cell {
+      padding: 0.25rem 0.5rem;
+      border: 0;
+
+      &[data-libelle]::before {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--mat-sys-on-surface-variant);
+        content: attr(data-libelle);
+      }
+    }
+  }
+
+  .barre-filtres {
+    .filtre-recherche,
+    .filtre {
+      flex: 1 1 100%;
+    }
+
+    .bouton-filtre {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .resume-finances {
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  }
+}

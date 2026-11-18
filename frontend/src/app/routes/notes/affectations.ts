@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
 
 import { AnneeContexte } from '@core/annee-contexte';
 import {
@@ -35,6 +36,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
+    MtxSelectModule,
     PageHeader,
     AnneeRequise,
   ],
@@ -57,6 +59,11 @@ export class Affectations {
   /** Choix en cours, par identifiant d'enseignement : rien n'est envoyé avant validation. */
   protected readonly choix = signal<Record<string, string | null>>({});
 
+  /** « NOM Prénom » : c'est sur ce libellé que porte la recherche. */
+  protected readonly professeurs = computed(() =>
+    this.enseignants().map((p) => ({ id: p.id, libelle: `${p.nom} ${p.prenom}` })),
+  );
+
   protected readonly matieresSansProfesseur = computed(() => {
     const choix = this.choix();
     return this.enseignements().filter((e) => !choix[e.id]).length;
@@ -70,7 +77,7 @@ export class Affectations {
   protected enseignantObserve: string | null = null;
 
   constructor() {
-    this.api.personnel().subscribe({
+    this.api.tousLesPersonnels().subscribe({
       next: (personnel) => this.enseignants.set(personnel.filter((p) => p.actif)),
       error: (e) => this.erreur.set(messageErreur(e)),
     });

@@ -1,7 +1,36 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { config } from './config';
+
+/** Une page de résultats renvoyée par l'API (`PageVue` côté serveur). */
+export interface Page<T> {
+  contenu: T[];
+  page: number;
+  taille: number;
+  total: number;
+  pages: number;
+}
+
+/** Page et tri demandés à l'API. `tri` suit la forme Spring : « nom,asc ». */
+export interface Pagination {
+  page?: number;
+  taille?: number;
+  tri?: string | null;
+}
+
+/** Construit la chaîne de requête : les critères vides ne sont pas envoyés. */
+export function parametres(criteres: object = {}): HttpParams {
+  let params = new HttpParams();
+  for (const [cle, valeur] of Object.entries(criteres as Record<string, unknown>)) {
+    if (valeur === null || valeur === undefined || valeur === '') {
+      continue;
+    }
+    const nom = cle === 'taille' ? 'size' : cle === 'tri' ? 'sort' : cle;
+    params = params.set(nom, String(valeur));
+  }
+  return params;
+}
 
 export interface Profil {
   identifiant: string;
@@ -282,7 +311,8 @@ export interface JournalCaisse {
   journee: string;
   total: number;
   totauxParMode: { mode: ModePaiement; total: number }[];
-  paiements: Paiement[];
+  /** Le total et les totaux par mode portent sur la journée, pas sur la page. */
+  paiements: Page<Paiement>;
 }
 
 export interface Recouvrement {
@@ -535,8 +565,21 @@ export class ApiService {
 
   // ---------- Personnel ----------
 
-  personnel(): Observable<Personnel[]> {
-    return this.http.get<Personnel[]>(`${this.base}/personnel`);
+  personnel(
+    criteres: Pagination & {
+      recherche?: string;
+      role?: string | null;
+      actif?: boolean | null;
+    } = {},
+  ): Observable<Page<Personnel>> {
+    return this.http.get<Page<Personnel>>(`${this.base}/personnel`, {
+      params: parametres(criteres),
+    });
+  }
+
+  /** Liste complète, pour alimenter une liste déroulante. */
+  tousLesPersonnels(): Observable<Personnel[]> {
+    return this.personnel({ taille: 500 }).pipe(map((page) => page.contenu));
   }
 
   creerPersonnel(p: {
@@ -570,8 +613,34 @@ export class ApiService {
 
   // ---------- Élèves et inscriptions ----------
 
-  inscriptions(classeId: string): Observable<Inscription[]> {
-    return this.http.get<Inscription[]>(`${this.base}/classes/${classeId}/inscriptions`);
+  inscriptions(
+    classeId: string,
+    criteres: Pagination & {
+      recherche?: string;
+      statut?: string | null;
+      redoublant?: boolean | null;
+    } = {},
+  ): Observable<Page<Inscription>> {
+    return this.http.get<Page<Inscription>>(`${this.base}/classes/${classeId}/inscriptions`, {
+      params: parametres(criteres),
+    });
+  }
+
+  /** Inscriptions complètes d'une classe, pour alimenter une liste déroulante. */
+  toutesLesInscriptions(classeId: string): Observable<Inscription[]> {
+    return this.inscriptions(classeId, { taille: 500 }).pipe(map((page) => page.contenu));
+  }
+
+  /** Liste paginée des élèves, tous rattachements confondus. */
+  eleves(
+    criteres: Pagination & {
+      recherche?: string;
+      sexe?: string | null;
+      neApres?: string | null;
+      neAvant?: string | null;
+    } = {},
+  ): Observable<Page<Eleve>> {
+    return this.http.get<Page<Eleve>>(`${this.base}/eleves`, { params: parametres(criteres) });
   }
 
   inscrire(
@@ -733,13 +802,23 @@ export class ApiService {
     return this.http.get<Recu>(`${this.base}/paiements/${paiementId}/recu?duplicata=${duplicata}`);
   }
 
-  impayes(anneeId: string, classeId: string | null): Observable<Impaye[]> {
-    const filtre = classeId ? `?classeId=${classeId}` : '';
-    return this.http.get<Impaye[]>(`${this.base}/annees-scolaires/${anneeId}/impayes${filtre}`);
+  impayes(
+    anneeId: string,
+    criteres: Pagination & {
+      classeId?: string | null;
+      limite?: string | null;
+      recherche?: string;
+    } = {},
+  ): Observable<Page<Impaye>> {
+    return this.http.get<Page<Impaye>>(`${this.base}/annees-scolaires/${anneeId}/impayes`, {
+      params: parametres(criteres),
+    });
   }
 
-  journalCaisse(journee: string): Observable<JournalCaisse> {
-    return this.http.get<JournalCaisse>(`${this.base}/caisse/journal?journee=${journee}`);
+  journalCaisse(journee: string, pagination: Pagination = {}): Observable<JournalCaisse> {
+    return this.http.get<JournalCaisse>(`${this.base}/caisse/journal`, {
+      params: parametres({ journee, ...pagination }),
+    });
   }
 
   recouvrement(anneeId: string): Observable<Recouvrement> {
@@ -915,10 +994,10 @@ export class ApiService {
 export function messageErreur(erreur: unknown): string {
   if (erreur instanceof HttpErrorResponse) {
     if (erreur.status === 0) {
-      return 'Le serveur est injoignable. Vérifiez que l\'API est démarrée.';
+      return "Le serveur est injoignable. Vérifiez que l'API est démarrée.";
     }
     if (erreur.status === 403) {
-      return 'Vous n\'avez pas les droits nécessaires pour cette action.';
+      return "Vous n'avez pas les droits nécessaires pour cette action.";
     }
     return erreur.error?.detail ?? `Erreur ${erreur.status}`;
   }

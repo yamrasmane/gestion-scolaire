@@ -106,11 +106,17 @@
           <div class="grille-formulaire">
             <mat-form-field>
               <mat-label>Matière</mat-label>
-              <mat-select name="matiereId" required [(ngModel)]="nouvelleLigne.matiereId">
-                @for (matiere of matieresDisponibles(); track matiere.id) {
-                  <mat-option [value]="matiere.id">{{ matiere.libelle }}</mat-option>
-                }
-              </mat-select>
+              <mtx-select
+                name="matiereId"
+                required
+                [(ngModel)]="nouvelleLigne.matiereId"
+                [items]="matieresDisponibles()"
+                bindValue="id"
+                bindLabel="libelle"
+                placeholder="Choisir une matière"
+                notFoundText="Aucune matière ne correspond"
+                [searchable]="true"
+              />
             </mat-form-field>
 
             <mat-form-field>

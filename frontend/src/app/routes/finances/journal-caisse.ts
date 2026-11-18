@@ -6,7 +6,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 
 import {
@@ -16,6 +18,8 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { aujourdhui, depuisIso, enIso } from '@shared/composants/dates';
+import { EtatListe } from '@shared/composants/etat-liste';
 
 /** Journal de caisse quotidien (SF-32). */
 @Component({
@@ -32,7 +36,14 @@ import { PageHeader } from '@shared/components/page-header/page-header';
         <div class="ligne-actions">
           <mat-form-field>
             <mat-label>Journée</mat-label>
-            <input matInput type="date" [ngModel]="journee()" (ngModelChange)="choisir($event)" />
+            <input
+              matInput
+              [matDatepicker]="calendrier"
+              [ngModel]="dateJournee()"
+              (ngModelChange)="choisir($event)"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="calendrier" />
+            <mat-datepicker #calendrier />
           </mat-form-field>
           <button matButton="tonal" (click)="imprimer()">
             <mat-icon>print</mat-icon>
@@ -54,46 +65,48 @@ import { PageHeader } from '@shared/components/page-header/page-header';
             }
           </div>
 
-          @if (j.paiements.length === 0) {
+          @if (j.paiements.contenu.length === 0) {
             <p class="text-muted">Aucun encaissement ce jour-là.</p>
           } @else {
             <div class="table-defilement">
-              <table mat-table [dataSource]="j.paiements" class="w-full">
+              <table mat-table [dataSource]="j.paiements.contenu" class="w-full">
                 <ng-container matColumnDef="recu">
                   <th mat-header-cell *matHeaderCellDef>Reçu</th>
-                  <td mat-cell *matCellDef="let p">{{ p.numeroRecu }}</td>
+                  <td mat-cell *matCellDef="let p" data-libelle="Reçu">{{ p.numeroRecu }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="montant">
                   <th mat-header-cell *matHeaderCellDef>Montant</th>
-                  <td mat-cell *matCellDef="let p">
+                  <td mat-cell *matCellDef="let p" data-libelle="Montant">
                     <strong>{{ p.montant | number }}</strong>
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="mode">
                   <th mat-header-cell *matHeaderCellDef>Mode</th>
-                  <td mat-cell *matCellDef="let p">{{ libelleMode(p.mode) }}</td>
+                  <td mat-cell *matCellDef="let p" data-libelle="Mode">
+                    {{ libelleMode(p.mode) }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="reference">
                   <th mat-header-cell *matHeaderCellDef>Référence</th>
-                  <td mat-cell *matCellDef="let p">{{ p.reference }}</td>
+                  <td mat-cell *matCellDef="let p" data-libelle="Référence">{{ p.reference }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="payeur">
                   <th mat-header-cell *matHeaderCellDef>Payeur</th>
-                  <td mat-cell *matCellDef="let p">{{ p.payeur }}</td>
+                  <td mat-cell *matCellDef="let p" data-libelle="Payeur">{{ p.payeur }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="caissier">
                   <th mat-header-cell *matHeaderCellDef>Caissier</th>
-                  <td mat-cell *matCellDef="let p">{{ p.caissier }}</td>
+                  <td mat-cell *matCellDef="let p" data-libelle="Caissier">{{ p.caissier }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
-                  <td mat-cell *matCellDef="let p">
+                  <td mat-cell *matCellDef="let p" data-libelle="Statut">
                     @if (p.statut === 'ANNULE') {
                       <mat-chip>Annulé</mat-chip>
                     } @else {
@@ -106,8 +119,17 @@ import { PageHeader } from '@shared/components/page-header/page-header';
                 <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
               </table>
             </div>
+            <mat-paginator
+              [length]="liste.total()"
+              [pageIndex]="liste.page()"
+              [pageSize]="liste.taille()"
+              [pageSizeOptions]="liste.taillesPage"
+              showFirstLastButtons
+              (page)="liste.surPage($event); charger()"
+            />
             <p class="text-muted">
-              Les paiements annulés restent au journal, sans compter dans le total.
+              Les paiements annulés restent au journal, sans compter dans le total. Le total et les
+              totaux par mode portent sur la journée entière, pas sur la page affichée.
             </p>
           }
         }
@@ -124,6 +146,8 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatPaginatorModule,
     PageHeader,
   ],
 })
@@ -139,16 +163,22 @@ export class JournalCaisse {
     'caissier',
     'statut',
   ];
-  protected readonly journee = signal(new Date().toISOString().slice(0, 10));
+  protected readonly journee = signal(aujourdhui());
   protected readonly journal = signal<Journal | null>(null);
   protected readonly erreur = signal('');
+  /** Les lignes du journal arrivent paginées ; les totaux restent ceux du jour. */
+  protected readonly liste = new EtatListe(25);
+
+  /** La journée, telle que le calendrier l'attend. */
+  protected readonly dateJournee = () => depuisIso(this.journee());
 
   constructor() {
     this.charger();
   }
 
-  protected choisir(journee: string): void {
-    this.journee.set(journee);
+  protected choisir(journee: Date | null): void {
+    this.journee.set(enIso(journee) ?? aujourdhui());
+    this.liste.auDebut();
     this.charger();
   }
 
@@ -167,10 +197,18 @@ export class JournalCaisse {
     window.print();
   }
 
-  private charger(): void {
-    this.api.journalCaisse(this.journee()).subscribe({
-      next: (journal) => this.journal.set(journal),
-      error: (e) => this.erreur.set(messageErreur(e)),
+  protected charger(): void {
+    this.liste.chargement.set(true);
+    this.api.journalCaisse(this.journee(), this.liste.parametres()).subscribe({
+      next: (journal) => {
+        this.journal.set(journal);
+        this.liste.recevoir(journal.paiements);
+        this.liste.chargement.set(false);
+      },
+      error: (e) => {
+        this.erreur.set(messageErreur(e));
+        this.liste.chargement.set(false);
+      },
     });
   }
 }

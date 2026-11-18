@@ -182,10 +182,12 @@
               <mat-label>Échéance</mat-label>
               <input
                 matInput
-                type="date"
+                [matDatepicker]="calendrierEcheance"
                 [name]="'date' + $index"
                 [(ngModel)]="tranche.dateEcheance"
               />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierEcheance" />
+              <mat-datepicker #calendrierEcheance />
             </mat-form-field>
 
             @if (saisie.modeRepartition === 'POURCENTAGE') {

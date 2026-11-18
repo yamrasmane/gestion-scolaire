@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -22,6 +23,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Grille de saisie des notes, par matière et par trimestre (SF-11, SF-12). */
@@ -39,6 +41,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatSelectModule,
     MatCheckboxModule,
     MatTooltipModule,
+    MatDatepickerModule,
     PageHeader,
     AnneeRequise,
   ],
@@ -131,7 +134,7 @@ export class SaisieNotes {
       this.api.creerEvaluation(enseignement, trimestre, {
         categorie: this.nouvelleEvaluation.categorie,
         libelle: this.nouvelleEvaluation.libelle,
-        dateEval: this.nouvelleEvaluation.dateEval || null,
+        dateEval: enIso(this.nouvelleEvaluation.dateEval),
       }),
       () => (this.nouvelleEvaluation = this.videEvaluation()),
     );
@@ -216,7 +219,11 @@ export class SaisieNotes {
     this.enseignements.set([]);
   }
 
-  private videEvaluation(): { categorie: CategorieEvaluation; libelle: string; dateEval: string } {
-    return { categorie: 'DEVOIR', libelle: '', dateEval: '' };
+  private videEvaluation(): {
+    categorie: CategorieEvaluation;
+    libelle: string;
+    dateEval: Date | null;
+  } {
+    return { categorie: 'DEVOIR', libelle: '', dateEval: null };
   }
 }

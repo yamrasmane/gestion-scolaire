@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -22,12 +23,13 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { depuisIso, enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 interface TrancheSaisie {
   numero: number;
   libelle: string;
-  dateEcheance: string;
+  dateEcheance: Date | null;
   pourcentage: number | null;
   montant: number | null;
 }
@@ -49,6 +51,7 @@ interface TrancheSaisie {
     MatInputModule,
     MatSelectModule,
     MatCheckboxModule,
+    MatDatepickerModule,
     PageHeader,
     AnneeRequise,
   ],
@@ -128,7 +131,7 @@ export class PlansPaiement {
       tranches: plan.tranches.map((t) => ({
         numero: t.numero,
         libelle: t.libelle,
-        dateEcheance: t.dateEcheance,
+        dateEcheance: depuisIso(t.dateEcheance),
         pourcentage: t.pourcentage,
         montant: t.montant,
       })),
@@ -141,7 +144,7 @@ export class PlansPaiement {
     this.saisie.tranches.push({
       numero: this.saisie.tranches.length + 1,
       libelle: `Tranche ${this.saisie.tranches.length + 1}`,
-      dateEcheance: '',
+      dateEcheance: null,
       pourcentage: null,
       montant: null,
     });
@@ -165,7 +168,11 @@ export class PlansPaiement {
       modeRepartition: this.saisie.modeRepartition,
       parDefaut: this.saisie.parDefaut,
       montantMinInscription: this.saisie.montantMinInscription,
-      tranches: this.saisie.tranches,
+      // L'API attend « 2026-11-30 » là où le calendrier rend une Date.
+      tranches: this.saisie.tranches.map((t) => ({
+        ...t,
+        dateEcheance: enIso(t.dateEcheance) ?? '',
+      })),
     };
     const planId = this.enEdition();
     this.executer(

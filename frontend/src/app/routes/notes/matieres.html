@@ -14,11 +14,17 @@
   <mat-card-content>
     <mat-form-field>
       <mat-label>Classe</mat-label>
-      <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)">
-        @for (c of classes(); track c.id) {
-          <mat-option [value]="c.id">{{ c.nom }}</mat-option>
-        }
-      </mat-select>
+      <mtx-select
+        [ngModel]="classeId()"
+        (ngModelChange)="choisirClasse($event)"
+        [items]="classes()"
+        bindValue="id"
+        bindLabel="nom"
+        placeholder="Choisir une classe"
+        notFoundText="Aucune classe ne correspond"
+        [searchable]="true"
+        [clearable]="false"
+      />
     </mat-form-field>
 
     @if (classeId()) {
@@ -71,21 +77,30 @@
       <div class="grille-formulaire">
         <mat-form-field>
           <mat-label>Matière</mat-label>
-          <mat-select name="matiere" [(ngModel)]="affectation.matiereId">
-            @for (m of matieres(); track m.id) {
-              <mat-option [value]="m.id">{{ m.libelle }}</mat-option>
-            }
-          </mat-select>
+          <mtx-select
+            name="matiere"
+            [(ngModel)]="affectation.matiereId"
+            [items]="matieres()"
+            bindValue="id"
+            bindLabel="libelle"
+            placeholder="Choisir une matière"
+            notFoundText="Aucune matière ne correspond"
+            [searchable]="true"
+          />
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Professeur titulaire</mat-label>
-          <mat-select name="enseignant" [(ngModel)]="affectation.enseignantId">
-            <mat-option [value]="null">À désigner</mat-option>
-            @for (p of enseignants(); track p.id) {
-              <mat-option [value]="p.id">{{ p.nom }} {{ p.prenom }}</mat-option>
-            }
-          </mat-select>
+          <mtx-select
+            name="enseignant"
+            [(ngModel)]="affectation.enseignantId"
+            [items]="professeurs()"
+            bindValue="id"
+            bindLabel="libelle"
+            placeholder="À désigner"
+            notFoundText="Aucun professeur ne correspond"
+            [searchable]="true"
+          />
         </mat-form-field>
 
         <mat-form-field>
