@@ -16,6 +16,7 @@ import bf.lycee.gestion.repository.InscriptionRepository;
 import bf.lycee.gestion.repository.PaiementRepository;
 import bf.lycee.gestion.security.UtilisateurCourant;
 import bf.lycee.gestion.web.FinancesDto;
+import bf.lycee.gestion.web.PageVue;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,18 +145,19 @@ public class CaisseService {
      * classe. {@code limite} borne les échéances prises en compte (par défaut, ce jour).
      */
     @Transactional
-    public List<FinancesDto.ImpayeVue> impayes(UUID anneeId, UUID classeId, LocalDate limite) {
+    public PageVue<FinancesDto.ImpayeVue> impayes(UUID anneeId, UUID classeId, LocalDate limite,
+                                                  String terme, Pageable page) {
         LocalDate borne = limite != null ? limite : LocalDate.now();
         List<UUID> classeIds = classeId != null
                 ? List.of(classeId)
                 : classes.findByAnneeScolaireIdOrderByNom(anneeId).stream().map(Classe::getId).toList();
         if (classeIds.isEmpty()) {
-            return List.of();
+            return PageVue.de(List.of(), page);
         }
         List<EcheanceEleve> liste = echeances.impayes(classeIds, StatutEcheance.PAYEE, borne);
         liste.forEach(facturation::rafraichirStatut);
 
-        return liste.stream()
+        List<FinancesDto.ImpayeVue> lignes = liste.stream()
                 .filter(e -> FacturationService.reste(e).signum() > 0)
                 .map(e -> {
                     Inscription inscription = e.getFraisEleve().getInscription();
@@ -166,13 +169,28 @@ public class CaisseService {
                             e.getDateEcheance(), e.getMontantDu(), e.getMontantPaye(),
                             FacturationService.reste(e), e.getStatut());
                 })
+                // Le reste à payer n'est connu qu'ici : le filtre et le découpage
+                // en pages se font donc en mémoire, sur les lignes déjà réduites
+                // par la classe et la date limite.
+                .filter(vue -> correspond(vue, terme))
                 .toList();
+        return PageVue.de(lignes, page);
+    }
+
+    /** Recherche libre sur le matricule, le nom, le prénom et le type de frais. */
+    private static boolean correspond(FinancesDto.ImpayeVue vue, String terme) {
+        if (terme == null || terme.isBlank()) {
+            return true;
+        }
+        String cherche = terme.trim().toLowerCase();
+        return (vue.matricule() + ' ' + vue.nom() + ' ' + vue.prenom() + ' '
+                + vue.classeNom() + ' ' + vue.typeFraisLibelle()).toLowerCase().contains(cherche);
     }
 
     // ---------- Journal de caisse et recouvrement (SF-32) ----------
 
     @Transactional(readOnly = true)
-    public FinancesDto.JournalCaisse journal(LocalDate journee) {
+    public FinancesDto.JournalCaisse journal(LocalDate journee, Pageable page) {
         List<Paiement> liste = paiements.findByJourneeCaisseOrderByIdAsc(journee);
         Map<ModePaiement, BigDecimal> parMode = new LinkedHashMap<>();
         BigDecimal total = BigDecimal.ZERO;
@@ -188,7 +206,7 @@ public class CaisseService {
                 .sorted(Comparator.comparing(t -> t.mode().name()))
                 .toList();
         return new FinancesDto.JournalCaisse(journee, total, totaux,
-                liste.stream().map(facturation::versVue).toList());
+                PageVue.de(liste.stream().map(facturation::versVue).toList(), page));
     }
 
     /** Tableau de bord du recouvrement d'une année scolaire (SF-32). */

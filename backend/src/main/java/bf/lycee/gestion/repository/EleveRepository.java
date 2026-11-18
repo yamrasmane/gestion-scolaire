@@ -7,10 +7,12 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface EleveRepository extends JpaRepository<Eleve, UUID> {
+public interface EleveRepository
+        extends JpaRepository<Eleve, UUID>, JpaSpecificationExecutor<Eleve> {
 
     Optional<Eleve> findByMatricule(String matricule);
 

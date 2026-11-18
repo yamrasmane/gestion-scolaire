@@ -288,8 +288,8 @@ class FinancesIntegrationTest {
         mvc.perform(get("/api/annees-scolaires/" + annee + "/impayes").with(INTENDANT)
                         .param("classeId", classe6A.toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].matricule").value("EL-001"))
-                .andExpect(jsonPath("$[0].statut").value("EN_RETARD"));
+                .andExpect(jsonPath("$.contenu[0].matricule").value("EL-001"))
+                .andExpect(jsonPath("$.contenu[0].statut").value("EN_RETARD"));
     }
 
     @Test

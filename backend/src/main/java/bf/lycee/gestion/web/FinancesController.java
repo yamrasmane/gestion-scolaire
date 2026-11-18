@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -210,18 +212,21 @@ public class FinancesController {
 
     @GetMapping("/annees-scolaires/{anneeId}/impayes")
     @PreAuthorize(Roles.FINANCES_LECTURE)
-    public List<FinancesDto.ImpayeVue> impayes(
+    public PageVue<FinancesDto.ImpayeVue> impayes(
             @PathVariable UUID anneeId,
             @RequestParam(required = false) UUID classeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate limite) {
-        return caisse.impayes(anneeId, classeId, limite);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate limite,
+            @RequestParam(defaultValue = "") String recherche,
+            @PageableDefault(size = 25) Pageable page) {
+        return caisse.impayes(anneeId, classeId, limite, recherche, page);
     }
 
     @GetMapping("/caisse/journal")
     @PreAuthorize(Roles.FINANCES_LECTURE)
     public FinancesDto.JournalCaisse journal(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate journee) {
-        return caisse.journal(journee != null ? journee : LocalDate.now());
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate journee,
+            @PageableDefault(size = 25) Pageable page) {
+        return caisse.journal(journee != null ? journee : LocalDate.now(), page);
     }
 
     @GetMapping("/annees-scolaires/{anneeId}/recouvrement")

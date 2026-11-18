@@ -11,6 +11,7 @@ import bf.lycee.gestion.imports.LecteurTableur;
 import bf.lycee.gestion.imports.LecteurTableur.Ligne;
 import bf.lycee.gestion.imports.RapportImport;
 import bf.lycee.gestion.repository.AnneeScolaireRepository;
+import bf.lycee.gestion.repository.Criteres;
 import bf.lycee.gestion.repository.ClasseRepository;
 import bf.lycee.gestion.repository.EleveRepository;
 import bf.lycee.gestion.repository.InscriptionRepository;
@@ -18,6 +19,7 @@ import bf.lycee.gestion.web.EleveDto.CorrectionCategorie;
 import bf.lycee.gestion.web.EleveDto.EleveVue;
 import bf.lycee.gestion.web.EleveDto.InscriptionManuelle;
 import bf.lycee.gestion.web.EleveDto.InscriptionVue;
+import bf.lycee.gestion.web.PageVue;
 import bf.lycee.gestion.web.EleveDto.LigneImport;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,15 +76,25 @@ public class EleveService {
     }
 
     @Transactional(readOnly = true)
-    public List<EleveVue> rechercher(String terme) {
-        String nettoye = terme == null ? "" : terme.trim();
-        return eleves.rechercher(nettoye, PageRequest.of(0, 50)).stream().map(EleveVue::de).toList();
+    public PageVue<EleveVue> rechercher(String terme, Sexe sexe, LocalDate neApres,
+                                        LocalDate neAvant, Pageable page) {
+        Specification<Eleve> criteres = Specification.allOf(
+                Criteres.eleveRecherche(terme),
+                Criteres.eleveSexe(sexe),
+                Criteres.eleveNeEntre(neApres, neAvant));
+        return PageVue.de(eleves.findAll(criteres, page), EleveVue::de);
     }
 
     @Transactional(readOnly = true)
-    public List<InscriptionVue> inscriptionsDeLaClasse(UUID classeId) {
-        return inscriptions.findByClasseIdOrderByEleveNomAscElevePrenomAsc(classeId).stream()
-                .map(InscriptionVue::de).toList();
+    public PageVue<InscriptionVue> inscriptionsDeLaClasse(UUID classeId, String terme,
+                                                          StatutInscription statut,
+                                                          Boolean redoublant, Pageable page) {
+        Specification<Inscription> criteres = Specification.allOf(
+                Criteres.inscriptionClasse(classeId),
+                Criteres.inscriptionRecherche(terme),
+                Criteres.inscriptionStatut(statut),
+                Criteres.inscriptionRedoublant(redoublant));
+        return PageVue.de(inscriptions.findAll(criteres, page), InscriptionVue::de);
     }
 
     /** Inscription manuelle : crée la fiche élève si le matricule est inconnu. */

@@ -9,6 +9,9 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import bf.lycee.gestion.domain.enums.RolePersonnel;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,9 +36,14 @@ public class PersonnelController {
         this.service = service;
     }
 
+    /** Liste paginée du personnel : recherche libre, rôle et état du compte. */
     @GetMapping
-    public List<PersonnelDto.Vue> lister() {
-        return service.lister();
+    public PageVue<PersonnelDto.Vue> lister(
+            @RequestParam(defaultValue = "") String recherche,
+            @RequestParam(required = false) RolePersonnel role,
+            @RequestParam(required = false) Boolean actif,
+            @PageableDefault(size = 25, sort = {"nom", "prenom"}) Pageable page) {
+        return service.lister(recherche, role, actif, page);
     }
 
     @PostMapping

@@ -93,9 +93,10 @@ class DonneesDemoIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[7].nom").isNotEmpty());
 
-        mvc.perform(get("/api/classes/" + sixiemeA + "/inscriptions").with(DIRECTEUR))
+        mvc.perform(get("/api/classes/" + sixiemeA + "/inscriptions").with(DIRECTEUR)
+                        .param("size", "40"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[17].eleve.matricule").isNotEmpty());
+                .andExpect(jsonPath("$.contenu[17].eleve.matricule").isNotEmpty());
     }
 
     @Test
@@ -155,9 +156,10 @@ class DonneesDemoIntegrationTest {
         mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/impayes").with(DIRECTEUR)
                         .param("classeId", sixiemeA.toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].matricule").isNotEmpty())
-                .andExpect(jsonPath("$[0].reste").isNumber())
-                .andExpect(jsonPath("$[0].statut").isNotEmpty());
+                .andExpect(jsonPath("$.contenu[0].matricule").isNotEmpty())
+                .andExpect(jsonPath("$.contenu[0].reste").isNumber())
+                .andExpect(jsonPath("$.contenu[0].statut").isNotEmpty())
+                .andExpect(jsonPath("$.total").isNumber());
     }
 
     @Test
@@ -166,7 +168,7 @@ class DonneesDemoIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").isNumber())
                 .andExpect(jsonPath("$.totauxParMode[0].mode").isNotEmpty())
-                .andExpect(jsonPath("$.paiements[0].numeroRecu").isNotEmpty());
+                .andExpect(jsonPath("$.paiements.contenu[0].numeroRecu").isNotEmpty());
 
         mvc.perform(get("/api/annees-scolaires/" + anneeCourante + "/recouvrement").with(DIRECTEUR))
                 .andExpect(status().isOk())

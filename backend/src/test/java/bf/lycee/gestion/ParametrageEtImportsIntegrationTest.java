@@ -256,9 +256,9 @@ class ParametrageEtImportsIntegrationTest {
 
         mvc.perform(get("/api/personnel").with(DIRECTEUR))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].nom").value("KABORE"))
-                .andExpect(jsonPath("$[0].compteCree").value(false));
+                .andExpect(jsonPath("$.total").value(3))
+                .andExpect(jsonPath("$.contenu[0].nom").value("KABORE"))
+                .andExpect(jsonPath("$.contenu[0].compteCree").value(false));
     }
 
     @Test
@@ -376,11 +376,11 @@ class ParametrageEtImportsIntegrationTest {
                 Integer.class)).isEqualTo(2);
         mvc.perform(get("/api/classes/" + cinquieme2026 + "/inscriptions").with(ENSEIGNANT))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].eleve.nom").value("KABORE"))
-                .andExpect(jsonPath("$[0].categorie").value("NOUVEAU"))
-                .andExpect(jsonPath("$[0].redoublant").value(true))
-                .andExpect(jsonPath("$[1].categorie").value("ANCIEN"));
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.contenu[0].eleve.nom").value("KABORE"))
+                .andExpect(jsonPath("$.contenu[0].categorie").value("NOUVEAU"))
+                .andExpect(jsonPath("$.contenu[0].redoublant").value(true))
+                .andExpect(jsonPath("$.contenu[1].categorie").value("ANCIEN"));
         mvc.perform(get("/api/annees-scolaires/" + annee2026 + "/classes").with(ENSEIGNANT))
                 .andExpect(jsonPath("$[0].effectif").value(2));
 
@@ -393,8 +393,8 @@ class ParametrageEtImportsIntegrationTest {
 
         mvc.perform(get("/api/eleves").param("recherche", "kab").with(ENSEIGNANT))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].matricule").value("E003"));
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.contenu[0].matricule").value("E003"));
     }
 
     @Test

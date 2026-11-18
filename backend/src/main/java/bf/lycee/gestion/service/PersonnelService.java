@@ -6,7 +6,9 @@ import bf.lycee.gestion.imports.LecteurTableur;
 import bf.lycee.gestion.imports.LecteurTableur.Ligne;
 import bf.lycee.gestion.imports.RapportImport;
 import bf.lycee.gestion.provisionnement.ProvisionnementComptes;
+import bf.lycee.gestion.repository.Criteres;
 import bf.lycee.gestion.repository.PersonnelRepository;
+import bf.lycee.gestion.web.PageVue;
 import bf.lycee.gestion.web.PersonnelDto.Creation;
 import bf.lycee.gestion.web.PersonnelDto.LigneImport;
 import bf.lycee.gestion.web.PersonnelDto.Modification;
@@ -23,6 +25,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,8 +60,12 @@ public class PersonnelService {
     }
 
     @Transactional(readOnly = true)
-    public List<Vue> lister() {
-        return personnels.findAllByOrderByNomAscPrenomAsc().stream().map(Vue::de).toList();
+    public PageVue<Vue> lister(String terme, RolePersonnel role, Boolean actif, Pageable page) {
+        Specification<Personnel> criteres = Specification.allOf(
+                Criteres.personnelRecherche(terme),
+                Criteres.personnelRole(role),
+                Criteres.personnelActif(actif));
+        return PageVue.de(personnels.findAll(criteres, page), Vue::de);
     }
 
     public Resultat creer(Creation saisie) {

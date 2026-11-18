@@ -9,6 +9,12 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import bf.lycee.gestion.domain.enums.Sexe;
+import bf.lycee.gestion.domain.enums.StatutInscription;
+import java.time.LocalDate;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,14 +38,29 @@ public class EleveController {
         this.service = service;
     }
 
+    /**
+     * Liste paginée des élèves. Critères cumulables : recherche libre
+     * (matricule, nom, prénom, parent), sexe et intervalle de naissance.
+     */
     @GetMapping("/eleves")
-    public List<EleveDto.EleveVue> rechercher(@RequestParam(defaultValue = "") String recherche) {
-        return service.rechercher(recherche);
+    public PageVue<EleveDto.EleveVue> rechercher(
+            @RequestParam(defaultValue = "") String recherche,
+            @RequestParam(required = false) Sexe sexe,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neApres,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neAvant,
+            @PageableDefault(size = 25, sort = {"nom", "prenom"}) Pageable page) {
+        return service.rechercher(recherche, sexe, neApres, neAvant, page);
     }
 
+    /** Liste paginée des inscriptions d'une classe, avec recherche et filtres. */
     @GetMapping("/classes/{classeId}/inscriptions")
-    public List<EleveDto.InscriptionVue> inscriptions(@PathVariable UUID classeId) {
-        return service.inscriptionsDeLaClasse(classeId);
+    public PageVue<EleveDto.InscriptionVue> inscriptions(
+            @PathVariable UUID classeId,
+            @RequestParam(defaultValue = "") String recherche,
+            @RequestParam(required = false) StatutInscription statut,
+            @RequestParam(required = false) Boolean redoublant,
+            @PageableDefault(size = 25, sort = {"eleve.nom", "eleve.prenom"}) Pageable page) {
+        return service.inscriptionsDeLaClasse(classeId, recherche, statut, redoublant, page);
     }
 
     @PostMapping("/classes/{classeId}/inscriptions")

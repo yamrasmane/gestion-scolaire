@@ -150,8 +150,9 @@ public final class FinancesDto {
     public record TotalParMode(ModePaiement mode, BigDecimal total) {
     }
 
+    /** Le total et les totaux par mode portent sur la journée entière, pas sur la page. */
     public record JournalCaisse(LocalDate journee, BigDecimal total, List<TotalParMode> totauxParMode,
-                                List<PaiementVue> paiements) {
+                                PageVue<PaiementVue> paiements) {
     }
 
     /** Tableau de bord du recouvrement d'une année (SF-32). */

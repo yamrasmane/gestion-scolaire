@@ -196,6 +196,7 @@ class AdministrateurIntegrationTest {
 
         mvc.perform(get("/api/personnel").with(ADMIN))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].matricule").value("P-100"));
+                .andExpect(jsonPath("$.contenu[0].matricule").value("P-100"))
+                .andExpect(jsonPath("$.total").value(1));
     }
 }

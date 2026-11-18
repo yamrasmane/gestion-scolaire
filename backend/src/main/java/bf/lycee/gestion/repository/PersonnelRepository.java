@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface PersonnelRepository extends JpaRepository<Personnel, UUID> {
+public interface PersonnelRepository
+        extends JpaRepository<Personnel, UUID>, JpaSpecificationExecutor<Personnel> {
 
     List<Personnel> findAllByOrderByNomAscPrenomAsc();
 
