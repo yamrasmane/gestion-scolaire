@@ -815,6 +815,17 @@ export class ApiService {
     });
   }
 
+  /**
+   * Document édité par le moteur Jasper. Le format (pdf, xlsx, docx, html,
+   * csv) fait partie des critères ; la réponse est le fichier lui-même.
+   */
+  document(chemin: string, criteres: Record<string, unknown> = {}): Observable<Blob> {
+    return this.http.get(`${this.base}/rapports${chemin}`, {
+      params: parametres(criteres),
+      responseType: 'blob',
+    });
+  }
+
   journalCaisse(journee: string, pagination: Pagination = {}): Observable<JournalCaisse> {
     return this.http.get<JournalCaisse>(`${this.base}/caisse/journal`, {
       params: parametres({ journee, ...pagination }),

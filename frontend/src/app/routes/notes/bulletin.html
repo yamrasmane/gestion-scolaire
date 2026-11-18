@@ -5,10 +5,11 @@
 @if (bulletin(); as b) {
   <div class="feuille">
     <div class="barre-outils">
-      <button matButton="filled" (click)="imprimer()">
-        <mat-icon>print</mat-icon>
-        Imprimer
-      </button>
+      <app-bouton-document
+        [chemin]="'/bulletins/' + inscriptionId() + '/trimestres/' + trimestreId()"
+        [nom]="'bulletin-' + b.matricule + '-T' + b.trimestreNumero"
+        libelle="Imprimer le bulletin"
+      />
     </div>
 
     <article class="bulletin">

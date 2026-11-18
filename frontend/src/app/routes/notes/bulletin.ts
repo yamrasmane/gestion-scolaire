@@ -3,16 +3,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 import { ApiService, Bulletin as BulletinVue, messageErreur } from '@core/api.service';
+import { BoutonDocument } from '@shared/composants/bouton-document';
 
 /**
- * Bulletin trimestriel imprimable (SF-17, SF-18). Le navigateur se charge de
- * l'impression ou de l'enregistrement en PDF.
+ * Bulletin trimestriel (SF-17, SF-18). L'aperçu à l'écran sert à vérifier les
+ * notes ; le document remis à la famille est édité par le serveur à partir du
+ * modèle Jasper « bulletin », au format choisi.
  */
 @Component({
   selector: 'app-bulletin',
   templateUrl: './bulletin.html',
   styleUrl: './bulletin.scss',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, BoutonDocument],
 })
 export class Bulletin {
   private readonly api = inject(ApiService);
@@ -30,9 +32,5 @@ export class Bulletin {
         error: (e) => this.erreur.set(messageErreur(e)),
       });
     });
-  }
-
-  protected imprimer(): void {
-    window.print();
   }
 }

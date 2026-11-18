@@ -20,6 +20,7 @@ import {
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { aujourdhui, enIso } from '@shared/composants/dates';
 import { EtatListe } from '@shared/composants/etat-liste';
+import { BoutonDocument } from '@shared/composants/bouton-document';
 
 /** Journal de caisse quotidien (SF-32). */
 @Component({
@@ -45,10 +46,12 @@ import { EtatListe } from '@shared/composants/etat-liste';
             <mat-datepicker-toggle matIconSuffix [for]="calendrier" />
             <mat-datepicker #calendrier />
           </mat-form-field>
-          <button matButton="tonal" (click)="imprimer()">
-            <mat-icon>print</mat-icon>
-            Imprimer
-          </button>
+          <app-bouton-document
+            chemin="/journal-caisse"
+            [nom]="'journal-' + journeeIso()"
+            [criteres]="{ journee: journeeIso() }"
+            libelle="Éditer le journal"
+          />
         </div>
 
         @if (journal(); as j) {
@@ -149,6 +152,7 @@ import { EtatListe } from '@shared/composants/etat-liste';
     MatDatepickerModule,
     MatPaginatorModule,
     PageHeader,
+    BoutonDocument,
   ],
 })
 export class JournalCaisse {
@@ -178,6 +182,9 @@ export class JournalCaisse {
     this.charger();
   }
 
+  /** La journée au format de l'API, pour l'édition du document. */
+  protected readonly journeeIso = () => enIso(this.journee()) ?? aujourdhui();
+
   protected choisir(journee: Date | null): void {
     this.journee.set(journee ?? new Date());
     this.liste.auDebut();
@@ -193,10 +200,6 @@ export class JournalCaisse {
         CHEQUE: 'Chèque',
       } as Record<ModePaiement, string>
     )[mode];
-  }
-
-  protected imprimer(): void {
-    window.print();
   }
 
   protected charger(): void {

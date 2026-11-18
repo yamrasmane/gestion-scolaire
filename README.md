@@ -135,6 +135,49 @@ cherchent au clavier**, et toutes les dates se saisissent dans un **calendrier**
 L'interface s'adapte au téléphone : sur petit écran, chaque ligne de tableau devient une fiche dont
 les valeurs portent le nom de leur colonne.
 
+## Édition des documents (JasperReports)
+
+Tous les documents — reçus, bulletins, état des impayés, journal de caisse — sont produits par
+**JasperReports**, à partir des modèles de `backend/src/main/resources/rapports/`.
+
+Un seul moteur les fabrique tous (`rapports/ServiceRapports.java`) : on lui donne le **nom du
+fichier Jasper**, les **données** et les **paramètres**, et il rend le document dans le format
+demandé.
+
+**Le format est au choix** : `?format=pdf` (défaut), `xlsx`, `docx`, `html` ou `csv`. Dans
+l'interface, le bouton principal édite le format courant et le menu à côté offre les autres.
+
+| Document | Adresse |
+|---|---|
+| Reçu de règlement | `GET /api/rapports/recus/{paiementId}?duplicata=&format=` |
+| Bulletin | `GET /api/rapports/bulletins/{inscriptionId}/trimestres/{trimestreId}?format=` |
+| État des impayés | `GET /api/rapports/impayes/{anneeId}?classeId=&limite=&recherche=&format=` |
+| Journal de caisse | `GET /api/rapports/journal-caisse?journee=&format=` |
+
+**Données et paramètres.** Ce qui se répète (les lignes du tableau) est transmis en **JSON** ; ce
+qui ne se répète pas — nom de l'établissement, ministère, adresse, élève, classe, totaux, date
+d'édition — est transmis en **paramètres** Jasper, en lettres capitales (`ETABLISSEMENT`,
+`MINISTERE`, `ADRESSE`, `ELEVE`, `MOYENNE_GENERALE`, `TOTAL`…). L'entête de l'établissement se
+règle dans `application.yml`, sous `lycee.etablissement`.
+
+### Modifier un document
+
+1. Récupérez le **modèle de données** du document en ajoutant `modele=true` à son adresse : le
+   serveur renvoie le JSON exact que verra Jasper, par exemple
+   `GET /api/rapports/bulletins/{id}/trimestres/{id}?modele=true`. Enregistrez-le en `.json`.
+2. Ouvrez le `.jrxml` du document dans **Jaspersoft Studio**, créez un adaptateur de données
+   « JSON file » pointant sur ce fichier, et dessinez librement. La requête `jsonql` du rapport
+   (`lignes` par défaut) décide des lignes imprimées ; les champs disponibles sont ceux du modèle,
+   les valeurs d'entête sont les paramètres déjà déclarés.
+3. Déposez le `.jasper` compilé (ou le `.jrxml`, compilé alors à la volée) dans le dossier
+   `lycee.rapports.dossier` — `RAPPORTS_DOSSIER` dans l'environnement. Il remplace le modèle livré
+   **sans reconstruire l'application** et sans redémarrage : la date du fichier suffit à le
+   reprendre.
+
+```bash
+export RAPPORTS_DOSSIER=/opt/lycee/rapports   # puis y déposer bulletin.jasper, recu.jasper, …
+```
+
 ## Règles de calcul
 
 **Moyenne d'une matière** (SF-13) : seules les notes saisies et non marquées « absent » comptent.

@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 import { ApiService, ModePaiement, Recu as RecuVue, messageErreur } from '@core/api.service';
+import { BoutonDocument } from '@shared/composants/bouton-document';
 
 /**
  * Reçu imprimable (SF-30). Le navigateur se charge de l'impression ou de
@@ -19,10 +20,12 @@ import { ApiService, ModePaiement, Recu as RecuVue, messageErreur } from '@core/
     @if (recu(); as r) {
       <div class="feuille">
         <div class="barre-outils">
-          <button matButton="filled" (click)="imprimer()">
-            <mat-icon>print</mat-icon>
-            Imprimer
-          </button>
+          <app-bouton-document
+            [chemin]="'/recus/' + paiementId()"
+            [nom]="'recu-' + r.numeroRecu"
+            [criteres]="{ duplicata: duplicata() === 'true' }"
+            libelle="Imprimer le reçu"
+          />
         </div>
 
         <article class="recu">
@@ -220,7 +223,7 @@ import { ApiService, ModePaiement, Recu as RecuVue, messageErreur } from '@core/
       }
     }
   `,
-  imports: [DatePipe, DecimalPipe, MatButtonModule, MatIconModule],
+  imports: [DatePipe, DecimalPipe, MatButtonModule, MatIconModule, BoutonDocument],
 })
 export class Recu {
   private readonly api = inject(ApiService);
@@ -250,9 +253,5 @@ export class Recu {
         CHEQUE: 'Chèque',
       } as Record<ModePaiement, string>
     )[mode];
-  }
-
-  protected imprimer(): void {
-    window.print();
   }
 }

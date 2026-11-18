@@ -19,6 +19,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 import { enIso } from '@shared/composants/dates';
 import { EtatListe } from '@shared/composants/etat-liste';
+import { BoutonDocument } from '@shared/composants/bouton-document';
 
 /** Liste des échéances échues non soldées et tableau de bord (SF-31, SF-32). */
 @Component({
@@ -123,16 +124,14 @@ import { EtatListe } from '@shared/composants/etat-liste';
                 Effacer
               </button>
             }
-            <button
-              matButton="tonal"
-              type="button"
+            <app-bouton-document
               class="bouton-filtre"
-              [disabled]="liste.total() === 0 || export.enCours"
-              (click)="exporter()"
-            >
-              <mat-icon>download</mat-icon>
-              Exporter en CSV
-            </button>
+              [chemin]="'/impayes/' + contexte.anneeId()"
+              nom="etat-des-impayes"
+              libelle="Éditer l'état"
+              formatDefaut="xlsx"
+              [criteres]="criteresDocument()"
+            />
           </form>
 
           @if (impayes().length === 0) {
@@ -233,6 +232,7 @@ import { EtatListe } from '@shared/composants/etat-liste';
     MtxSelectModule,
     PageHeader,
     AnneeRequise,
+    BoutonDocument,
   ],
 })
 export class Impayes {
@@ -258,7 +258,6 @@ export class Impayes {
   /** Date gardée telle que le calendrier la rend : une dérivée recalculée à
    * chaque affichage relancerait sans fin la détection de changement. */
   protected readonly limite = signal<Date | null>(null);
-  protected readonly export = { enCours: false };
 
   /** Somme des restes dus de la page affichée. */
   protected readonly total = computed(() =>
@@ -315,59 +314,6 @@ export class Impayes {
     this.charger();
   }
 
-  /**
-   * Export CSV, ouvrable dans Excel (SF-31). La liste étant paginée, on
-   * redemande à l'API toutes les lignes qui répondent à la recherche.
-   */
-  protected exporter(): void {
-    const anneeId = this.contexte.anneeId();
-    if (!anneeId) {
-      return;
-    }
-    this.export.enCours = true;
-    this.api.impayes(anneeId, { ...this.criteres(), page: 0, taille: 5000 }).subscribe({
-      next: (page) => {
-        this.ecrireCsv(page.contenu);
-        this.export.enCours = false;
-      },
-      error: (e) => {
-        this.erreur.set(messageErreur(e));
-        this.export.enCours = false;
-      },
-    });
-  }
-
-  private ecrireCsv(lignesImpayees: Impaye[]): void {
-    const entetes = [
-      'Matricule',
-      'Nom',
-      'Prénom',
-      'Classe',
-      'Frais',
-      'Tranche',
-      'Échéance',
-      'Reste dû',
-    ];
-    const lignes = lignesImpayees.map((i) =>
-      [
-        i.matricule,
-        i.nom,
-        i.prenom,
-        i.classeNom,
-        i.typeFraisLibelle,
-        i.trancheLibelle,
-        i.dateEcheance,
-        i.reste,
-      ].join(';'),
-    );
-    const contenu = '﻿' + [entetes.join(';'), ...lignes].join('\n');
-    const lien = document.createElement('a');
-    lien.href = URL.createObjectURL(new Blob([contenu], { type: 'text/csv;charset=utf-8' }));
-    lien.download = `impayes-${this.contexte.annee()?.libelle ?? ''}.csv`;
-    lien.click();
-    URL.revokeObjectURL(lien.href);
-  }
-
   protected charger(): void {
     const anneeId = this.contexte.anneeId();
     if (!anneeId) {
@@ -384,6 +330,11 @@ export class Impayes {
         this.liste.chargement.set(false);
       },
     });
+  }
+
+  /** Mêmes critères que la liste affichée : l'état édité correspond à l'écran. */
+  protected criteresDocument(): Record<string, unknown> {
+    return this.criteres();
   }
 
   private criteres() {
