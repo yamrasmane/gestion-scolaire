@@ -153,7 +153,7 @@
     </detail>
 
     <columnFooter>
-        <band height="16">
+        <band height="22">
             <line>
                 <reportElement x="0" y="2" width="762" height="1"/>
             </line>

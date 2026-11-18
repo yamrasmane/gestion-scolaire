@@ -215,6 +215,17 @@
         </band>
     </detail>
 
+    <pageFooter>
+        <band height="16">
+            <textField>
+                <reportElement x="0" y="2" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="7"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{DEVISE} + "   ·   édité le " + $P{DATE_EDITION}]]>
+                </textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
     <summary>
         <band height="150">
             <line>
@@ -276,15 +287,4 @@
         </band>
     </summary>
 
-    <pageFooter>
-        <band height="16">
-            <textField>
-                <reportElement x="0" y="2" width="515" height="12"/>
-                <textElement textAlignment="Center"><font size="7"/></textElement>
-                <textFieldExpression>
-                    <![CDATA[$P{DEVISE} + "   ·   édité le " + $P{DATE_EDITION}]]>
-                </textFieldExpression>
-            </textField>
-        </band>
-    </pageFooter>
 </jasperReport>

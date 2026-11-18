@@ -102,6 +102,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Analyseur de requêtes de Jasper (jsonql) -->
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>2.7.7</version>
+        </dependency>
         <!-- Compilation des .jrxml modifiés dans Jaspersoft Studio -->
         <dependency>
             <groupId>org.eclipse.jdt</groupId>
