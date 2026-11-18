@@ -92,8 +92,7 @@ public class ServiceRapports {
                              FormatRapport format) {
         try {
             JasperReport rapport = charger(nomRapport);
-            JasperPrint impression = JasperFillManager.fillReport(rapport,
-                    parametresComplets(parametres), sourceJson(donnees));
+            JasperPrint impression = remplir(rapport, parametres, donnees);
             byte[] contenu = exporter(impression, format);
             return new Document(contenu, nomRapport + '.' + format.extension(), format);
         } catch (JRException | IOException e) {
@@ -109,10 +108,7 @@ public class ServiceRapports {
      */
     public String modeleJson(Object donnees) {
         try {
-            Object racine = donnees instanceof java.util.Collection<?> liste
-                    ? Map.of("lignes", liste)
-                    : donnees;
-            return json.writerWithDefaultPrettyPrinter().writeValueAsString(racine);
+            return json.writerWithDefaultPrettyPrinter().writeValueAsString(racine(donnees));
         } catch (IOException e) {
             throw new RapportException("Modèle de données illisible : " + e.getMessage(), e);
         }
@@ -180,23 +176,48 @@ public class ServiceRapports {
     // ---------- Données et paramètres ----------
 
     /**
-     * Les données partent en JSON ; la requête {@code jsonql} écrite dans le
-     * .jrxml choisit le nœud sur lequel le rapport itère.
+     * Remplit le rapport avec les données.
+     *
+     * <p>Quand le .jrxml porte une requête {@code jsonql} — c'est le cas de
+     * tous les modèles livrés —, le flux JSON est passé en paramètre et c'est
+     * <strong>la requête du fichier Jasper</strong> qui choisit le nœud sur
+     * lequel itérer : un maquettiste peut donc changer ce nœud dans Jaspersoft
+     * Studio sans toucher au code. Sans requête, on se rabat sur les lignes.
      */
-    private JsonQLDataSource sourceJson(Object donnees) throws JRException, IOException {
-        // Modèle uniforme : les lignes répétées d'un document vivent toujours
-        // sous « lignes ». Un rapport itère donc sur `lignes`, quel qu'il soit,
-        // et son entête se lit dans les paramètres.
-        Object racine = donnees instanceof java.util.Collection<?> liste
-                ? Map.of("lignes", liste)
-                : donnees == null ? Map.of("lignes", java.util.List.of()) : donnees;
-        byte[] contenu = json.writeValueAsBytes(racine);
-        JsonQLDataSource source = new JsonQLDataSource(new ByteArrayInputStream(contenu));
-        // Dates et nombres sont sérialisés au format ISO, sans dépendre de la
-        // langue de la machine.
+    private JasperPrint remplir(JasperReport rapport, Map<String, Object> parametres,
+                                Object donnees) throws JRException, IOException {
+        byte[] contenu = json.writeValueAsBytes(racine(donnees));
+        Map<String, Object> tous = parametresComplets(parametres);
+        boolean requeteJson = rapport.getQuery() != null
+                && "jsonql".equalsIgnoreCase(rapport.getQuery().getLanguage());
+        if (requeteJson) {
+            // Noms des paramètres intégrés de l'exécuteur de requêtes JSON.
+            tous.put("JSON_INPUT_STREAM", new ByteArrayInputStream(contenu));
+            tous.put("JSON_DATE_PATTERN", "yyyy-MM-dd");
+            tous.put("JSON_NUMBER_PATTERN", "#0.###");
+            tous.put("JSON_LOCALE", java.util.Locale.FRANCE);
+            return JasperFillManager.fillReport(rapport, tous);
+        }
+        return JasperFillManager.fillReport(rapport, tous, sourceJson(contenu));
+    }
+
+    /** Source de repli, positionnée d'office sur les lignes du document. */
+    private JsonQLDataSource sourceJson(byte[] contenu) throws JRException {
+        JsonQLDataSource source = new JsonQLDataSource(new ByteArrayInputStream(contenu), "lignes");
         source.setDatePattern("yyyy-MM-dd");
         source.setNumberPattern("#0.###");
         return source;
+    }
+
+    /**
+     * Modèle uniforme : les lignes répétées d'un document vivent toujours sous
+     * « lignes », l'entête se lit dans les paramètres.
+     */
+    private Object racine(Object donnees) {
+        if (donnees instanceof java.util.Collection<?> liste) {
+            return Map.of("lignes", liste);
+        }
+        return donnees == null ? Map.of("lignes", java.util.List.of()) : donnees;
     }
 
     /** Paramètres du rapport : ceux de l'appelant, plus l'entête de l'établissement. */

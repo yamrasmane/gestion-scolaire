@@ -106,7 +106,11 @@ class RapportsIntegrationTest {
         assertThat(csv).contains("REC-2026-000001").contains("M. Ouédraogo");
         String html = new String(rapports.produire("journal-caisse", lignes, parametres,
                 FormatRapport.HTML).contenu(), StandardCharsets.UTF_8);
-        assertThat(html).contains("JOURNAL DE CAISSE").contains("12/10/2026");
+        assertThat(html)
+                .contains("JOURNAL DE CAISSE")   // entête : paramètre
+                .contains("12/10/2026")          // entête : paramètre
+                .contains("REC-2026-000001")     // ligne : données JSON
+                .contains("SAWADOGO Issa");
     }
 
     @Test
@@ -155,6 +159,14 @@ class RapportsIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         assertThat(pdf.getResponse().getContentAsByteArray()).hasSizeGreaterThan(1000);
+
+        // Les matières du bulletin doivent figurer dans le document, pas seulement l'entête.
+        String texte = mvc.perform(get("/api/rapports/bulletins/" + inscription
+                        + "/trimestres/" + premierTrimestre)
+                        .param("format", "csv").with(DIRECTEUR))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(texte).contains("Mathématiques").contains("BULLETIN DE NOTES");
 
         MvcResult classeur = mvc.perform(get("/api/rapports/bulletins/" + inscription
                         + "/trimestres/" + premierTrimestre)
