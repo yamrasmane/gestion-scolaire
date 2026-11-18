@@ -76,12 +76,40 @@ public class PersonnelService {
         return new Resultat(Vue.de(personnel), avertissement);
     }
 
+    /**
+     * Modifie une fiche, rôle compris. Le rôle est répercuté sur le compte de
+     * connexion quand il existe : sans cela, la personne garderait ses anciens
+     * droits jusqu'à ce qu'on reprenne le compte à la main dans Keycloak.
+     */
     public Vue modifier(UUID id, Modification saisie) {
         Personnel personnel = trouver(id);
+        String email = saisie.email().trim().toLowerCase();
+        if (!EMAIL.matcher(email).matches()) {
+            throw new SaisieInvalideException("Adresse électronique invalide : " + email);
+        }
+        if (!personnel.getEmail().equalsIgnoreCase(email)
+                && personnels.existsByEmailIgnoreCase(email)) {
+            throw new RegleMetierException("Une fiche porte déjà l'adresse " + email);
+        }
+
+        RolePersonnel ancienRole = personnel.getRole();
         personnel.setNom(saisie.nom().trim());
         personnel.setPrenom(saisie.prenom().trim());
+        personnel.setEmail(email);
         personnel.setTelephone(vide(saisie.telephone()));
-        return Vue.de(personnels.save(personnel));
+        personnel.setRole(saisie.role());
+        personnels.save(personnel);
+
+        if (saisie.role() != ancienRole && personnel.getKeycloakId() != null) {
+            try {
+                provisionnement.definirRole(personnel.getKeycloakId(), saisie.role());
+            } catch (RuntimeException e) {
+                LOG.warn("Changement de rôle impossible dans Keycloak pour {}", personnel.getEmail(), e);
+                throw new RegleMetierException("Le rôle n'a pas pu être changé sur le compte de "
+                        + "connexion dans Keycloak ; réessayez plus tard");
+            }
+        }
+        return Vue.de(personnel);
     }
 
     /** Active ou désactive une fiche et, s'il existe, son compte de connexion. */

@@ -1,7 +1,9 @@
 package bf.lycee.gestion.provisionnement;
 
 import bf.lycee.gestion.domain.Personnel;
+import bf.lycee.gestion.domain.enums.RolePersonnel;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -103,6 +105,49 @@ public class KeycloakProvisionnement implements ProvisionnementComptes {
                 .retrieve()
                 .toBodilessEntity();
         return UUID.fromString(id);
+    }
+
+    /**
+     * Retire les rôles métier du compte et pose celui de la fiche : sans ce
+     * retrait, la personne cumulerait son ancien rôle et le nouveau.
+     */
+    @Override
+    public void definirRole(UUID keycloakId, RolePersonnel role) {
+        String jeton = jetonAdministration();
+        String realm = proprietes.realm();
+        List<String> metiers = Arrays.stream(RolePersonnel.values()).map(Enum::name).toList();
+
+        List<Map<String, Object>> poses = http.get()
+                .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, keycloakId)
+                .headers(h -> h.setBearerAuth(jeton))
+                .retrieve()
+                .body(LISTE);
+        List<Map<String, Object>> aRetirer = poses == null ? List.of() : poses.stream()
+                .filter(r -> metiers.contains(String.valueOf(r.get("name"))))
+                .filter(r -> !role.name().equals(String.valueOf(r.get("name"))))
+                .toList();
+        if (!aRetirer.isEmpty()) {
+            http.method(org.springframework.http.HttpMethod.DELETE)
+                    .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, keycloakId)
+                    .headers(h -> h.setBearerAuth(jeton))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(aRetirer)
+                    .retrieve()
+                    .toBodilessEntity();
+        }
+
+        Map<String, Object> nouveau = http.get()
+                .uri("/admin/realms/{realm}/roles/{role}", realm, role.name())
+                .headers(h -> h.setBearerAuth(jeton))
+                .retrieve()
+                .body(OBJET);
+        http.post()
+                .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, keycloakId)
+                .headers(h -> h.setBearerAuth(jeton))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(List.of(nouveau))
+                .retrieve()
+                .toBodilessEntity();
     }
 
     @Override

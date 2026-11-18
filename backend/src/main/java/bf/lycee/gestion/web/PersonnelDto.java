@@ -25,7 +25,9 @@ public final class PersonnelDto {
     public record Modification(
             @NotBlank @Size(max = 100) String nom,
             @NotBlank @Size(max = 100) String prenom,
-            @Size(max = 30) String telephone) {
+            @NotBlank @Email @Size(max = 150) String email,
+            @Size(max = 30) String telephone,
+            @NotNull RolePersonnel role) {
     }
 
     public record Vue(UUID id, String matricule, String nom, String prenom, String email, String telephone,

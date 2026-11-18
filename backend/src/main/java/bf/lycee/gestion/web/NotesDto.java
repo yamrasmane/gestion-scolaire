@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -35,6 +36,34 @@ public final class NotesDto {
 
     public record EnseignementSaisie(@NotNull UUID matiereId, UUID enseignantId,
                                      @NotNull @Positive BigDecimal coefficient) {
+    }
+
+    /** Affectation d'un professeur à une matière d'une classe (SF-10). */
+    public record AffectationSaisie(@NotNull UUID enseignementId, UUID enseignantId) {
+    }
+
+    public record AffectationsSaisie(@NotEmpty @Valid List<AffectationSaisie> affectations) {
+    }
+
+    // ---------- Programme d'un niveau (SF-09) ----------
+
+    public record LigneProgrammeVue(UUID id, UUID niveauId, String niveauCode, String niveauLibelle,
+                                    UUID matiereId, String matiereCode, String matiereLibelle,
+                                    BigDecimal coefficient) {
+    }
+
+    public record LigneProgrammeSaisie(@NotNull UUID matiereId,
+                                       @NotNull @Positive BigDecimal coefficient) {
+    }
+
+    /** Compte rendu de l'application d'un programme aux classes d'un niveau. */
+    public record ApplicationProgramme(int classesTouchees, int matieresAjoutees,
+                                       int coefficientsMisAJour, List<String> details) {
+    }
+
+    /** Service d'un enseignant : ce qu'il enseigne, et où. */
+    public record ChargeEnseignant(UUID enseignantId, String enseignantNom, int nombreClasses,
+                                   BigDecimal totalCoefficients, List<EnseignementVue> enseignements) {
     }
 
     // ---------- Évaluations et saisie des notes (SF-11, SF-12) ----------

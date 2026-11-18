@@ -17,5 +17,12 @@ public interface EnseignementRepository extends JpaRepository<Enseignement, UUID
 
     boolean existsByClasseIdAndMatiereId(UUID classeId, UUID matiereId);
 
+    boolean existsByMatiereId(UUID matiereId);
+
+    List<Enseignement> findByClasseIdIn(java.util.Collection<UUID> classeIds);
+
+    @EntityGraph(attributePaths = {"matiere", "classe", "classe.niveau", "classe.anneeScolaire"})
+    List<Enseignement> findByEnseignantIdOrderByClasseNom(UUID enseignantId);
+
     List<Enseignement> findByEnseignantId(UUID enseignantId);
 }

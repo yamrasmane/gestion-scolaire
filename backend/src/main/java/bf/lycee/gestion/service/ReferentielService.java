@@ -30,13 +30,16 @@ public class ReferentielService {
     private final ClasseRepository classes;
     private final AnneeScolaireRepository annees;
     private final InscriptionRepository inscriptions;
+    private final MatiereService matieres;
 
     public ReferentielService(NiveauRepository niveaux, ClasseRepository classes,
-                              AnneeScolaireRepository annees, InscriptionRepository inscriptions) {
+                              AnneeScolaireRepository annees, InscriptionRepository inscriptions,
+                              MatiereService matieres) {
         this.niveaux = niveaux;
         this.classes = classes;
         this.annees = annees;
         this.inscriptions = inscriptions;
+        this.matieres = matieres;
     }
 
     // ---------- Niveaux ----------
@@ -95,7 +98,11 @@ public class ReferentielService {
         classe.setNiveau(niveau);
         classe.setNom(nom);
         classe.setEffectifMax(saisie.effectifMax());
-        return ClasseVue.de(classes.save(classe), 0);
+        classes.save(classe);
+        // La classe reçoit d'emblée les matières au programme de son niveau ;
+        // il ne reste qu'à désigner les professeurs.
+        matieres.doterDuProgramme(classe);
+        return ClasseVue.de(classe, 0);
     }
 
     public ClasseVue modifierClasse(UUID id, ClasseModification saisie) {

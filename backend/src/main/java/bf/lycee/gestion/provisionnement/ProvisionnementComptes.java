@@ -17,4 +17,7 @@ public interface ProvisionnementComptes {
     UUID creerCompte(Personnel personnel);
 
     void definirActivation(UUID keycloakId, boolean actif);
+
+    /** Remplace le rôle du compte par celui de la fiche. */
+    void definirRole(UUID keycloakId, bf.lycee.gestion.domain.enums.RolePersonnel role);
 }

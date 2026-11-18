@@ -1,6 +1,7 @@
 package bf.lycee.gestion.provisionnement;
 
 import bf.lycee.gestion.domain.Personnel;
+import bf.lycee.gestion.domain.enums.RolePersonnel;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -23,5 +24,10 @@ public class SansProvisionnement implements ProvisionnementComptes {
     @Override
     public void definirActivation(UUID keycloakId, boolean actif) {
         // rien à faire
+    }
+
+    @Override
+    public void definirRole(UUID keycloakId, RolePersonnel role) {
+        // rien à faire : le rôle est posé à la main dans Keycloak
     }
 }

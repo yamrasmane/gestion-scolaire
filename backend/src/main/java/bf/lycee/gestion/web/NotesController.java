@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,6 +50,74 @@ public class NotesController {
     @PreAuthorize(Roles.DIRECTION)
     public NotesDto.MatiereVue creerMatiere(@Valid @RequestBody NotesDto.MatiereSaisie saisie) {
         return matieres.creerMatiere(saisie);
+    }
+
+    @PutMapping("/matieres/{id}")
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.MatiereVue modifierMatiere(@PathVariable UUID id,
+                                               @Valid @RequestBody NotesDto.MatiereSaisie saisie) {
+        return matieres.modifierMatiere(id, saisie);
+    }
+
+    @DeleteMapping("/matieres/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize(Roles.DIRECTION)
+    public void supprimerMatiere(@PathVariable UUID id) {
+        matieres.supprimerMatiere(id);
+    }
+
+    // ---------- Programme d'un niveau (SF-09) ----------
+
+    @GetMapping("/niveaux/{niveauId}/programme")
+    public List<NotesDto.LigneProgrammeVue> programme(@PathVariable UUID niveauId) {
+        return matieres.listerProgramme(niveauId);
+    }
+
+    @PostMapping("/niveaux/{niveauId}/programme")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.LigneProgrammeVue ajouterAuProgramme(
+            @PathVariable UUID niveauId, @Valid @RequestBody NotesDto.LigneProgrammeSaisie saisie) {
+        return matieres.ajouterAuProgramme(niveauId, saisie);
+    }
+
+    @PutMapping("/programme/{ligneId}")
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.LigneProgrammeVue modifierLigneProgramme(
+            @PathVariable UUID ligneId, @Valid @RequestBody NotesDto.LigneProgrammeSaisie saisie) {
+        return matieres.modifierLigneProgramme(ligneId, saisie);
+    }
+
+    @DeleteMapping("/programme/{ligneId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize(Roles.DIRECTION)
+    public void retirerDuProgramme(@PathVariable UUID ligneId) {
+        matieres.retirerDuProgramme(ligneId);
+    }
+
+    /** Applique le programme du niveau aux classes de l'année (SF-09). */
+    @PostMapping("/niveaux/{niveauId}/programme/application")
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.ApplicationProgramme appliquerProgramme(
+            @PathVariable UUID niveauId,
+            @RequestParam UUID anneeId,
+            @RequestParam(defaultValue = "false") boolean alignerCoefficients) {
+        return matieres.appliquerProgramme(niveauId, anneeId, alignerCoefficients);
+    }
+
+    // ---------- Affectation des professeurs (SF-10) ----------
+
+    @PutMapping("/classes/{classeId}/affectations")
+    @PreAuthorize(Roles.DIRECTION)
+    public List<NotesDto.EnseignementVue> affecter(
+            @PathVariable UUID classeId, @Valid @RequestBody NotesDto.AffectationsSaisie saisie) {
+        return matieres.affecter(classeId, saisie);
+    }
+
+    @GetMapping("/personnel/{enseignantId}/charge")
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.ChargeEnseignant charge(@PathVariable UUID enseignantId) {
+        return matieres.charge(enseignantId);
     }
 
     @GetMapping("/classes/{classeId}/enseignements")
