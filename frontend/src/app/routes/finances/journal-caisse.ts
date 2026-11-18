@@ -18,7 +18,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
-import { aujourdhui, depuisIso, enIso } from '@shared/composants/dates';
+import { aujourdhui, enIso } from '@shared/composants/dates';
 import { EtatListe } from '@shared/composants/etat-liste';
 
 /** Journal de caisse quotidien (SF-32). */
@@ -39,7 +39,7 @@ import { EtatListe } from '@shared/composants/etat-liste';
             <input
               matInput
               [matDatepicker]="calendrier"
-              [ngModel]="dateJournee()"
+              [ngModel]="journee()"
               (ngModelChange)="choisir($event)"
             />
             <mat-datepicker-toggle matIconSuffix [for]="calendrier" />
@@ -163,21 +163,23 @@ export class JournalCaisse {
     'caissier',
     'statut',
   ];
-  protected readonly journee = signal(aujourdhui());
+  /**
+   * La journée est gardée sous forme de Date, celle que le calendrier
+   * manipule : reconstruire l'objet à chaque affichage relancerait sans fin
+   * la détection de changement et figerait la page.
+   */
+  protected readonly journee = signal<Date>(new Date());
   protected readonly journal = signal<Journal | null>(null);
   protected readonly erreur = signal('');
   /** Les lignes du journal arrivent paginées ; les totaux restent ceux du jour. */
   protected readonly liste = new EtatListe(25);
-
-  /** La journée, telle que le calendrier l'attend. */
-  protected readonly dateJournee = () => depuisIso(this.journee());
 
   constructor() {
     this.charger();
   }
 
   protected choisir(journee: Date | null): void {
-    this.journee.set(enIso(journee) ?? aujourdhui());
+    this.journee.set(journee ?? new Date());
     this.liste.auDebut();
     this.charger();
   }
@@ -199,16 +201,18 @@ export class JournalCaisse {
 
   protected charger(): void {
     this.liste.chargement.set(true);
-    this.api.journalCaisse(this.journee(), this.liste.parametres()).subscribe({
-      next: (journal) => {
-        this.journal.set(journal);
-        this.liste.recevoir(journal.paiements);
-        this.liste.chargement.set(false);
-      },
-      error: (e) => {
-        this.erreur.set(messageErreur(e));
-        this.liste.chargement.set(false);
-      },
-    });
+    this.api
+      .journalCaisse(enIso(this.journee()) ?? aujourdhui(), this.liste.parametres())
+      .subscribe({
+        next: (journal) => {
+          this.journal.set(journal);
+          this.liste.recevoir(journal.paiements);
+          this.liste.chargement.set(false);
+        },
+        error: (e) => {
+          this.erreur.set(messageErreur(e));
+          this.liste.chargement.set(false);
+        },
+      });
   }
 }

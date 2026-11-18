@@ -17,7 +17,7 @@ import { AnneeContexte } from '@core/annee-contexte';
 import { ApiService, Classe, Impaye, Recouvrement, messageErreur } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
-import { depuisIso, enIso } from '@shared/composants/dates';
+import { enIso } from '@shared/composants/dates';
 import { EtatListe } from '@shared/composants/etat-liste';
 
 /** Liste des échéances échues non soldées et tableau de bord (SF-31, SF-32). */
@@ -110,7 +110,7 @@ import { EtatListe } from '@shared/composants/etat-liste';
                 matInput
                 name="limite"
                 [matDatepicker]="calendrierLimite"
-                [ngModel]="dateLimite()"
+                [ngModel]="limite()"
                 (ngModelChange)="filtrerLimite($event)"
               />
               <mat-datepicker-toggle matIconSuffix [for]="calendrierLimite" />
@@ -255,15 +255,15 @@ export class Impayes {
   protected readonly erreur = signal('');
   protected readonly liste = new EtatListe(25);
   protected readonly recherche = signal('');
-  protected readonly limite = signal<string | null>(null);
+  /** Date gardée telle que le calendrier la rend : une dérivée recalculée à
+   * chaque affichage relancerait sans fin la détection de changement. */
+  protected readonly limite = signal<Date | null>(null);
   protected readonly export = { enCours: false };
 
   /** Somme des restes dus de la page affichée. */
   protected readonly total = computed(() =>
     this.impayes().reduce((somme, i) => somme + i.reste, 0),
   );
-
-  protected readonly dateLimite = () => depuisIso(this.limite());
 
   protected readonly filtresActifs = () =>
     this.recherche() !== '' || this.classeId() !== null || this.limite() !== null;
@@ -302,7 +302,7 @@ export class Impayes {
   }
 
   protected filtrerLimite(limite: Date | null): void {
-    this.limite.set(enIso(limite));
+    this.limite.set(limite);
     this.liste.auDebut();
     this.charger();
   }
@@ -387,6 +387,10 @@ export class Impayes {
   }
 
   private criteres() {
-    return { classeId: this.classeId(), limite: this.limite(), recherche: this.recherche() };
+    return {
+      classeId: this.classeId(),
+      limite: enIso(this.limite()),
+      recherche: this.recherche(),
+    };
   }
 }
