@@ -316,6 +316,32 @@ export interface Enseignement {
   coefficient: number;
 }
 
+export interface LigneProgramme {
+  id: string;
+  niveauId: string;
+  niveauCode: string;
+  niveauLibelle: string;
+  matiereId: string;
+  matiereCode: string;
+  matiereLibelle: string;
+  coefficient: number;
+}
+
+export interface ApplicationProgramme {
+  classesTouchees: number;
+  matieresAjoutees: number;
+  coefficientsMisAJour: number;
+  details: string[];
+}
+
+export interface ChargeEnseignant {
+  enseignantId: string;
+  enseignantNom: string;
+  nombreClasses: number;
+  totalCoefficients: number;
+  enseignements: Enseignement[];
+}
+
 export interface Evaluation {
   id: string;
   enseignementId: string;
@@ -524,6 +550,17 @@ export class ApiService {
     return this.http.post<ResultatPersonnel>(`${this.base}/personnel`, p);
   }
 
+  modifierPersonnel(
+    id: string,
+    p: { nom: string; prenom: string; email: string; telephone: string; role: string },
+  ): Observable<Personnel> {
+    return this.http.put<Personnel>(`${this.base}/personnel/${id}`, p);
+  }
+
+  chargeEnseignant(id: string): Observable<ChargeEnseignant> {
+    return this.http.get<ChargeEnseignant>(`${this.base}/personnel/${id}/charge`);
+  }
+
   activerPersonnel(id: string, actif: boolean): Observable<Personnel> {
     return this.http.post<Personnel>(
       `${this.base}/personnel/${id}/${actif ? 'activation' : 'desactivation'}`,
@@ -719,6 +756,57 @@ export class ApiService {
     return this.http.post<Matiere>(`${this.base}/matieres`, saisie);
   }
 
+  modifierMatiere(id: string, saisie: { code: string; libelle: string }): Observable<Matiere> {
+    return this.http.put<Matiere>(`${this.base}/matieres/${id}`, saisie);
+  }
+
+  supprimerMatiere(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/matieres/${id}`);
+  }
+
+  programme(niveauId: string): Observable<LigneProgramme[]> {
+    return this.http.get<LigneProgramme[]>(`${this.base}/niveaux/${niveauId}/programme`);
+  }
+
+  ajouterAuProgramme(
+    niveauId: string,
+    saisie: { matiereId: string; coefficient: number },
+  ): Observable<LigneProgramme> {
+    return this.http.post<LigneProgramme>(`${this.base}/niveaux/${niveauId}/programme`, saisie);
+  }
+
+  modifierLigneProgramme(
+    ligneId: string,
+    saisie: { matiereId: string; coefficient: number },
+  ): Observable<LigneProgramme> {
+    return this.http.put<LigneProgramme>(`${this.base}/programme/${ligneId}`, saisie);
+  }
+
+  retirerDuProgramme(ligneId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/programme/${ligneId}`);
+  }
+
+  appliquerProgramme(
+    niveauId: string,
+    anneeId: string,
+    alignerCoefficients: boolean,
+  ): Observable<ApplicationProgramme> {
+    return this.http.post<ApplicationProgramme>(
+      `${this.base}/niveaux/${niveauId}/programme/application` +
+        `?anneeId=${anneeId}&alignerCoefficients=${alignerCoefficients}`,
+      null,
+    );
+  }
+
+  affecter(
+    classeId: string,
+    affectations: { enseignementId: string; enseignantId: string | null }[],
+  ): Observable<Enseignement[]> {
+    return this.http.put<Enseignement[]>(`${this.base}/classes/${classeId}/affectations`, {
+      affectations,
+    });
+  }
+
   enseignements(classeId: string): Observable<Enseignement[]> {
     return this.http.get<Enseignement[]>(`${this.base}/classes/${classeId}/enseignements`);
   }
@@ -827,10 +915,10 @@ export class ApiService {
 export function messageErreur(erreur: unknown): string {
   if (erreur instanceof HttpErrorResponse) {
     if (erreur.status === 0) {
-      return "Le serveur est injoignable. Vérifiez que l'API est démarrée.";
+      return 'Le serveur est injoignable. Vérifiez que l\'API est démarrée.';
     }
     if (erreur.status === 403) {
-      return "Vous n'avez pas les droits nécessaires pour cette action.";
+      return 'Vous n\'avez pas les droits nécessaires pour cette action.';
     }
     return erreur.error?.detail ?? `Erreur ${erreur.status}`;
   }

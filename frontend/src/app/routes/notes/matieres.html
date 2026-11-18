@@ -114,14 +114,70 @@
     <mat-card-title>Catalogue des matières ({{ matieres().length }})</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p class="text-muted">
-      @for (m of matieres(); track m.id) {
-        {{ m.libelle }} ({{ m.code }}){{ $last ? '' : ' · ' }}
-      } @empty {
-        Aucune matière enregistrée.
-      }
-    </p>
+    @if (matieres().length === 0) {
+      <p class="text-muted">Aucune matière enregistrée.</p>
+    } @else {
+      <p class="text-muted">
+        Une matière ne peut être supprimée que si elle ne figure dans aucune classe et dans aucun
+        programme de niveau.
+      </p>
+      <div class="table-defilement">
+        <table mat-table [dataSource]="matieres()" class="w-full">
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let m">
+              @if (matiereModifiee() === m.id) {
+                <mat-form-field class="champ-etroit">
+                  <input
+                    matInput
+                    maxlength="20"
+                    name="codeEdite"
+                    [(ngModel)]="matiereSaisie.code"
+                  />
+                </mat-form-field>
+              } @else {
+                {{ m.code }}
+              }
+            </td>
+          </ng-container>
 
+          <ng-container matColumnDef="libelle">
+            <th mat-header-cell *matHeaderCellDef>Libellé</th>
+            <td mat-cell *matCellDef="let m">
+              @if (matiereModifiee() === m.id) {
+                <mat-form-field>
+                  <input matInput name="libelleEdite" [(ngModel)]="matiereSaisie.libelle" />
+                </mat-form-field>
+              } @else {
+                <strong>{{ m.libelle }}</strong>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let m">
+              @if (matiereModifiee() === m.id) {
+                <button matButton="filled" [disabled]="enCours()" (click)="enregistrerMatiere(m)">
+                  Enregistrer
+                </button>
+                <button matButton (click)="matiereModifiee.set(null)">Annuler</button>
+              } @else {
+                <button matButton (click)="editerMatiere(m)">Modifier</button>
+                <button matButton [disabled]="enCours()" (click)="supprimerMatiere(m)">
+                  Supprimer
+                </button>
+              }
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="colonnesCatalogue"></tr>
+          <tr mat-row *matRowDef="let ligne; columns: colonnesCatalogue"></tr>
+        </table>
+      </div>
+    }
+
+    <h3 class="f-w-400 m-t-24">Ajouter une matière</h3>
     <div class="grille-formulaire">
       <mat-form-field>
         <mat-label>Code</mat-label>

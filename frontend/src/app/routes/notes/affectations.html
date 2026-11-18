@@ -1,0 +1,163 @@
+<page-header title="Affectation des enseignants" />
+
+@if (erreur(); as message) {
+  <p class="alerte-erreur" role="alert">{{ message }}</p>
+}
+@if (information(); as message) {
+  <p class="alerte-succes">{{ message }}</p>
+}
+
+@if (!contexte.anneeId()) {
+  <mat-card>
+    <mat-card-content>
+      <app-annee-requise />
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <mat-card>
+    <mat-card-content>
+      <p class="text-muted">
+        Les matières proposées sont celles du programme du niveau de la classe. Nommez les
+        professeurs, puis enregistrez la classe entière en une fois.
+      </p>
+      @if (classes().length === 0) {
+        <p class="text-muted">
+          Aucune classe pour {{ contexte.annee()?.libelle }} : créez-en une dans « Classes et
+          niveaux ».
+        </p>
+      } @else {
+        <mat-form-field class="champ-large">
+          <mat-label>Classe</mat-label>
+          <mat-select [ngModel]="classeId()" (ngModelChange)="choisirClasse($event)" name="classe">
+            @for (classe of classes(); track classe.id) {
+              <mat-option [value]="classe.id">{{ classe.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (classeId()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Matières de la classe {{ nomClasse() }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (enseignements().length === 0) {
+          <p class="text-muted">
+            Cette classe n'a aucune matière. Renseignez le programme de son niveau dans « Programmes
+            par niveau », puis appliquez-le aux classes existantes.
+          </p>
+        } @else {
+          <div class="table-defilement">
+            <table mat-table [dataSource]="enseignements()" class="w-full">
+              <ng-container matColumnDef="matiere">
+                <th mat-header-cell *matHeaderCellDef>Matière</th>
+                <td mat-cell *matCellDef="let e">
+                  <strong>{{ e.matiereLibelle }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="coefficient">
+                <th mat-header-cell *matHeaderCellDef>Coefficient</th>
+                <td mat-cell *matCellDef="let e">{{ e.coefficient }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="enseignant">
+                <th mat-header-cell *matHeaderCellDef>Professeur</th>
+                <td mat-cell *matCellDef="let e">
+                  <mat-form-field class="champ-large">
+                    <mat-select
+                      [ngModel]="choix()[e.id]"
+                      (ngModelChange)="definir(e.id, $event)"
+                      [name]="'enseignant-' + e.id"
+                      [attr.aria-label]="'Professeur de ' + e.matiereLibelle"
+                    >
+                      <mat-option [value]="null">— Non attribuée —</mat-option>
+                      @for (p of enseignants(); track p.id) {
+                        <mat-option [value]="p.id">{{ p.nom }} {{ p.prenom }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+            </table>
+          </div>
+
+          @if (matieresSansProfesseur() > 0) {
+            <p class="text-muted">
+              {{ matieresSansProfesseur() }} matière(s) encore sans professeur : les notes de ces
+              matières ne pourront pas être saisies.
+            </p>
+          }
+
+          <div class="ligne-actions">
+            <button matButton="filled" [disabled]="enCours() || !modifie()" (click)="enregistrer()">
+              <mat-icon>save</mat-icon>
+              Enregistrer les affectations
+            </button>
+            <button matButton [disabled]="enCours() || !modifie()" (click)="annuler()">
+              Annuler les changements
+            </button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Service d'un professeur</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-form-field class="champ-large">
+        <mat-label>Professeur</mat-label>
+        <mat-select
+          [(ngModel)]="enseignantObserve"
+          (ngModelChange)="voirCharge($event)"
+          name="observe"
+        >
+          @for (p of enseignants(); track p.id) {
+            <mat-option [value]="p.id">{{ p.nom }} {{ p.prenom }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (charge(); as service) {
+        <p>
+          <strong>{{ service.enseignantNom }}</strong> — {{ service.nombreClasses }} classe(s),
+          {{ service.totalCoefficients }} point(s) de coefficient au total.
+        </p>
+        @if (service.enseignements.length === 0) {
+          <p class="text-muted">Aucune matière ne lui est encore confiée.</p>
+        } @else {
+          <div class="table-defilement">
+            <table mat-table [dataSource]="service.enseignements" class="w-full">
+              <ng-container matColumnDef="classe">
+                <th mat-header-cell *matHeaderCellDef>Classe</th>
+                <td mat-cell *matCellDef="let e">{{ e.classeNom }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="matiere">
+                <th mat-header-cell *matHeaderCellDef>Matière</th>
+                <td mat-cell *matCellDef="let e">{{ e.matiereLibelle }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="coefficient">
+                <th mat-header-cell *matHeaderCellDef>Coefficient</th>
+                <td mat-cell *matCellDef="let e">{{ e.coefficient }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnesCharge"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnesCharge"></tr>
+            </table>
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+}

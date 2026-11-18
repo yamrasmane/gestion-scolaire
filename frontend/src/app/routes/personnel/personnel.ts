@@ -50,6 +50,9 @@ export class Personnel {
   protected readonly enCours = signal(false);
 
   protected nouveau = this.vide();
+  /** Fiche en cours de modification : la même carte sert aux deux gestes. */
+  protected readonly enEdition = signal<Membre | null>(null);
+  protected modification = this.videModification();
 
   constructor() {
     this.charger();
@@ -77,6 +80,46 @@ export class Personnel {
     });
   }
 
+  protected editer(membre: Membre): void {
+    this.enEdition.set(membre);
+    this.erreur.set('');
+    this.information.set('');
+    this.modification = {
+      nom: membre.nom,
+      prenom: membre.prenom,
+      email: membre.email,
+      telephone: membre.telephone ?? '',
+      role: membre.role,
+    };
+  }
+
+  protected abandonner(): void {
+    this.enEdition.set(null);
+    this.modification = this.videModification();
+  }
+
+  protected enregistrer(): void {
+    const membre = this.enEdition();
+    if (!membre) {
+      return;
+    }
+    this.enCours.set(true);
+    this.erreur.set('');
+    this.information.set('');
+    this.api.modifierPersonnel(membre.id, this.modification).subscribe({
+      next: (fiche) => {
+        this.information.set(`La fiche de ${fiche.nom} ${fiche.prenom} a été mise à jour.`);
+        this.abandonner();
+        this.enCours.set(false);
+        this.charger();
+      },
+      error: (e) => {
+        this.erreur.set(messageErreur(e));
+        this.enCours.set(false);
+      },
+    });
+  }
+
   protected basculer(membre: Membre): void {
     this.erreur.set('');
     this.api.activerPersonnel(membre.id, !membre.actif).subscribe({
@@ -94,5 +137,9 @@ export class Personnel {
 
   private vide() {
     return { matricule: '', nom: '', prenom: '', email: '', telephone: '', role: 'ENSEIGNANT' };
+  }
+
+  private videModification() {
+    return { nom: '', prenom: '', email: '', telephone: '', role: 'ENSEIGNANT' };
   }
 }

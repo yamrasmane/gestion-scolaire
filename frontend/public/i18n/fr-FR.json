@@ -18,7 +18,9 @@
     "notes": "Notes",
     "notes.saisie": "Saisie des notes",
     "notes.classement": "Classement et bulletins",
-    "parametrage.matieres": "Matières et coefficients"
+    "parametrage.matieres": "Matières et coefficients",
+    "parametrage.programmes": "Programmes par niveau",
+    "notes.affectations": "Affectation des enseignants"
   },
   "validation": {
     "required": "Ce champ est obligatoire",

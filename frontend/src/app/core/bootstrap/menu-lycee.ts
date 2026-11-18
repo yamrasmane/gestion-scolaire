@@ -31,6 +31,12 @@ export const MENU_LYCEE: Menu[] = [
     children: [
       { route: 'saisie', name: 'saisie', type: 'link' },
       { route: 'classement', name: 'classement', type: 'link' },
+      {
+        route: 'affectations',
+        name: 'affectations',
+        type: 'link',
+        permissions: { only: DIRECTION },
+      },
     ],
   },
   {
@@ -56,6 +62,12 @@ export const MENU_LYCEE: Menu[] = [
       {
         route: 'matieres',
         name: 'matieres',
+        type: 'link',
+        permissions: { only: DIRECTION },
+      },
+      {
+        route: 'programmes',
+        name: 'programmes',
         type: 'link',
         permissions: { only: DIRECTION },
       },

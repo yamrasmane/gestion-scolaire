@@ -49,7 +49,10 @@ export class Matieres {
   protected readonly erreur = signal('');
   protected readonly enCours = signal(false);
 
+  protected readonly colonnesCatalogue = ['code', 'libelle', 'actions'];
+  protected readonly matiereModifiee = signal<string | null>(null);
   protected nouvelleMatiere = { code: '', libelle: '' };
+  protected matiereSaisie = { code: '', libelle: '' };
   protected affectation = this.videAffectation();
 
   constructor() {
@@ -86,6 +89,25 @@ export class Matieres {
       this.nouvelleMatiere = { code: '', libelle: '' };
       this.chargerMatieres();
     });
+  }
+
+  protected editerMatiere(matiere: Matiere): void {
+    this.matiereModifiee.set(matiere.id);
+    this.matiereSaisie = { code: matiere.code, libelle: matiere.libelle };
+  }
+
+  protected enregistrerMatiere(matiere: Matiere): void {
+    if (!this.matiereSaisie.code.trim() || !this.matiereSaisie.libelle.trim()) {
+      return;
+    }
+    this.executer(this.api.modifierMatiere(matiere.id, this.matiereSaisie), () => {
+      this.matiereModifiee.set(null);
+      this.chargerMatieres();
+    });
+  }
+
+  protected supprimerMatiere(matiere: Matiere): void {
+    this.executer(this.api.supprimerMatiere(matiere.id), () => this.chargerMatieres());
   }
 
   protected affecter(): void {
