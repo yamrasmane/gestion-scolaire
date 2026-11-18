@@ -320,7 +320,10 @@ class ParametrageEtImportsIntegrationTest {
         mvc.perform(post("/api/personnel/" + id + "/desactivation").with(DIRECTEUR))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.actif").value(false));
         mvc.perform(put("/api/personnel/" + id).with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nom\": \"OUEDRAOGO\", \"prenom\": \"Awa Marie\", \"telephone\": \"70112233\"}"))
+                        .content("""
+                                {"nom": "OUEDRAOGO", "prenom": "Awa Marie",
+                                 "email": "awa.ouedraogo@lycee.bf", "telephone": "70112233",
+                                 "role": "INTENDANT"}"""))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.prenom").value("Awa Marie"));
     }
 

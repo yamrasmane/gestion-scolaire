@@ -62,7 +62,7 @@ class SocleIntegrationTest {
     }
 
     @Test
-    void leSchemaComporteLes22TablesMetiersEtLeursTablesDAudit() {
+    void leSchemaComporteLes23TablesMetiersEtLeursTablesDAudit() {
         Integer metiers = jdbc.queryForObject("""
                 SELECT count(*) FROM information_schema.tables
                 WHERE table_schema = current_schema()
@@ -70,8 +70,8 @@ class SocleIntegrationTest {
         Integer audits = jdbc.queryForObject("""
                 SELECT count(*) FROM information_schema.tables
                 WHERE table_schema = 'audit' AND table_name LIKE '%\\_aud'""", Integer.class);
-        assertThat(metiers).isEqualTo(22);
-        assertThat(audits).isEqualTo(22);
+        assertThat(metiers).isEqualTo(23);
+        assertThat(audits).isEqualTo(23);
         assertThat(flyway.info().pending()).isEmpty();
     }
 
