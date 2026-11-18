@@ -57,3 +57,20 @@ app:
       client-id: ${KEYCLOAK_CLIENT_ID:lycee-backend}
       client-secret: ${KEYCLOAK_CLIENT_SECRET:changez-ce-secret}
       mot-de-passe-initial: ${KEYCLOAK_MOT_DE_PASSE_INITIAL:Changeme123!}
+
+lycee:
+  # Entête des documents édités : ces valeurs arrivent dans Jasper en paramètres
+  # (ETABLISSEMENT, MINISTERE, ADRESSE, …), à placer librement dans le .jrxml.
+  etablissement:
+    nom: ${ETABLISSEMENT_NOM:Lycée municipal}
+    ministere: ${ETABLISSEMENT_MINISTERE:Ministère de l'Éducation nationale}
+    direction: ${ETABLISSEMENT_DIRECTION:Direction régionale de l'enseignement}
+    adresse: ${ETABLISSEMENT_ADRESSE:Ouagadougou, Burkina Faso}
+    telephone: ${ETABLISSEMENT_TELEPHONE:}
+    email: ${ETABLISSEMENT_EMAIL:}
+    devise: ${ETABLISSEMENT_DEVISE:Unité - Progrès - Justice}
+    logo: ${ETABLISSEMENT_LOGO:}
+  rapports:
+    # Dossier où déposer les .jasper (ou .jrxml) modifiés dans Jaspersoft Studio.
+    # Vide : les modèles livrés dans l'application sont utilisés.
+    dossier: ${RAPPORTS_DOSSIER:}

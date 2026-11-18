@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Reçu de règlement (SF-30).
+
+  Modèle de données (JSON) : { "lignes": [ { typeFrais, tranche, montant } ] }
+  L'entête arrive en paramètres : ouvrez ce fichier dans Jaspersoft Studio,
+  branchez un adaptateur « JSON file » sur le modèle rendu par
+  GET /api/rapports/recus/{paiementId}?modele=true, et déplacez librement
+  les champs. Enregistrez le .jasper (ou ce .jrxml) dans le dossier
+  lycee.rapports.dossier pour qu'il remplace celui-ci sans reconstruction.
+-->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+                                  http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="recu" pageWidth="595" pageHeight="842" columnWidth="515"
+              leftMargin="40" rightMargin="40" topMargin="30" bottomMargin="30">
+
+    <parameter name="ETABLISSEMENT" class="java.lang.String"/>
+    <parameter name="MINISTERE" class="java.lang.String"/>
+    <parameter name="DIRECTION" class="java.lang.String"/>
+    <parameter name="ADRESSE" class="java.lang.String"/>
+    <parameter name="TELEPHONE" class="java.lang.String"/>
+    <parameter name="DEVISE" class="java.lang.String"/>
+    <parameter name="DATE_EDITION" class="java.lang.String"/>
+
+    <parameter name="NUMERO_RECU" class="java.lang.String"/>
+    <parameter name="DUPLICATA" class="java.lang.Boolean"/>
+    <parameter name="DATE_PAIEMENT" class="java.lang.String"/>
+    <parameter name="ELEVE" class="java.lang.String"/>
+    <parameter name="MATRICULE" class="java.lang.String"/>
+    <parameter name="CLASSE" class="java.lang.String"/>
+    <parameter name="MONTANT" class="java.lang.String"/>
+    <parameter name="MONTANT_LETTRES" class="java.lang.String"/>
+    <parameter name="MODE" class="java.lang.String"/>
+    <parameter name="REFERENCE" class="java.lang.String"/>
+    <parameter name="PAYEUR" class="java.lang.String"/>
+    <parameter name="CAISSIER" class="java.lang.String"/>
+    <parameter name="STATUT" class="java.lang.String"/>
+    <parameter name="RESTE" class="java.lang.String"/>
+
+    <queryString language="jsonql">
+        <![CDATA[lignes]]>
+    </queryString>
+
+    <field name="typeFrais" class="java.lang.String"/>
+    <field name="tranche" class="java.lang.String"/>
+    <field name="montant" class="java.lang.String"/>
+
+    <title>
+        <band height="104">
+            <textField>
+                <reportElement x="0" y="0" width="515" height="14"/>
+                <textElement textAlignment="Center"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{MINISTERE}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="14" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{DIRECTION}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="28" width="515" height="18"/>
+                <textElement textAlignment="Center"><font size="13" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{ETABLISSEMENT}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="46" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="8"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{ADRESSE} + ($P{TELEPHONE}.isEmpty() ? "" : " — " + $P{TELEPHONE})]]>
+                </textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="0" y="62" width="515" height="1"/>
+            </line>
+            <textField>
+                <reportElement x="0" y="70" width="515" height="20"/>
+                <textElement textAlignment="Center"><font size="14" isBold="true"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["REÇU N° " + $P{NUMERO_RECU} + (Boolean.TRUE.equals($P{DUPLICATA}) ? "  (DUPLICATA)" : "")]]>
+                </textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="90" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Payé le " + $P{DATE_PAIEMENT}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <pageHeader>
+        <band height="92">
+            <staticText>
+                <reportElement x="0" y="4" width="90" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Élève]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="90" y="4" width="425" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{ELEVE} + " (" + $P{MATRICULE} + ") — " + $P{CLASSE}]]>
+                </textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="22" width="90" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Payeur]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="22" width="425" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{PAYEUR}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="40" width="90" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Mode]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="40" width="425" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{MODE} + ($P{REFERENCE} == null || $P{REFERENCE}.isEmpty() ? "" : " — réf. " + $P{REFERENCE})]]>
+                </textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="58" width="90" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Caissier]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="58" width="425" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{CAISSIER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageHeader>
+
+    <columnHeader>
+        <band height="20">
+            <staticText>
+                <reportElement x="0" y="4" width="280" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Frais réglé]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="280" y="4" width="130" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Tranche]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="410" y="4" width="105" height="14"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Montant (FCFA)]]></text>
+            </staticText>
+            <line>
+                <reportElement x="0" y="19" width="515" height="1"/>
+            </line>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="16">
+            <textField>
+                <reportElement x="0" y="1" width="280" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{typeFrais}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="280" y="1" width="130" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{tranche}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="410" y="1" width="105" height="14"/>
+                <textElement textAlignment="Right"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{montant}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <summary>
+        <band height="120">
+            <line>
+                <reportElement x="0" y="2" width="515" height="1"/>
+            </line>
+            <staticText>
+                <reportElement x="280" y="8" width="130" height="16"/>
+                <textElement><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Total réglé]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="410" y="8" width="105" height="16"/>
+                <textElement textAlignment="Right"><font size="11" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{MONTANT}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="30" width="515" height="26"/>
+                <textElement><font size="9" isItalic="true"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["Arrêté le présent reçu à la somme de " + $P{MONTANT_LETTRES} + "."]]>
+                </textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="58" width="515" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{RESTE} == null ? "" : "Reste à payer après ce règlement : " + $P{RESTE} + " FCFA"]]>
+                </textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="330" y="80" width="185" height="14"/>
+                <textElement textAlignment="Center"><font size="9" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["Le caissier"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="104" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="7"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{DEVISE} + "   ·   édité le " + $P{DATE_EDITION}]]>
+                </textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+</jasperReport>

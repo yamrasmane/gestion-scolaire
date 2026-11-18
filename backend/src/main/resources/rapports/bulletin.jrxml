@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Bulletin de notes d'un trimestre (SF-17).
+
+  Modèle de données (JSON) : { "lignes": [ { matiereLibelle, enseignant,
+  moyenneDevoirs, composition, moyenne, coefficient, moyenneCoefficientee,
+  rang, appreciation } ] }
+  L'entête et le pied (élève, classe, moyenne générale, rang, mention,
+  statistiques de la classe) arrivent en paramètres. Pour redessiner ce
+  document : ouvrez-le dans Jaspersoft Studio, branchez un adaptateur
+  « JSON file » sur le modèle rendu par l'API (modele=true sur la même
+  adresse), puis déposez le .jasper obtenu dans lycee.rapports.dossier.
+-->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+                                  http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="bulletin" pageWidth="595" pageHeight="842" columnWidth="515"
+              leftMargin="40" rightMargin="40" topMargin="30" bottomMargin="30">
+
+    <parameter name="ETABLISSEMENT" class="java.lang.String"/>
+    <parameter name="MINISTERE" class="java.lang.String"/>
+    <parameter name="DIRECTION" class="java.lang.String"/>
+    <parameter name="ADRESSE" class="java.lang.String"/>
+    <parameter name="TELEPHONE" class="java.lang.String"/>
+    <parameter name="DEVISE" class="java.lang.String"/>
+    <parameter name="DATE_EDITION" class="java.lang.String"/>
+
+    <parameter name="ELEVE" class="java.lang.String"/>
+    <parameter name="MATRICULE" class="java.lang.String"/>
+    <parameter name="CLASSE" class="java.lang.String"/>
+    <parameter name="ANNEE_SCOLAIRE" class="java.lang.String"/>
+    <parameter name="TRIMESTRE" class="java.lang.String"/>
+    <parameter name="REDOUBLANT" class="java.lang.String"/>
+    <parameter name="MOYENNE_GENERALE" class="java.lang.String"/>
+    <parameter name="TOTAL_POINTS" class="java.lang.String"/>
+    <parameter name="TOTAL_COEFFICIENTS" class="java.lang.String"/>
+    <parameter name="RANG" class="java.lang.String"/>
+    <parameter name="MENTION" class="java.lang.String"/>
+    <parameter name="APPRECIATION" class="java.lang.String"/>
+    <parameter name="EFFECTIF" class="java.lang.String"/>
+    <parameter name="MOYENNE_CLASSE" class="java.lang.String"/>
+    <parameter name="PLUS_FORTE_MOYENNE" class="java.lang.String"/>
+    <parameter name="PLUS_FAIBLE_MOYENNE" class="java.lang.String"/>
+    <parameter name="OBSERVATIONS" class="java.lang.String"/>
+
+    <queryString language="jsonql">
+        <![CDATA[lignes]]>
+    </queryString>
+
+    <field name="matiereLibelle" class="java.lang.String"/>
+    <field name="enseignant" class="java.lang.String"/>
+    <field name="moyenneDevoirs" class="java.lang.String"/>
+    <field name="composition" class="java.lang.String"/>
+    <field name="moyenne" class="java.lang.String"/>
+    <field name="coefficient" class="java.lang.String"/>
+    <field name="moyenneCoefficientee" class="java.lang.String"/>
+    <field name="rang" class="java.lang.String"/>
+    <field name="appreciation" class="java.lang.String"/>
+
+    <title>
+        <band height="128">
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="0" width="515" height="14"/>
+                <textElement textAlignment="Center"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{MINISTERE}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="14" width="515" height="18"/>
+                <textElement textAlignment="Center"><font size="13" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{ETABLISSEMENT}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="32" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{ADRESSE}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="52" width="515" height="20"/>
+                <textElement textAlignment="Center"><font size="14" isBold="true"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["BULLETIN DE NOTES — " + $P{TRIMESTRE}]]>
+                </textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="72" width="515" height="14"/>
+                <textElement textAlignment="Center"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Année scolaire " + $P{ANNEE_SCOLAIRE}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="0" y="90" width="515" height="1"/>
+            </line>
+            <textField>
+                <reportElement x="0" y="96" width="340" height="14"/>
+                <textElement><font size="10" isBold="true"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{ELEVE} + "   (" + $P{MATRICULE} + ")"]]>
+                </textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="340" y="96" width="175" height="14"/>
+                <textElement textAlignment="Right"><font size="10"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["Classe : " + $P{CLASSE} + $P{REDOUBLANT}]]>
+                </textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="112" width="515" height="12"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{OBSERVATIONS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="22">
+            <staticText>
+                <reportElement x="0" y="4" width="130" height="14"/>
+                <textElement><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Matière]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="130" y="4" width="95" height="14"/>
+                <textElement><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Professeur]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="225" y="4" width="48" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Devoirs]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="273" y="4" width="48" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Compo.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="321" y="4" width="44" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Moy.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="365" y="4" width="32" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Coef.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="397" y="4" width="48" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Moy×Coef]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="445" y="4" width="30" height="14"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Rang]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="475" y="4" width="40" height="14"/>
+                <textElement><font size="8" isBold="true"/></textElement>
+                <text><![CDATA[Appr.]]></text>
+            </staticText>
+            <line>
+                <reportElement x="0" y="21" width="515" height="1"/>
+            </line>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="15">
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="1" width="130" height="13"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{matiereLibelle}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="130" y="1" width="95" height="13"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{enseignant}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="225" y="1" width="48" height="13"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{moyenneDevoirs}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="273" y="1" width="48" height="13"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{composition}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="321" y="1" width="44" height="13"/>
+                <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$F{moyenne}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="365" y="1" width="32" height="13"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{coefficient}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="397" y="1" width="48" height="13"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{moyenneCoefficientee}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="445" y="1" width="30" height="13"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$F{rang}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="475" y="1" width="40" height="13"/>
+                <textElement><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[$F{appreciation}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <summary>
+        <band height="150">
+            <line>
+                <reportElement x="0" y="2" width="515" height="1"/>
+            </line>
+            <staticText>
+                <reportElement x="225" y="8" width="172" height="14"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Total points / coefficients]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="397" y="8" width="118" height="14"/>
+                <textElement textAlignment="Right"><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{TOTAL_POINTS} + " / " + $P{TOTAL_COEFFICIENTS}]]>
+                </textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="225" y="26" width="172" height="16"/>
+                <textElement textAlignment="Right"><font size="11" isBold="true"/></textElement>
+                <text><![CDATA[Moyenne générale]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="397" y="26" width="118" height="16"/>
+                <textElement textAlignment="Right"><font size="12" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{MOYENNE_GENERALE} + " / 20"]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="48" width="515" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["Rang : " + $P{RANG} + " sur " + $P{EFFECTIF} + "   ·   Mention : " + $P{MENTION}]]>
+                </textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="64" width="515" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression>
+                    <![CDATA["Moyenne de la classe : " + $P{MOYENNE_CLASSE}
+                        + "   ·   plus forte : " + $P{PLUS_FORTE_MOYENNE}
+                        + "   ·   plus faible : " + $P{PLUS_FAIBLE_MOYENNE}]]>
+                </textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="86" width="515" height="14"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Appréciation du conseil de classe]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="100" width="515" height="28"/>
+                <textElement><font size="9" isItalic="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{APPRECIATION}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="330" y="130" width="185" height="14"/>
+                <textElement textAlignment="Center"><font size="9" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["Le Directeur"]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+
+    <pageFooter>
+        <band height="16">
+            <textField>
+                <reportElement x="0" y="2" width="515" height="12"/>
+                <textElement textAlignment="Center"><font size="7"/></textElement>
+                <textFieldExpression>
+                    <![CDATA[$P{DEVISE} + "   ·   édité le " + $P{DATE_EDITION}]]>
+                </textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

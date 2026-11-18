@@ -1,5 +1,6 @@
 package bf.lycee.gestion.web;
 
+import bf.lycee.gestion.rapports.RapportException;
 import bf.lycee.gestion.service.IntrouvableException;
 import bf.lycee.gestion.service.RegleMetierException;
 import bf.lycee.gestion.service.SaisieInvalideException;
@@ -28,6 +29,16 @@ public class GestionErreurs extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RegleMetierException.class)
     public ProblemDetail regleMetier(RegleMetierException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(RapportException.class)
+    public ProblemDetail rapport(RapportException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail argumentInvalide(IllegalArgumentException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
