@@ -1,12 +1,6 @@
 /** Rôles du realm Keycloak, identiques à ceux contrôlés par l'API. */
 export type Role =
-  | 'ADMIN'
-  | 'DIRECTEUR'
-  | 'CENSEUR'
-  | 'ENSEIGNANT'
-  | 'INTENDANT'
-  | 'ECONOME'
-  | 'SURVEILLANT';
+  'ADMIN' | 'DIRECTEUR' | 'CENSEUR' | 'ENSEIGNANT' | 'INTENDANT' | 'ECONOME' | 'SURVEILLANT';
 
 /** Tous les rôles connus : ce que l'on accorde à l'administrateur. */
 export const TOUS_LES_ROLES: Role[] = [
