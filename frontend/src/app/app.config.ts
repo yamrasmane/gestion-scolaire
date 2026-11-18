@@ -43,11 +43,21 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     { provide: LOCALE_ID, useValue: 'fr-FR' },
     { provide: BASE_URL, useValue: environment.baseUrl },
-    // Ordre important : la session Keycloak d'abord, puis la langue, puis le
-    // menu et les données communes (qui appellent l'API avec le jeton).
-    provideAppInitializer(() => inject(AuthService).initialiser()),
-    provideAppInitializer(() => inject(TranslateLangService).load()),
-    provideAppInitializer(() => inject(StartupService).load()),
+    // Un seul initialisateur, car Angular lance tous les initialisateurs en
+    // parallèle : séparés, le menu se construisait avant l'arrivée du jeton
+    // Keycloak et les entrées réservées à un rôle restaient cachées.
+    // Les injections se font avant le premier `await` : le contexte
+    // d'injection n'existe plus après.
+    provideAppInitializer(() => {
+      const auth = inject(AuthService);
+      const langue = inject(TranslateLangService);
+      const demarrage = inject(StartupService);
+      return (async () => {
+        await auth.initialiser();
+        await langue.load();
+        await demarrage.load();
+      })();
+    }),
     provideHttpClient(withInterceptors(interceptors)),
     provideRouter(
       routes,
