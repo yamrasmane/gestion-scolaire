@@ -101,6 +101,21 @@ menu latéral repliable, bandeau fixe, thème clair ou sombre, fil d'Ariane et p
 La police Roboto et les icônes Material sont servies par l'application : aucun appel à Internet
 au démarrage.
 
+## Matières, programmes et affectations
+
+Le **programme d'un niveau** (« Paramétrage › Programmes par niveau ») décrit les matières d'un
+type de classe et leur coefficient : une ligne par matière, un coefficient par niveau. Toute classe
+créée ensuite dans ce niveau reçoit ces matières automatiquement ; le bouton *Appliquer aux classes
+existantes* complète celles qui existent déjà, sans toucher aux professeurs déjà nommés (cocher la
+case pour réaligner aussi les coefficients).
+
+Les professeurs sont nommés classe par classe dans « Notes › Affectation des enseignants » : un
+choix par matière, enregistré en une seule fois pour toute la classe. La même page donne le service
+d'un professeur — ses classes, ses matières et son total de coefficients.
+
+Les **fiches du personnel** (« Personnel ») se modifient en place : nom, prénom, adresse, téléphone
+et rôle. Changer le rôle met aussi à jour les droits du compte Keycloak lié, s'il existe.
+
 ## Règles de calcul
 
 **Moyenne d'une matière** (SF-13) : seules les notes saisies et non marquées « absent » comptent.
