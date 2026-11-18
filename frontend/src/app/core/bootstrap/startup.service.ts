@@ -3,6 +3,7 @@ import { NgxPermissionsService } from 'ngx-permissions';
 
 import { AnneeContexte } from '@core/annee-contexte';
 import { AuthService } from '@core/authentication';
+import { TOUS_LES_ROLES } from '@core/roles';
 import { MENU_LYCEE } from './menu-lycee';
 import { MenuService } from './menu.service';
 
@@ -18,7 +19,11 @@ export class StartupService {
   private readonly annees = inject(AnneeContexte);
 
   load() {
-    this.permissions.loadPermissions(this.auth.roles());
+    // L'administrateur reçoit tous les rôles comme permissions : il voit donc
+    // l'intégralité du menu, y compris les entrées ajoutées plus tard sans
+    // qu'il ait fallu penser à y inscrire ADMIN.
+    const roles = this.auth.roles();
+    this.permissions.loadPermissions(roles.includes('ADMIN') ? TOUS_LES_ROLES : roles);
 
     const menu = structuredClone(MENU_LYCEE);
     this.menuService.addNamespace(menu, 'menu');

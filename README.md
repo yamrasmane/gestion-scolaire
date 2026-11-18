@@ -151,7 +151,30 @@ PDF). La génération par lot en PDF ou ZIP n'est pas encore faite.
 | `SURVEILLANT` | Élèves et inscriptions. |
 
 Les rôles viennent du jeton Keycloak. Un compte sans rôle peut se connecter mais ne voit qu'un
-menu réduit, et l'application le lui signale.
+menu réduit, et l'application le lui signale. La page d'accueil affiche toujours le compte connecté
+et ses rôles : c'est le premier endroit à regarder quand une entrée de menu manque.
+
+Un compte porteur du rôle `ADMIN` reçoit à l'ouverture de session **tous les rôles** comme
+permissions d'affichage : il voit donc l'intégralité du menu, y compris les entrées ajoutées plus
+tard, sans qu'il faille penser à y inscrire `ADMIN`.
+
+### Donner le rôle ADMIN à un compte
+
+Le realm n'est importé qu'à la **première** création de la base Keycloak : si votre realm `lycee`
+existe déjà, le compte `admin` livré avec le fichier d'import n'y figure pas. Deux solutions.
+
+Dans la console Keycloak (http://localhost:8081, `admin` / `admin`), realm `lycee` : *Users* →
+le compte → onglet *Role mapping* → *Assign role* → filtrer sur les rôles du realm → `ADMIN`. La
+personne doit se déconnecter puis se reconnecter pour que son nouveau jeton porte le rôle.
+
+Ou réimporter le realm en repartant d'une base Keycloak vierge — attention, cela supprime tous les
+comptes et mots de passe déjà créés dans Keycloak (les données du lycée, elles, ne bougent pas) :
+
+```bash
+docker compose stop keycloak
+psql -U lycee -h localhost -d postgres -c "DROP DATABASE keycloak;" -c "CREATE DATABASE keycloak;"
+docker compose up -d keycloak
+```
 
 ## Identifiants
 

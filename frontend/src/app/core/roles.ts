@@ -8,6 +8,17 @@ export type Role =
   | 'ECONOME'
   | 'SURVEILLANT';
 
+/** Tous les rôles connus : ce que l'on accorde à l'administrateur. */
+export const TOUS_LES_ROLES: Role[] = [
+  'ADMIN',
+  'DIRECTEUR',
+  'CENSEUR',
+  'ENSEIGNANT',
+  'INTENDANT',
+  'ECONOME',
+  'SURVEILLANT',
+];
+
 /** L'administrateur ouvre toutes les portes : il figure dans chaque liste. */
 export const DIRECTION: Role[] = ['ADMIN', 'DIRECTEUR', 'CENSEUR'];
 export const SCOLARITE: Role[] = ['ADMIN', 'DIRECTEUR', 'CENSEUR', 'SURVEILLANT'];
