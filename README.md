@@ -144,8 +144,12 @@ Un seul moteur les fabrique tous (`rapports/ServiceRapports.java`) : on lui donn
 fichier Jasper**, les **données** et les **paramètres**, et il rend le document dans le format
 demandé.
 
-**Le format est au choix** : `?format=pdf` (défaut), `xlsx`, `docx`, `html` ou `csv`. Dans
-l'interface, le bouton principal édite le format courant et le menu à côté offre les autres.
+**Le format est au choix** : `?format=pdf` (défaut), `xlsx`, `docx`, `html` ou `csv`.
+
+Dans l'interface, le bouton principal ouvre un **aperçu avant impression** : le PDF s'affiche dans
+une fenêtre, d'où l'on imprime (ce qui sort est exactement ce qui est montré) ou l'on enregistre
+dans le format voulu. Le menu à côté du bouton permet d'enregistrer directement, sans passer par
+l'aperçu.
 
 | Document | Adresse |
 |---|---|
