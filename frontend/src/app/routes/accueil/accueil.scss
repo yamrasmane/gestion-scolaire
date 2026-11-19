@@ -1,0 +1,111 @@
+/** Tableau de bord : tuiles de chiffres clés puis deux colonnes de cartes. */
+
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tuile {
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--lycee-bordure);
+  border-radius: var(--mat-sys-corner-medium);
+
+  .libelle {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--lycee-texte-doux);
+  }
+
+  .valeur {
+    display: block;
+    margin: 0.35rem 0 0.25rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .precision {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--lycee-texte-doux);
+  }
+
+  .mat-mdc-progress-bar {
+    margin-top: 0.5rem;
+  }
+}
+
+/** Deux colonnes sur grand écran, une seule dès que la place manque. */
+.colonnes {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+
+  .mat-mdc-card + .mat-mdc-card {
+    margin-top: 0;
+  }
+}
+
+@media (width <= 1100px) {
+  .colonnes {
+    grid-template-columns: 1fr;
+  }
+}
+
+.alertes {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--lycee-filet);
+  }
+
+  li:last-child {
+    border-bottom: 0;
+  }
+
+  .puce {
+    flex: 0 0 auto;
+    min-width: 3.5rem;
+    justify-content: center;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+/** Effectifs : une ligne d'entrées séparées, comme « Marchés par statut ». */
+.recapitulatif {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+  font-size: 0.875rem;
+
+  .entree + .entree {
+    position: relative;
+  }
+
+  .entree + .entree::before {
+    position: absolute;
+    left: -0.7rem;
+    color: var(--lycee-bordure);
+    content: '·';
+  }
+}

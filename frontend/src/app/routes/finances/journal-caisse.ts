@@ -111,9 +111,9 @@ import { BoutonDocument } from '@shared/composants/bouton-document';
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let p" data-libelle="Statut">
                     @if (p.statut === 'ANNULE') {
-                      <mat-chip>Annulé</mat-chip>
+                      <mat-chip class="etat-alerte">Annulé</mat-chip>
                     } @else {
-                      <mat-chip highlighted>Valide</mat-chip>
+                      <mat-chip class="etat-ok">Valide</mat-chip>
                     }
                   </td>
                 </ng-container>

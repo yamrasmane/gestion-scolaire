@@ -116,6 +116,23 @@ d'un professeur — ses classes, ses matières et son total de coefficients.
 Les **fiches du personnel** (« Personnel ») se modifient en place : nom, prénom, adresse, téléphone
 et rôle. Changer le rôle met aussi à jour les droits du compte Keycloak lié, s'il existe.
 
+## Habillage
+
+L'interface suit les maquettes fournies : menu latéral marine à élément actif ambre, fond gris très
+clair, cartes blanches cernées d'un filet, titres de page en gras sans bandeau coloré, boutons
+rectangulaires (plein marine pour l'action principale, blanc cerné pour les autres) et pastilles
+d'état en teintes pastel.
+
+Tout tient dans `src/styles/custom/_maquette.scss`, qui redéfinit les variables du thème Material
+(`--mat-sys-*`) : les composants suivent sans être modifiés un par un. Les pastilles d'état
+s'écrivent avec une classe de ton — `etat-alerte`, `etat-attention`, `etat-ok`, `etat-info` — sur un
+`mat-chip` ou un simple `span`.
+
+La page d'accueil est un **tableau de bord** : quatre chiffres clés (effectif, taux de recouvrement,
+montant échu non réglé, encaissements du jour), les échéances en souffrance, les alertes du moment
+et les effectifs par classe. Les blocs financiers ne s'affichent que pour les rôles qui ont accès
+aux finances.
+
 ## Listes, recherche et saisie
 
 Les listes longues (élèves d'une classe, personnel, impayés, journal de caisse) sont **paginées par

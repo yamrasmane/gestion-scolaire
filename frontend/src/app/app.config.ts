@@ -13,6 +13,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MAT_CARD_CONFIG } from '@angular/material/card';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { provideDateFnsDatetimeAdapter } from '@ng-matero/extensions-date-fns-adapter';
@@ -84,6 +85,12 @@ export const appConfig: ApplicationConfig = {
     {
       provide: MAT_DATE_LOCALE,
       useFactory: () => inject(SettingsService).getLocale(),
+    },
+    {
+      // Champs cernés d'un filet et fond blanc, comme sur les maquettes ; le
+      // message d'erreur ne réserve plus sa place sous chaque champ.
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { appearance: 'outline', subscriptSizing: 'dynamic' },
     },
     {
       provide: MAT_CARD_CONFIG,

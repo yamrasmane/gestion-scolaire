@@ -13,9 +13,9 @@
         <mat-card-title>
           Trimestre {{ t.numero }}
           @if (t.cloture) {
-            <mat-chip>Clôturé</mat-chip>
+            <mat-chip class="etat-attention">Clôturé</mat-chip>
           } @else {
-            <mat-chip highlighted>Ouvert</mat-chip>
+            <mat-chip class="etat-ok">Ouvert</mat-chip>
           }
         </mat-card-title>
         <mat-card-subtitle>

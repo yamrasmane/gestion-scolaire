@@ -160,6 +160,20 @@ export class Encaissement {
     this.chargerFiche();
   }
 
+  /** Ton de la pastille d'une échéance : vert soldé, ambre partiel, rouge en retard. */
+  protected tonStatut(statut: string): string {
+    switch (statut) {
+      case 'PAYEE':
+        return 'etat-ok';
+      case 'EN_RETARD':
+        return 'etat-alerte';
+      case 'PARTIELLE':
+        return 'etat-attention';
+      default:
+        return 'etat-info';
+    }
+  }
+
   protected libelleStatut(statut: string): string {
     return (
       (

@@ -194,7 +194,9 @@ import { BoutonDocument } from '@shared/composants/bouton-document';
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let i" data-libelle="Statut">
-                    <mat-chip>{{ i.statut === 'EN_RETARD' ? 'En retard' : 'Partiel' }}</mat-chip>
+                    <mat-chip [class]="i.statut === 'EN_RETARD' ? 'etat-alerte' : 'etat-attention'">
+                      {{ i.statut === 'EN_RETARD' ? 'En retard' : 'Partiel' }}
+                    </mat-chip>
                   </td>
                 </ng-container>
 

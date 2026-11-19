@@ -61,9 +61,9 @@ import { PageHeader } from '@shared/components/page-header/page-header';
               <th mat-header-cell *matHeaderCellDef>État</th>
               <td mat-cell *matCellDef="let t">
                 @if (t.actif) {
-                  <mat-chip highlighted>Actif</mat-chip>
+                  <mat-chip class="etat-ok">Actif</mat-chip>
                 } @else {
-                  <mat-chip>Inactif</mat-chip>
+                  <mat-chip class="etat-info">Inactif</mat-chip>
                 }
               </td>
             </ng-container>

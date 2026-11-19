@@ -1,19 +1,21 @@
+/* Titre de page des maquettes : pas de bandeau coloré, un titre net. */
 .matero-page-header {
   display: block;
-  padding: 1rem;
+  padding: 0;
   margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0074e9;
-  border-radius: var(--mat-sys-corner-medium);
+  color: var(--mat-sys-on-background);
+  background: none;
 
   .matero-breadcrumb {
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     margin-bottom: 0;
+    font-size: 0.8125rem;
   }
 }
 
 .matero-page-title {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }

@@ -1,0 +1,366 @@
+/**
+ * Habillage repris des maquettes fournies : menu marine à élément actif ambre,
+ * fond gris très clair, cartes blanches cernées d'un filet, titres en gras,
+ * boutons rectangulaires discrets et pastilles d'état en teintes pastel.
+ *
+ * Tout passe par les variables du thème Material : les composants suivent
+ * sans avoir à être modifiés un par un.
+ */
+
+html {
+  /* Palette des maquettes */
+  --lycee-marine: #16233d;
+  --lycee-marine-clair: #1e2f52;
+  --lycee-ambre: #f0b429;
+  --lycee-fond: #f1f3f7;
+  --lycee-bordure: #e5e8ef;
+  --lycee-filet: #eef0f5;
+  --lycee-texte: #1f2937;
+  --lycee-texte-doux: #5b6676;
+
+  /* Teintes des pastilles d'état */
+  --lycee-alerte-fond: #fdeaee;
+  --lycee-alerte-texte: #a81b40;
+  --lycee-attention-fond: #fdf0d2;
+  --lycee-attention-texte: #8a6200;
+  --lycee-ok-fond: #e3f5ea;
+  --lycee-ok-texte: #1b6b3a;
+  --lycee-info-fond: #e8eef9;
+  --lycee-info-texte: #27497f;
+
+  /* Report dans le thème : couleurs… */
+  --mat-sys-primary: var(--lycee-marine);
+  --mat-sys-on-primary: #fff;
+  --mat-sys-primary-container: #dfe6f3;
+  --mat-sys-on-primary-container: var(--lycee-marine);
+  --mat-sys-secondary: var(--lycee-marine-clair);
+  --mat-sys-on-secondary: #fff;
+  --mat-sys-secondary-container: #e8ecf5;
+  --mat-sys-on-secondary-container: var(--lycee-marine);
+  --mat-sys-tertiary: #8a6200;
+  --mat-sys-on-tertiary: #fff;
+  --mat-sys-tertiary-container: var(--lycee-ok-fond);
+  --mat-sys-on-tertiary-container: var(--lycee-ok-texte);
+  --mat-sys-error: var(--lycee-alerte-texte);
+  --mat-sys-error-container: var(--lycee-alerte-fond);
+  --mat-sys-on-error-container: var(--lycee-alerte-texte);
+
+  /* …surfaces… */
+  --mat-sys-background: var(--lycee-fond);
+  --mat-sys-on-background: var(--lycee-texte);
+  --mat-sys-surface: #fff;
+  --mat-sys-surface-bright: #fff;
+  --mat-sys-surface-container: #fff;
+  --mat-sys-surface-container-low: #fff;
+  --mat-sys-surface-container-lowest: #fff;
+  --mat-sys-surface-container-high: #fff;
+  --mat-sys-surface-container-highest: #f7f8fb;
+  --mat-sys-on-surface: var(--lycee-texte);
+  --mat-sys-on-surface-variant: var(--lycee-texte-doux);
+  --mat-sys-outline: #aeb6c4;
+  --mat-sys-outline-variant: var(--lycee-bordure);
+
+  /* …et arrondis : les maquettes restent sobres. */
+  --mat-sys-corner-extra-small: 6px;
+  --mat-sys-corner-small: 8px;
+  --mat-sys-corner-medium: 10px;
+  --mat-sys-corner-large: 12px;
+}
+
+/* ---------- Structure de page ---------- */
+
+/** Titre de page : pas de bandeau coloré, un titre net sur le fond clair. */
+.matero-page-header {
+  padding: 0;
+  margin-bottom: 1rem;
+  color: var(--lycee-texte);
+  background: none;
+
+  .matero-breadcrumb {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+  }
+}
+
+.matero-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/** Cartes : fond blanc, filet discret, pas d'ombre portée. */
+.mat-mdc-card {
+  background: #fff;
+  border: 1px solid var(--lycee-bordure);
+  border-radius: var(--mat-sys-corner-medium);
+  box-shadow: none !important;
+}
+
+.mat-mdc-card + .mat-mdc-card {
+  margin-top: 1rem;
+}
+
+.mat-mdc-card-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-card-subtitle {
+  font-size: 0.8125rem;
+}
+
+/* ---------- Menu latéral ---------- */
+
+.matero-sidebar-main,
+.matero-sidebar-header,
+.matero-sidebar-header mat-toolbar,
+.matero-user-panel {
+  color: #fff;
+  background: var(--lycee-marine) !important;
+}
+
+.matero-sidebar-header mat-toolbar {
+  font-weight: 700;
+}
+
+.matero-sidemenu {
+  .menu-name,
+  .menu-icon,
+  .menu-caret {
+    color: rgb(255 255 255 / 86%);
+  }
+
+  .mat-mdc-list-item,
+  a.mat-mdc-list-item {
+    height: 42px;
+    margin-bottom: 2px;
+    border-radius: var(--mat-sys-corner-small);
+  }
+
+  .mat-mdc-list-item:hover {
+    background: var(--lycee-marine-clair);
+  }
+
+  /*
+   * Élément actif : pavé ambre à texte marine. La pastille est portée par le
+   * lien interne (`.menu-heading` ou l'élément de liste), pas par le `li`.
+   */
+  .menu-item.active {
+    background: transparent !important;
+  }
+
+  .menu-item.active > .menu-heading,
+  .menu-item.active > .mat-mdc-list-item,
+  .mat-mdc-list-item.active,
+  a.active {
+    background: var(--lycee-ambre) !important;
+    border-radius: var(--mat-sys-corner-small);
+
+    .menu-name,
+    .menu-icon,
+    .menu-caret,
+    .mdc-list-item__primary-text {
+      font-weight: 600;
+      color: var(--lycee-marine) !important;
+    }
+  }
+
+  /*
+   * Un sous-menu déplié garde le fond du menu : sans cela, le gabarit pose
+   * un pavé blanc qui tranche avec le marine.
+   */
+  .menu-item,
+  .menu-item.expanded,
+  .menu-item-sub,
+  .mat-mdc-nav-list,
+  .mat-mdc-list {
+    background: transparent !important;
+  }
+
+  .menu-item.expanded:not(.active) > .menu-heading {
+    background: transparent !important;
+  }
+
+  /* Sous-menus : simple décalage, sans pastille de couleur. */
+  .menu-item-sub .mat-mdc-list-item {
+    font-size: 0.875rem;
+  }
+}
+
+.matero-user-panel-name,
+.matero-user-panel-email {
+  color: rgb(255 255 255 / 86%);
+}
+
+/** Barre du haut : blanche, séparée du contenu par un filet. */
+.matero-header mat-toolbar,
+.matero-toolbar {
+  color: var(--lycee-texte);
+  background: #fff !important;
+  border-bottom: 1px solid var(--lycee-bordure);
+  box-shadow: none !important;
+}
+
+/* ---------- Boutons ---------- */
+
+.mat-mdc-button-base {
+  --mdc-text-button-container-shape: var(--mat-sys-corner-extra-small);
+  --mdc-filled-button-container-shape: var(--mat-sys-corner-extra-small);
+  --mdc-outlined-button-container-shape: var(--mat-sys-corner-extra-small);
+  --mdc-protected-button-container-shape: var(--mat-sys-corner-extra-small);
+
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/** Bouton principal : pavé marine plein. */
+.mat-mdc-unelevated-button:not(:disabled) {
+  color: #fff;
+  background: var(--lycee-marine);
+  box-shadow: none;
+}
+
+/** Bouton secondaire : blanc cerné, comme « Exporter Excel » des maquettes. */
+.mat-mdc-button:not(:disabled):not(.mat-mdc-menu-item):not(.mdc-list-item) {
+  color: var(--lycee-texte);
+  background: #fff;
+  border: 1px solid var(--lycee-bordure);
+}
+
+.mat-mdc-button:not(:disabled):hover {
+  background: #f7f8fb;
+}
+
+/** Bouton tonal : marine très clair. */
+.mat-mdc-tonal-button:not(:disabled) {
+  color: var(--lycee-marine);
+  background: var(--lycee-primary-container, #dfe6f3);
+}
+
+/* ---------- Tableaux ---------- */
+
+table.mat-mdc-table {
+  background: transparent;
+
+  .mat-mdc-header-row {
+    height: 40px;
+    background: transparent;
+  }
+
+  .mat-mdc-header-cell {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--lycee-texte-doux);
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--lycee-bordure);
+  }
+
+  .mat-mdc-row {
+    height: 46px;
+  }
+
+  .mat-mdc-cell {
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--lycee-filet);
+  }
+
+  .mat-mdc-row:hover .mat-mdc-cell {
+    background: #fafbfd;
+  }
+}
+
+/** Pied de pagination : discret, aligné sur le texte des maquettes. */
+.mat-mdc-paginator {
+  font-size: 0.8125rem;
+  background: transparent;
+}
+
+/* ---------- Pastilles d'état ---------- */
+
+/**
+ * Une pastille d'état se pose sur un `mat-chip` ou un simple `span`, avec la
+ * classe de ton qui convient : `etat-alerte`, `etat-attention`, `etat-ok`,
+ * `etat-info`. Sans classe de ton, la pastille reste neutre.
+ */
+.mat-mdc-standard-chip,
+.puce {
+  --mdc-chip-container-height: 24px;
+  --mdc-chip-label-text-size: 0.75rem;
+
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lycee-info-texte);
+  white-space: nowrap;
+  background: var(--lycee-info-fond) !important;
+  border: 0;
+  border-radius: 999px;
+
+  .mdc-evolution-chip__text-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: inherit !important;
+  }
+}
+
+.etat-alerte {
+  color: var(--lycee-alerte-texte) !important;
+  background: var(--lycee-alerte-fond) !important;
+}
+
+.etat-attention {
+  color: var(--lycee-attention-texte) !important;
+  background: var(--lycee-attention-fond) !important;
+}
+
+.etat-ok {
+  color: var(--lycee-ok-texte) !important;
+  background: var(--lycee-ok-fond) !important;
+}
+
+.etat-info {
+  color: var(--lycee-info-texte) !important;
+  background: var(--lycee-info-fond) !important;
+}
+
+/* ---------- Barre de recherche d'un tableau ---------- */
+
+.barre-filtres {
+  padding-bottom: 0.25rem;
+
+  /* Un libellé long ne doit pas passer sous l'icône du calendrier. */
+  .filtre:has(.mat-datepicker-toggle) {
+    flex-basis: 14rem;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background: #fff;
+  }
+}
+
+/* ---------- Onglets ---------- */
+
+.mat-mdc-tab-group,
+.mat-mdc-tab-header {
+  --mdc-tab-indicator-active-indicator-color: var(--lycee-ambre);
+  --mat-tab-header-active-label-text-color: var(--lycee-texte);
+  --mat-tab-header-active-focus-label-text-color: var(--lycee-texte);
+  --mat-tab-header-active-hover-label-text-color: var(--lycee-texte);
+
+  border-bottom: 1px solid var(--lycee-bordure);
+}
+
+/* ---------- Barres de progression ---------- */
+
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--lycee-ok-texte);
+  --mdc-linear-progress-track-color: var(--lycee-bordure);
+  --mat-progress-bar-active-indicator-color: var(--lycee-ok-texte);
+  --mat-progress-bar-track-color: var(--lycee-bordure);
+
+  height: 6px;
+  border-radius: 999px;
+}
