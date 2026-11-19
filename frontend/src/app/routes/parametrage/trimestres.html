@@ -119,12 +119,13 @@
   }
 
   @if (peutModifier && trimestres().length < 3) {
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Nouveau trimestre</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <form (ngSubmit)="creer()">
+    <app-bouton-formulaire
+      libelle="Ajouter un trimestre"
+      formulaire="trimestre-nouveau"
+      action="Créer le trimestre"
+    >
+      <ng-template let-fenetre>
+        <form id="trimestre-nouveau" (ngSubmit)="creer(fenetre)">
           <div class="grille-formulaire">
             <mat-form-field>
               <mat-label>Numéro</mat-label>
@@ -161,13 +162,8 @@
               <mat-datepicker #calendrierFin />
             </mat-form-field>
           </div>
-
-          <button matButton="filled" type="submit" [disabled]="enCours()">
-            <mat-icon>add</mat-icon>
-            Créer le trimestre
-          </button>
         </form>
-      </mat-card-content>
-    </mat-card>
+      </ng-template>
+    </app-bouton-formulaire>
   }
 }

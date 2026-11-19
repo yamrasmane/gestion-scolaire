@@ -68,12 +68,13 @@
 </mat-card>
 
 @if (peutModifier) {
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Nouvelle année scolaire</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="formulaire" (ngSubmit)="creer()">
+  <app-bouton-formulaire
+    libelle="Nouvelle année scolaire"
+    formulaire="annee-nouvelle"
+    action="Créer l'année"
+  >
+    <ng-template let-fenetre>
+      <form id="annee-nouvelle" [formGroup]="formulaire" (ngSubmit)="creer(fenetre)">
         <div class="grille-formulaire">
           <mat-form-field>
             <mat-label>Libellé</mat-label>
@@ -117,14 +118,9 @@
             Bloquer la remise du bulletin en cas d'impayé
           </mat-checkbox>
         </div>
-
-        <button matButton="filled" type="submit" [disabled]="enCours()">
-          <mat-icon>add</mat-icon>
-          Créer l'année scolaire
-        </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </ng-template>
+  </app-bouton-formulaire>
 } @else {
   <p class="text-muted">Seule la direction peut créer ou activer une année scolaire.</p>
 }

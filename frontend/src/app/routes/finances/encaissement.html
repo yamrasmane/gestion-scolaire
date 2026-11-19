@@ -103,229 +103,245 @@
     </mat-card>
 
     <!-- Échéancier -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Échéancier</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        @if (f.echeances.length === 0) {
-          <p class="text-muted">Aucune échéance : générez d'abord les frais.</p>
-        } @else {
-          <div class="table-defilement">
-            <table mat-table [dataSource]="f.echeances" class="w-full">
-              <ng-container matColumnDef="tranche">
-                <th mat-header-cell *matHeaderCellDef>Tranche</th>
-                <td mat-cell *matCellDef="let e">{{ e.trancheLibelle }}</td>
-              </ng-container>
+    <mat-tab-group>
+      <mat-tab label="Échéancier">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Échéancier</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @if (f.echeances.length === 0) {
+              <p class="text-muted">Aucune échéance : générez d'abord les frais.</p>
+            } @else {
+              <div class="table-defilement">
+                <table mat-table [dataSource]="f.echeances" class="w-full">
+                  <ng-container matColumnDef="tranche">
+                    <th mat-header-cell *matHeaderCellDef>Tranche</th>
+                    <td mat-cell *matCellDef="let e">{{ e.trancheLibelle }}</td>
+                  </ng-container>
 
-              <ng-container matColumnDef="frais">
-                <th mat-header-cell *matHeaderCellDef>Frais</th>
-                <td mat-cell *matCellDef="let e">{{ e.typeFraisLibelle }}</td>
-              </ng-container>
+                  <ng-container matColumnDef="frais">
+                    <th mat-header-cell *matHeaderCellDef>Frais</th>
+                    <td mat-cell *matCellDef="let e">{{ e.typeFraisLibelle }}</td>
+                  </ng-container>
 
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Échéance</th>
-                <td mat-cell *matCellDef="let e">{{ e.dateEcheance | date: 'dd/MM/yyyy' }}</td>
-              </ng-container>
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Échéance</th>
+                    <td mat-cell *matCellDef="let e">{{ e.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+                  </ng-container>
 
-              <ng-container matColumnDef="du">
-                <th mat-header-cell *matHeaderCellDef>Dû</th>
-                <td mat-cell *matCellDef="let e">{{ e.montantDu | number }}</td>
-              </ng-container>
+                  <ng-container matColumnDef="du">
+                    <th mat-header-cell *matHeaderCellDef>Dû</th>
+                    <td mat-cell *matCellDef="let e">{{ e.montantDu | number }}</td>
+                  </ng-container>
 
-              <ng-container matColumnDef="paye">
-                <th mat-header-cell *matHeaderCellDef>Payé</th>
-                <td mat-cell *matCellDef="let e">{{ e.montantPaye | number }}</td>
-              </ng-container>
+                  <ng-container matColumnDef="paye">
+                    <th mat-header-cell *matHeaderCellDef>Payé</th>
+                    <td mat-cell *matCellDef="let e">{{ e.montantPaye | number }}</td>
+                  </ng-container>
 
-              <ng-container matColumnDef="reste">
-                <th mat-header-cell *matHeaderCellDef>Reste</th>
-                <td mat-cell *matCellDef="let e">
-                  <strong>{{ e.reste | number }}</strong>
-                </td>
-              </ng-container>
+                  <ng-container matColumnDef="reste">
+                    <th mat-header-cell *matHeaderCellDef>Reste</th>
+                    <td mat-cell *matCellDef="let e">
+                      <strong>{{ e.reste | number }}</strong>
+                    </td>
+                  </ng-container>
 
-              <ng-container matColumnDef="statut">
-                <th mat-header-cell *matHeaderCellDef>Statut</th>
-                <td mat-cell *matCellDef="let e">
-                  <mat-chip [class]="tonStatut(e.statut)">
-                    {{ libelleStatut(e.statut) }}
-                  </mat-chip>
-                </td>
-              </ng-container>
+                  <ng-container matColumnDef="statut">
+                    <th mat-header-cell *matHeaderCellDef>Statut</th>
+                    <td mat-cell *matCellDef="let e">
+                      <mat-chip [class]="tonStatut(e.statut)">
+                        {{ libelleStatut(e.statut) }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="colonnesEcheances"></tr>
-              <tr mat-row *matRowDef="let ligne; columns: colonnesEcheances"></tr>
-            </table>
+                  <tr mat-header-row *matHeaderRowDef="colonnesEcheances"></tr>
+                  <tr mat-row *matRowDef="let ligne; columns: colonnesEcheances"></tr>
+                </table>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Encaissement -->
+        @if (peutEncaisser && f.resteAPayer > 0) {
+          <div class="ligne-actions m-b-16">
+            <app-bouton-formulaire
+              libelle="Encaisser un règlement"
+              titre="Enregistrer un règlement"
+              icone="payments"
+            >
+              <ng-template let-fenetre>
+                <p class="text-muted">
+                  Sans précision, le montant solde les échéances les plus anciennes.
+                </p>
+
+                <div class="grille-formulaire">
+                  <mat-form-field>
+                    <mat-label>Date</mat-label>
+                    <input
+                      matInput
+                      name="date"
+                      [matDatepicker]="calendrierPaiement"
+                      [(ngModel)]="paiement.datePaiement"
+                    />
+                    <mat-datepicker-toggle matIconSuffix [for]="calendrierPaiement" />
+                    <mat-datepicker #calendrierPaiement />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Montant (FCFA)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      min="1"
+                      name="montant"
+                      [(ngModel)]="paiement.montant"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Mode de paiement</mat-label>
+                    <mat-select name="mode" [(ngModel)]="paiement.mode">
+                      @for (m of modes; track m.code) {
+                        <mat-option [value]="m.code">{{ m.libelle }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Référence</mat-label>
+                    <input
+                      matInput
+                      name="reference"
+                      placeholder="N° de transaction"
+                      [(ngModel)]="paiement.reference"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Payeur</mat-label>
+                    <input matInput name="payeur" [(ngModel)]="paiement.payeur" />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Imputer sur un frais précis</mat-label>
+                    <mat-select name="imputation" [(ngModel)]="paiement.typeFraisId">
+                      <mat-option [value]="null">Automatique (plus ancienne échéance)</mat-option>
+                      @for (frais of f.frais; track frais.id) {
+                        <mat-option [value]="frais.typeFraisId">{{
+                          frais.typeFraisLibelle
+                        }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <button
+                  matButton="filled"
+                  [disabled]="enCours() || !paiement.montant"
+                  (click)="encaisser(fenetre)"
+                >
+                  <mat-icon>payments</mat-icon>
+                  Encaisser
+                </button>
+              </ng-template>
+            </app-bouton-formulaire>
           </div>
         }
-      </mat-card-content>
-    </mat-card>
+      </mat-tab>
 
-    <!-- Encaissement -->
-    @if (peutEncaisser && f.resteAPayer > 0) {
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Enregistrer un règlement</mat-card-title>
-          <mat-card-subtitle>
-            Sans précision, le montant solde les échéances les plus anciennes.
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="grille-formulaire">
-            <mat-form-field>
-              <mat-label>Date</mat-label>
-              <input
-                matInput
-                name="date"
-                [matDatepicker]="calendrierPaiement"
-                [(ngModel)]="paiement.datePaiement"
-              />
-              <mat-datepicker-toggle matIconSuffix [for]="calendrierPaiement" />
-              <mat-datepicker #calendrierPaiement />
-            </mat-form-field>
+      <mat-tab label="Règlements">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Règlements</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @if (f.paiements.length === 0) {
+              <p class="text-muted">Aucun règlement enregistré.</p>
+            } @else {
+              <div class="table-defilement">
+                <table mat-table [dataSource]="f.paiements" class="w-full">
+                  <ng-container matColumnDef="recu">
+                    <th mat-header-cell *matHeaderCellDef>Reçu</th>
+                    <td mat-cell *matCellDef="let p">{{ p.numeroRecu }}</td>
+                  </ng-container>
 
-            <mat-form-field>
-              <mat-label>Montant (FCFA)</mat-label>
-              <input matInput type="number" min="1" name="montant" [(ngModel)]="paiement.montant" />
-            </mat-form-field>
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let p">{{ p.datePaiement | date: 'dd/MM/yyyy' }}</td>
+                  </ng-container>
 
-            <mat-form-field>
-              <mat-label>Mode de paiement</mat-label>
-              <mat-select name="mode" [(ngModel)]="paiement.mode">
-                @for (m of modes; track m.code) {
-                  <mat-option [value]="m.code">{{ m.libelle }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+                  <ng-container matColumnDef="montant">
+                    <th mat-header-cell *matHeaderCellDef>Montant</th>
+                    <td mat-cell *matCellDef="let p">
+                      <strong>{{ p.montant | number }}</strong>
+                    </td>
+                  </ng-container>
 
-            <mat-form-field>
-              <mat-label>Référence</mat-label>
-              <input
-                matInput
-                name="reference"
-                placeholder="N° de transaction"
-                [(ngModel)]="paiement.reference"
-              />
-            </mat-form-field>
+                  <ng-container matColumnDef="mode">
+                    <th mat-header-cell *matHeaderCellDef>Mode</th>
+                    <td mat-cell *matCellDef="let p">{{ libelleMode(p.mode) }}</td>
+                  </ng-container>
 
-            <mat-form-field>
-              <mat-label>Payeur</mat-label>
-              <input matInput name="payeur" [(ngModel)]="paiement.payeur" />
-            </mat-form-field>
+                  <ng-container matColumnDef="payeur">
+                    <th mat-header-cell *matHeaderCellDef>Payeur</th>
+                    <td mat-cell *matCellDef="let p">{{ p.payeur }}</td>
+                  </ng-container>
 
-            <mat-form-field>
-              <mat-label>Imputer sur un frais précis</mat-label>
-              <mat-select name="imputation" [(ngModel)]="paiement.typeFraisId">
-                <mat-option [value]="null">Automatique (plus ancienne échéance)</mat-option>
-                @for (frais of f.frais; track frais.id) {
-                  <mat-option [value]="frais.typeFraisId">{{ frais.typeFraisLibelle }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+                  <ng-container matColumnDef="statut">
+                    <th mat-header-cell *matHeaderCellDef>Statut</th>
+                    <td mat-cell *matCellDef="let p">
+                      @if (p.statut === 'ANNULE') {
+                        <mat-chip class="etat-alerte" [matTooltip]="p.motifAnnulation ?? ''">
+                          Annulé
+                        </mat-chip>
+                      } @else {
+                        <mat-chip class="etat-ok">Valide</mat-chip>
+                      }
+                    </td>
+                  </ng-container>
 
-          <button
-            matButton="filled"
-            [disabled]="enCours() || !paiement.montant"
-            (click)="encaisser()"
-          >
-            <mat-icon>payments</mat-icon>
-            Encaisser
-          </button>
-        </mat-card-content>
-      </mat-card>
-    }
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let p">
+                      <button matButton (click)="ouvrirRecu(p, p.statut === 'ANNULE')">
+                        <mat-icon>receipt_long</mat-icon>
+                        Reçu
+                      </button>
+                      @if (peutParametrer && p.statut === 'VALIDE') {
+                        <button matButton (click)="ouvrirAnnulation(p)">Annuler</button>
+                      }
+                    </td>
+                  </ng-container>
 
-    <!-- Paiements -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Règlements</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        @if (f.paiements.length === 0) {
-          <p class="text-muted">Aucun règlement enregistré.</p>
-        } @else {
-          <div class="table-defilement">
-            <table mat-table [dataSource]="f.paiements" class="w-full">
-              <ng-container matColumnDef="recu">
-                <th mat-header-cell *matHeaderCellDef>Reçu</th>
-                <td mat-cell *matCellDef="let p">{{ p.numeroRecu }}</td>
-              </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="colonnesPaiements"></tr>
+                  <tr mat-row *matRowDef="let ligne; columns: colonnesPaiements"></tr>
+                </table>
+              </div>
 
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let p">{{ p.datePaiement | date: 'dd/MM/yyyy' }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="montant">
-                <th mat-header-cell *matHeaderCellDef>Montant</th>
-                <td mat-cell *matCellDef="let p">
-                  <strong>{{ p.montant | number }}</strong>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="mode">
-                <th mat-header-cell *matHeaderCellDef>Mode</th>
-                <td mat-cell *matCellDef="let p">{{ libelleMode(p.mode) }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="payeur">
-                <th mat-header-cell *matHeaderCellDef>Payeur</th>
-                <td mat-cell *matCellDef="let p">{{ p.payeur }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="statut">
-                <th mat-header-cell *matHeaderCellDef>Statut</th>
-                <td mat-cell *matCellDef="let p">
-                  @if (p.statut === 'ANNULE') {
-                    <mat-chip class="etat-alerte" [matTooltip]="p.motifAnnulation ?? ''">
-                      Annulé
-                    </mat-chip>
-                  } @else {
-                    <mat-chip class="etat-ok">Valide</mat-chip>
-                  }
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let p">
-                  <button matButton (click)="ouvrirRecu(p, p.statut === 'ANNULE')">
-                    <mat-icon>receipt_long</mat-icon>
-                    Reçu
+              @if (annulation; as a) {
+                <div class="ligne-actions m-t-16">
+                  <mat-form-field class="w-40">
+                    <mat-label>Motif de l'annulation (obligatoire)</mat-label>
+                    <input matInput maxlength="255" [(ngModel)]="a.motif" />
+                  </mat-form-field>
+                  <button
+                    matButton="filled"
+                    [disabled]="!a.motif.trim() || enCours()"
+                    (click)="annuler()"
+                  >
+                    Confirmer l'annulation
                   </button>
-                  @if (peutParametrer && p.statut === 'VALIDE') {
-                    <button matButton (click)="ouvrirAnnulation(p)">Annuler</button>
-                  }
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="colonnesPaiements"></tr>
-              <tr mat-row *matRowDef="let ligne; columns: colonnesPaiements"></tr>
-            </table>
-          </div>
-
-          @if (annulation; as a) {
-            <div class="ligne-actions m-t-16">
-              <mat-form-field class="w-40">
-                <mat-label>Motif de l'annulation (obligatoire)</mat-label>
-                <input matInput maxlength="255" [(ngModel)]="a.motif" />
-              </mat-form-field>
-              <button
-                matButton="filled"
-                [disabled]="!a.motif.trim() || enCours()"
-                (click)="annuler()"
-              >
-                Confirmer l'annulation
-              </button>
-              <button matButton (click)="annulation = null">Renoncer</button>
-            </div>
-          }
-        }
-      </mat-card-content>
-    </mat-card>
-
+                  <button matButton (click)="annulation = null">Renoncer</button>
+                </div>
+              }
+            }
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+    </mat-tab-group>
     <!-- Frais et remises -->
     <mat-accordion>
       <mat-expansion-panel>

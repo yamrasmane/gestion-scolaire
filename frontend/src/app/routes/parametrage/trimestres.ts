@@ -24,6 +24,7 @@ import {
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
@@ -46,6 +47,7 @@ type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
     MatCheckboxModule,
     MatDatepickerModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
   ],
 })
@@ -103,7 +105,8 @@ export class Trimestres {
     );
   }
 
-  protected creer(): void {
+  /** La fenêtre ne se referme qu'une fois le trimestre créé. */
+  protected creer(fenetre?: BoutonFormulaire): void {
     const anneeId = this.contexte.anneeId();
     if (anneeId && this.nouveau.dateDebut && this.nouveau.dateFin) {
       this.executer(
@@ -112,6 +115,7 @@ export class Trimestres {
           dateDebut: enIso(this.nouveau.dateDebut) ?? '',
           dateFin: enIso(this.nouveau.dateFin) ?? '',
         }),
+        fenetre,
       );
     }
   }
@@ -156,13 +160,14 @@ export class Trimestres {
     this.executer(t.cloture ? this.api.rouvrirTrimestre(t.id) : this.api.cloturerTrimestre(t.id));
   }
 
-  private executer(action: Observable<unknown>): void {
+  private executer(action: Observable<unknown>, fenetre?: BoutonFormulaire): void {
     this.enCours.set(true);
     this.erreur.set('');
     action.subscribe({
       next: () => {
         this.enCours.set(false);
         this.cycleEnEdition = null;
+        fenetre?.fermer();
         const anneeId = this.contexte.anneeId();
         if (anneeId) {
           this.charger(anneeId);

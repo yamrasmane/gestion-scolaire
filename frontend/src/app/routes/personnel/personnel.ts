@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -6,15 +6,18 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 
 import { ApiService, Personnel as Membre, messageErreur } from '@core/api.service';
 import { LIBELLES_ROLES, Role } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { EtatListe } from '@shared/composants/etat-liste';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { ImportFichier } from '@shared/composants/import-fichier';
 
 @Component({
@@ -32,12 +35,20 @@ import { ImportFichier } from '@shared/composants/import-fichier';
     MatSelectModule,
     MatSortModule,
     MatPaginatorModule,
+    MatTabsModule,
+    MatDialogModule,
     PageHeader,
     ImportFichier,
+    BoutonFormulaire,
   ],
 })
 export class Personnel {
   private readonly api = inject(ApiService);
+  private readonly fenetres = inject(MatDialog);
+
+  /** La fiche à modifier s'ouvre dans une fenêtre, pas dans la page. */
+  private readonly gabaritEdition = viewChild<TemplateRef<unknown>>('edition');
+  private fenetreEdition?: MatDialogRef<unknown>;
 
   protected readonly roles = Object.entries(LIBELLES_ROLES) as [Role, string][];
   protected readonly colonnes = [
@@ -72,7 +83,8 @@ export class Personnel {
     return LIBELLES_ROLES[role as Role] ?? role;
   }
 
-  protected creer(): void {
+  /** La fenêtre ne se referme qu'une fois la fiche créée. */
+  protected creer(fenetre?: BoutonFormulaire): void {
     this.enCours.set(true);
     this.erreur.set('');
     this.information.set('');
@@ -81,6 +93,7 @@ export class Personnel {
         this.information.set(resultat.avertissement ?? '');
         this.nouveau = this.vide();
         this.enCours.set(false);
+        fenetre?.fermer();
         this.charger();
       },
       error: (e) => {
@@ -101,9 +114,14 @@ export class Personnel {
       telephone: membre.telephone ?? '',
       role: membre.role,
     };
+    const gabarit = this.gabaritEdition();
+    if (gabarit) {
+      this.fenetreEdition = this.fenetres.open(gabarit, { width: '780px', maxWidth: '96vw' });
+    }
   }
 
   protected abandonner(): void {
+    this.fenetreEdition?.close();
     this.enEdition.set(null);
     this.modification = this.videModification();
   }

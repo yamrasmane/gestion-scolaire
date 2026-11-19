@@ -23,6 +23,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
@@ -43,6 +44,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatTooltipModule,
     MatDatepickerModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
   ],
 })
@@ -124,7 +126,8 @@ export class SaisieNotes {
     return this.valeurs[cle];
   }
 
-  protected creerEvaluation(): void {
+  /** La fenêtre ne se referme qu'une fois l'épreuve créée. */
+  protected creerEvaluation(fenetre?: BoutonFormulaire): void {
     const enseignement = this.enseignementId();
     const trimestre = this.trimestreId();
     if (!enseignement || !trimestre || !this.nouvelleEvaluation.libelle.trim()) {
@@ -136,7 +139,10 @@ export class SaisieNotes {
         libelle: this.nouvelleEvaluation.libelle,
         dateEval: enIso(this.nouvelleEvaluation.dateEval),
       }),
-      () => (this.nouvelleEvaluation = this.videEvaluation()),
+      () => {
+        this.nouvelleEvaluation = this.videEvaluation();
+        fenetre?.fermer();
+      },
     );
   }
 

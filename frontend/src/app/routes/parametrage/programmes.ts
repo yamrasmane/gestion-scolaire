@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { Observable } from 'rxjs';
 
@@ -21,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /**
@@ -43,7 +45,9 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatInputModule,
     MatSelectModule,
     MtxSelectModule,
+    MatTabsModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
   ],
 })
@@ -94,7 +98,8 @@ export class Programmes {
     this.charger();
   }
 
-  protected ajouter(): void {
+  /** La fenêtre ne se referme qu'une fois la ligne ajoutée. */
+  protected ajouter(fenetre?: BoutonFormulaire): void {
     const niveauId = this.niveauId();
     if (!niveauId || !this.nouvelleLigne.matiereId || !this.nouvelleLigne.coefficient) {
       return;
@@ -106,6 +111,7 @@ export class Programmes {
       }),
       () => {
         this.nouvelleLigne = this.vide();
+        fenetre?.fermer();
         this.charger();
       },
     );

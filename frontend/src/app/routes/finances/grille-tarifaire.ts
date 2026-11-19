@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 /** Montant de chaque frais par niveau ou classe et par catégorie d'élève (SF-22). */
@@ -40,6 +41,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatSelectModule,
     MatExpansionModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
   ],
 })
@@ -96,7 +98,8 @@ export class GrilleTarifaire {
     return tarif.classeNom ? `Classe ${tarif.classeNom}` : `Niveau ${tarif.niveauCode}`;
   }
 
-  protected ajouter(): void {
+  /** La fenêtre ne se referme qu'une fois le tarif ajouté. */
+  protected ajouter(fenetre?: BoutonFormulaire): void {
     const anneeId = this.contexte.anneeId();
     if (!anneeId || !this.nouveau.typeFraisId || this.nouveau.montant === null) {
       return;
@@ -116,6 +119,7 @@ export class GrilleTarifaire {
           porteeClasse: parClasse,
           categorie: this.nouveau.categorie,
         };
+        fenetre?.fermer();
       },
     );
   }

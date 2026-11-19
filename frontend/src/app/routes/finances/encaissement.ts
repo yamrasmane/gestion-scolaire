@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Observable } from 'rxjs';
@@ -32,6 +33,7 @@ import { MtxSelectModule } from '@ng-matero/extensions/select';
 
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { aujourdhui, enIso } from '@shared/composants/dates';
 
 /** Fiche financière de l'élève et encaissement (SF-28 à SF-31). */
@@ -54,8 +56,10 @@ import { aujourdhui, enIso } from '@shared/composants/dates';
     MatTooltipModule,
     MatDatepickerModule,
     MtxSelectModule,
+    MatTabsModule,
     PageHeader,
     AnneeRequise,
+    BoutonFormulaire,
   ],
 })
 export class Encaissement {
@@ -167,7 +171,7 @@ export class Encaissement {
         return 'etat-ok';
       case 'EN_RETARD':
         return 'etat-alerte';
-      case 'PARTIELLE':
+      case 'PARTIEL':
         return 'etat-attention';
       default:
         return 'etat-info';
@@ -258,7 +262,8 @@ export class Encaissement {
     this.executer(this.api.supprimerFrais(frais.id));
   }
 
-  protected encaisser(): void {
+  /** La fenêtre ne se referme qu'une fois le règlement enregistré. */
+  protected encaisser(fenetre?: BoutonFormulaire): void {
     const id = this.inscriptionId();
     if (!id || !this.paiement.montant) {
       return;
@@ -275,6 +280,7 @@ export class Encaissement {
       () => {
         this.information.set('Règlement enregistré.');
         this.paiement = this.vide();
+        fenetre?.fermer();
       },
     );
   }

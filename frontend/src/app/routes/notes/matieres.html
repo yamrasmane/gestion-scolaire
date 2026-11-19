@@ -4,221 +4,240 @@
   <p class="alerte-erreur" role="alert">{{ message }}</p>
 }
 
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Matières enseignées dans une classe</mat-card-title>
-    <mat-card-subtitle>
-      Le coefficient sert au calcul de la moyenne générale de la classe.
-    </mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <mat-form-field>
-      <mat-label>Classe</mat-label>
-      <mtx-select
-        [ngModel]="classeId()"
-        (ngModelChange)="choisirClasse($event)"
-        [items]="classes()"
-        bindValue="id"
-        bindLabel="nom"
-        placeholder="Choisir une classe"
-        notFoundText="Aucune classe ne correspond"
-        [searchable]="true"
-        [clearable]="false"
-      />
-    </mat-form-field>
-
-    @if (classeId()) {
-      @if (enseignements().length === 0) {
-        <p class="text-muted">Aucune matière n'est encore affectée à cette classe.</p>
-      } @else {
-        <div class="table-defilement">
-          <table mat-table [dataSource]="enseignements()" class="w-full">
-            <ng-container matColumnDef="matiere">
-              <th mat-header-cell *matHeaderCellDef>Matière</th>
-              <td mat-cell *matCellDef="let e">
-                <strong>{{ e.matiereLibelle }}</strong>
-                <span class="text-muted"> ({{ e.matiereCode }})</span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="enseignant">
-              <th mat-header-cell *matHeaderCellDef>Professeur</th>
-              <td mat-cell *matCellDef="let e">
-                {{ e.enseignantNom || '—' }}
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="coefficient">
-              <th mat-header-cell *matHeaderCellDef>Coefficient</th>
-              <td mat-cell *matCellDef="let e">{{ e.coefficient }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let e">
-                <button
-                  matIconButton
-                  [disabled]="enCours()"
-                  (click)="retirer(e)"
-                  aria-label="Retirer la matière"
-                >
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
-            <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
-          </table>
-        </div>
-      }
-
-      <h3 class="f-w-400 m-t-24">Affecter une matière</h3>
-      <div class="grille-formulaire">
+<mat-tab-group>
+  <mat-tab label="Matières de la classe">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Matières enseignées dans une classe</mat-card-title>
+        <mat-card-subtitle>
+          Le coefficient sert au calcul de la moyenne générale de la classe.
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
         <mat-form-field>
-          <mat-label>Matière</mat-label>
+          <mat-label>Classe</mat-label>
           <mtx-select
-            name="matiere"
-            [(ngModel)]="affectation.matiereId"
-            [items]="matieres()"
+            [ngModel]="classeId()"
+            (ngModelChange)="choisirClasse($event)"
+            [items]="classes()"
             bindValue="id"
-            bindLabel="libelle"
-            placeholder="Choisir une matière"
-            notFoundText="Aucune matière ne correspond"
+            bindLabel="nom"
+            placeholder="Choisir une classe"
+            notFoundText="Aucune classe ne correspond"
             [searchable]="true"
+            [clearable]="false"
           />
         </mat-form-field>
 
-        <mat-form-field>
-          <mat-label>Professeur titulaire</mat-label>
-          <mtx-select
-            name="enseignant"
-            [(ngModel)]="affectation.enseignantId"
-            [items]="professeurs()"
-            bindValue="id"
-            bindLabel="libelle"
-            placeholder="À désigner"
-            notFoundText="Aucun professeur ne correspond"
-            [searchable]="true"
-          />
-        </mat-form-field>
+        @if (classeId()) {
+          @if (enseignements().length === 0) {
+            <p class="text-muted">Aucune matière n'est encore affectée à cette classe.</p>
+          } @else {
+            <div class="table-defilement">
+              <table mat-table [dataSource]="enseignements()" class="w-full">
+                <ng-container matColumnDef="matiere">
+                  <th mat-header-cell *matHeaderCellDef>Matière</th>
+                  <td mat-cell *matCellDef="let e">
+                    <strong>{{ e.matiereLibelle }}</strong>
+                    <span class="text-muted"> ({{ e.matiereCode }})</span>
+                  </td>
+                </ng-container>
 
-        <mat-form-field>
-          <mat-label>Coefficient</mat-label>
-          <input
-            matInput
-            name="coefficient"
-            type="number"
-            min="0.5"
-            step="0.5"
-            [(ngModel)]="affectation.coefficient"
-          />
-        </mat-form-field>
-      </div>
+                <ng-container matColumnDef="enseignant">
+                  <th mat-header-cell *matHeaderCellDef>Professeur</th>
+                  <td mat-cell *matCellDef="let e">
+                    {{ e.enseignantNom || '—' }}
+                  </td>
+                </ng-container>
 
-      <button matButton="filled" [disabled]="enCours()" (click)="affecter()">
-        <mat-icon>add</mat-icon>
-        Affecter à la classe
-      </button>
-    }
-  </mat-card-content>
-</mat-card>
+                <ng-container matColumnDef="coefficient">
+                  <th mat-header-cell *matHeaderCellDef>Coefficient</th>
+                  <td mat-cell *matCellDef="let e">{{ e.coefficient }}</td>
+                </ng-container>
 
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Catalogue des matières ({{ matieres().length }})</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    @if (matieres().length === 0) {
-      <p class="text-muted">Aucune matière enregistrée.</p>
-    } @else {
-      <p class="text-muted">
-        Une matière ne peut être supprimée que si elle ne figure dans aucune classe et dans aucun
-        programme de niveau.
-      </p>
-      <div class="table-defilement">
-        <table mat-table [dataSource]="matieres()" class="w-full">
-          <ng-container matColumnDef="code">
-            <th mat-header-cell *matHeaderCellDef>Code</th>
-            <td mat-cell *matCellDef="let m">
-              @if (matiereModifiee() === m.id) {
-                <mat-form-field class="champ-etroit">
-                  <input
-                    matInput
-                    maxlength="20"
-                    name="codeEdite"
-                    [(ngModel)]="matiereSaisie.code"
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef></th>
+                  <td mat-cell *matCellDef="let e">
+                    <button
+                      matIconButton
+                      [disabled]="enCours()"
+                      (click)="retirer(e)"
+                      aria-label="Retirer la matière"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+                <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+              </table>
+            </div>
+          }
+
+          <app-bouton-formulaire
+            libelle="Affecter une matière"
+            titre="Affecter une matière à la classe"
+          >
+            <ng-template let-fenetre>
+              <div class="grille-formulaire">
+                <mat-form-field>
+                  <mat-label>Matière</mat-label>
+                  <mtx-select
+                    name="matiere"
+                    [(ngModel)]="affectation.matiereId"
+                    [items]="matieres()"
+                    bindValue="id"
+                    bindLabel="libelle"
+                    placeholder="Choisir une matière"
+                    notFoundText="Aucune matière ne correspond"
+                    [searchable]="true"
                   />
                 </mat-form-field>
-              } @else {
-                {{ m.code }}
-              }
-            </td>
-          </ng-container>
 
-          <ng-container matColumnDef="libelle">
-            <th mat-header-cell *matHeaderCellDef>Libellé</th>
-            <td mat-cell *matCellDef="let m">
-              @if (matiereModifiee() === m.id) {
                 <mat-form-field>
-                  <input matInput name="libelleEdite" [(ngModel)]="matiereSaisie.libelle" />
+                  <mat-label>Professeur titulaire</mat-label>
+                  <mtx-select
+                    name="enseignant"
+                    [(ngModel)]="affectation.enseignantId"
+                    [items]="professeurs()"
+                    bindValue="id"
+                    bindLabel="libelle"
+                    placeholder="À désigner"
+                    notFoundText="Aucun professeur ne correspond"
+                    [searchable]="true"
+                  />
                 </mat-form-field>
-              } @else {
-                <strong>{{ m.libelle }}</strong>
-              }
-            </td>
-          </ng-container>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let m">
-              @if (matiereModifiee() === m.id) {
-                <button matButton="filled" [disabled]="enCours()" (click)="enregistrerMatiere(m)">
-                  Enregistrer
-                </button>
-                <button matButton (click)="matiereModifiee.set(null)">Annuler</button>
-              } @else {
-                <button matButton (click)="editerMatiere(m)">Modifier</button>
-                <button matButton [disabled]="enCours()" (click)="supprimerMatiere(m)">
-                  Supprimer
-                </button>
-              }
-            </td>
-          </ng-container>
+                <mat-form-field>
+                  <mat-label>Coefficient</mat-label>
+                  <input
+                    matInput
+                    name="coefficient"
+                    type="number"
+                    min="0.5"
+                    step="0.5"
+                    [(ngModel)]="affectation.coefficient"
+                  />
+                </mat-form-field>
+              </div>
 
-          <tr mat-header-row *matHeaderRowDef="colonnesCatalogue"></tr>
-          <tr mat-row *matRowDef="let ligne; columns: colonnesCatalogue"></tr>
-        </table>
-      </div>
-    }
+              <button matButton="filled" [disabled]="enCours()" (click)="affecter(fenetre)">
+                <mat-icon>add</mat-icon>
+                Affecter à la classe
+              </button>
+            </ng-template>
+          </app-bouton-formulaire>
+        }
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
 
-    <h3 class="f-w-400 m-t-24">Ajouter une matière</h3>
-    <div class="grille-formulaire">
-      <mat-form-field>
-        <mat-label>Code</mat-label>
-        <input
-          matInput
-          name="code"
-          maxlength="20"
-          placeholder="MATH"
-          [(ngModel)]="nouvelleMatiere.code"
-        />
-      </mat-form-field>
+  <mat-tab label="Catalogue des matières">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Catalogue des matières ({{ matieres().length }})</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (matieres().length === 0) {
+          <p class="text-muted">Aucune matière enregistrée.</p>
+        } @else {
+          <p class="text-muted">
+            Une matière ne peut être supprimée que si elle ne figure dans aucune classe et dans
+            aucun programme de niveau.
+          </p>
+          <div class="table-defilement">
+            <table mat-table [dataSource]="matieres()" class="w-full">
+              <ng-container matColumnDef="code">
+                <th mat-header-cell *matHeaderCellDef>Code</th>
+                <td mat-cell *matCellDef="let m">
+                  @if (matiereModifiee() === m.id) {
+                    <mat-form-field class="champ-etroit">
+                      <input
+                        matInput
+                        maxlength="20"
+                        name="codeEdite"
+                        [(ngModel)]="matiereSaisie.code"
+                      />
+                    </mat-form-field>
+                  } @else {
+                    {{ m.code }}
+                  }
+                </td>
+              </ng-container>
 
-      <mat-form-field>
-        <mat-label>Libellé</mat-label>
-        <input
-          matInput
-          name="libelle"
-          placeholder="Mathématiques"
-          [(ngModel)]="nouvelleMatiere.libelle"
-        />
-      </mat-form-field>
-    </div>
+              <ng-container matColumnDef="libelle">
+                <th mat-header-cell *matHeaderCellDef>Libellé</th>
+                <td mat-cell *matCellDef="let m">
+                  @if (matiereModifiee() === m.id) {
+                    <mat-form-field>
+                      <input matInput name="libelleEdite" [(ngModel)]="matiereSaisie.libelle" />
+                    </mat-form-field>
+                  } @else {
+                    <strong>{{ m.libelle }}</strong>
+                  }
+                </td>
+              </ng-container>
 
-    <button matButton="filled" [disabled]="enCours()" (click)="creerMatiere()">
-      <mat-icon>add</mat-icon>
-      Ajouter la matière
-    </button>
-  </mat-card-content>
-</mat-card>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let m">
+                  @if (matiereModifiee() === m.id) {
+                    <button
+                      matButton="filled"
+                      [disabled]="enCours()"
+                      (click)="enregistrerMatiere(m)"
+                    >
+                      Enregistrer
+                    </button>
+                    <button matButton (click)="matiereModifiee.set(null)">Annuler</button>
+                  } @else {
+                    <button matButton (click)="editerMatiere(m)">Modifier</button>
+                    <button matButton [disabled]="enCours()" (click)="supprimerMatiere(m)">
+                      Supprimer
+                    </button>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="colonnesCatalogue"></tr>
+              <tr mat-row *matRowDef="let ligne; columns: colonnesCatalogue"></tr>
+            </table>
+          </div>
+        }
+
+        <app-bouton-formulaire libelle="Ajouter une matière">
+          <ng-template let-fenetre>
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Code</mat-label>
+                <input
+                  matInput
+                  name="code"
+                  maxlength="20"
+                  placeholder="MATH"
+                  [(ngModel)]="nouvelleMatiere.code"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Libellé</mat-label>
+                <input
+                  matInput
+                  name="libelle"
+                  placeholder="Mathématiques"
+                  [(ngModel)]="nouvelleMatiere.libelle"
+                />
+              </mat-form-field>
+            </div>
+
+            <button matButton="filled" [disabled]="enCours()" (click)="creerMatiere(fenetre)">
+              <mat-icon>add</mat-icon>
+              Ajouter la matière
+            </button>
+          </ng-template>
+        </app-bouton-formulaire>
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

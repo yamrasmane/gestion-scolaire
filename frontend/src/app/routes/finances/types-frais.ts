@@ -11,6 +11,7 @@ import { MatTableModule } from '@angular/material/table';
 
 import { ApiService, TypeFrais, messageErreur } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 
 /** Catalogue des frais de l'établissement (SF-21). */
 @Component({
@@ -88,12 +89,17 @@ import { PageHeader } from '@shared/components/page-header/page-header';
       </mat-card-content>
     </mat-card>
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Ajouter un type de frais</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <form #formulaire="ngForm" (ngSubmit)="formulaire.valid && creer()">
+    <app-bouton-formulaire
+      libelle="Ajouter un type de frais"
+      formulaire="type-frais-nouveau"
+      action="Ajouter"
+    >
+      <ng-template let-fenetre>
+        <form
+          id="type-frais-nouveau"
+          #formulaire="ngForm"
+          (ngSubmit)="formulaire.valid && creer(fenetre)"
+        >
           <div class="grille-formulaire">
             <mat-form-field>
               <mat-label>Code</mat-label>
@@ -139,14 +145,9 @@ import { PageHeader } from '@shared/components/page-header/page-header';
               Réparti sur les tranches
             </mat-checkbox>
           </div>
-
-          <button matButton="filled" type="submit" [disabled]="enCours()">
-            <mat-icon>add</mat-icon>
-            Ajouter
-          </button>
         </form>
-      </mat-card-content>
-    </mat-card>
+      </ng-template>
+    </app-bouton-formulaire>
   `,
   imports: [
     FormsModule,
@@ -159,6 +160,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatInputModule,
     MatCheckboxModule,
     PageHeader,
+    BoutonFormulaire,
   ],
 })
 export class TypesFrais {
@@ -183,13 +185,15 @@ export class TypesFrais {
     this.charger();
   }
 
-  protected creer(): void {
+  /** La fenêtre ne se referme qu'une fois le type de frais créé. */
+  protected creer(fenetre?: BoutonFormulaire): void {
     this.enCours.set(true);
     this.erreur.set('');
     this.api.creerTypeFrais(this.nouveau).subscribe({
       next: () => {
         this.nouveau = this.vide();
         this.enCours.set(false);
+        fenetre?.fermer();
         this.charger();
       },
       error: (e) => {

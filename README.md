@@ -128,6 +128,12 @@ Tout tient dans `src/styles/custom/_maquette.scss`, qui redéfinit les variables
 s'écrivent avec une classe de ton — `etat-alerte`, `etat-attention`, `etat-ok`, `etat-info` — sur un
 `mat-chip` ou un simple `span`.
 
+Les **formulaires de création** ne s'affichent plus dans la page : un bouton les ouvre dans une
+fenêtre (`shared/composants/bouton-formulaire.ts`), qui se referme une fois l'enregistrement
+réussi. Les écrans à plusieurs sections sont rangés en **onglets** sous le titre : liste et import
+du personnel, inscriptions et import d'une classe, matières de la classe et catalogue, programme
+d'un niveau et application aux classes, échéancier et règlements d'un élève.
+
 La page d'accueil est un **tableau de bord** : quatre chiffres clés (effectif, taux de recouvrement,
 montant échu non réglé, encaissements du jour), les échéances en souffrance, les alertes du moment
 et les effectifs par classe. Les blocs financiers ne s'affichent que pour les rôles qui ont accès

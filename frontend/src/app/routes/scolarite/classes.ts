@@ -15,6 +15,7 @@ import { ApiService, Classe, Cycle, Niveau, messageErreur } from '@core/api.serv
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
 @Component({
@@ -31,6 +32,7 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
     MatSelectModule,
     MatExpansionModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
   ],
 })
@@ -74,7 +76,8 @@ export class Classes {
     return cycle === 'PREMIER' ? 'Premier cycle' : 'Second cycle';
   }
 
-  protected creerClasse(): void {
+  /** La fenêtre ne se referme qu'une fois la classe créée. */
+  protected creerClasse(fenetre?: BoutonFormulaire): void {
     const anneeId = this.contexte.anneeId();
     const { niveauId, nom, effectifMax } = this.nouvelleClasse;
     if (!anneeId || !niveauId || !nom.trim()) {
@@ -82,6 +85,7 @@ export class Classes {
     }
     this.executer(this.api.creerClasse(anneeId, { niveauId, nom, effectifMax }), () => {
       this.nouvelleClasse = { ...this.nouvelleClasse, nom: '' };
+      fenetre?.fermer();
       this.chargerClasses(anneeId);
     });
   }

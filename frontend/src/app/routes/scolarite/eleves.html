@@ -33,271 +33,282 @@
   }
 
   @if (classe(); as c) {
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{ c.nom }}</mat-card-title>
-        <mat-card-subtitle>{{ liste.total() }} élève(s)</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <form class="barre-filtres" (ngSubmit)="filtrer()">
-          <mat-form-field class="filtre-recherche">
-            <mat-label>Rechercher un élève</mat-label>
-            <input
-              matInput
-              name="recherche"
-              autocomplete="off"
-              placeholder="Matricule, nom, prénom"
-              [ngModel]="recherche()"
-              (ngModelChange)="chercher($event)"
-            />
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field class="filtre">
-            <mat-label>Statut</mat-label>
-            <mat-select
-              name="statut"
-              [ngModel]="statutFiltre()"
-              (ngModelChange)="statutFiltre.set($event); filtrer()"
-            >
-              <mat-option [value]="null">Tous</mat-option>
-              <mat-option value="ACTIVE">Inscriptions actives</mat-option>
-              <mat-option value="ANNULEE">Annulées</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field class="filtre">
-            <mat-label>Redoublants</mat-label>
-            <mat-select
-              name="redoublant"
-              [ngModel]="redoublantFiltre()"
-              (ngModelChange)="redoublantFiltre.set($event); filtrer()"
-            >
-              <mat-option [value]="null">Tous</mat-option>
-              <mat-option [value]="true">Redoublants</mat-option>
-              <mat-option [value]="false">Non redoublants</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          @if (filtresActifs()) {
-            <button matButton type="button" class="bouton-filtre" (click)="viderFiltres()">
-              <mat-icon>filter_alt_off</mat-icon>
-              Effacer
-            </button>
-          }
-        </form>
-
-        @if (inscriptions().length === 0) {
-          <p class="text-muted">
-            @if (filtresActifs()) {
-              Aucun élève ne correspond à cette recherche.
-            } @else {
-              Aucun élève n'est inscrit dans cette classe.
-            }
-          </p>
-        } @else {
-          <div class="table-defilement">
-            <table
-              mat-table
-              matSort
-              matSortActive="eleve.nom"
-              matSortDirection="asc"
-              matSortDisableClear
-              [dataSource]="inscriptions()"
-              (matSortChange)="liste.surTri($event); chargerInscriptions()"
-              class="w-full"
-            >
-              <ng-container matColumnDef="matricule">
-                <th mat-header-cell mat-sort-header="eleve.matricule" *matHeaderCellDef>
-                  Matricule
-                </th>
-                <td mat-cell *matCellDef="let i" data-libelle="Matricule">
-                  {{ i.eleve.matricule }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="nom">
-                <th mat-header-cell mat-sort-header="eleve.nom" *matHeaderCellDef>Nom et prénom</th>
-                <td mat-cell *matCellDef="let i" data-libelle="Nom et prénom">
-                  <strong>{{ i.eleve.nom }}</strong> {{ i.eleve.prenom }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="naissance">
-                <th mat-header-cell mat-sort-header="eleve.dateNaissance" *matHeaderCellDef>
-                  Naissance
-                </th>
-                <td mat-cell *matCellDef="let i" data-libelle="Naissance">
-                  {{ i.eleve.dateNaissance | date: 'dd/MM/yyyy' }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="sexe">
-                <th mat-header-cell *matHeaderCellDef>Sexe</th>
-                <td mat-cell *matCellDef="let i" data-libelle="Sexe">{{ i.eleve.sexe }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="categorie">
-                <th mat-header-cell *matHeaderCellDef>Catégorie</th>
-                <td mat-cell *matCellDef="let i" data-libelle="Catégorie">
-                  <mat-chip
-                    [highlighted]="i.categorie === 'ANCIEN'"
-                    [matTooltip]="i.categorieForcee ? 'Corrigée : ' + i.motifCategorie : ''"
-                  >
-                    {{ i.categorie === 'ANCIEN' ? 'Ancien' : 'Nouveau' }}
-                    @if (i.categorieForcee) {
-                      <mat-icon matChipTrailingIcon>edit_note</mat-icon>
-                    }
-                  </mat-chip>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="redoublant">
-                <th mat-header-cell *matHeaderCellDef>Redoublant</th>
-                <td mat-cell *matCellDef="let i" data-libelle="Redoublant">
-                  {{ i.redoublant ? 'Oui' : 'Non' }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let i" class="cellule-actions">
-                  <button matButton (click)="ouvrirCorrection(i)">Corriger la catégorie</button>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
-              <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
-            </table>
-          </div>
-        }
-
-        <mat-paginator
-          [length]="liste.total()"
-          [pageIndex]="liste.page()"
-          [pageSize]="liste.taille()"
-          [pageSizeOptions]="liste.taillesPage"
-          showFirstLastButtons
-          (page)="liste.surPage($event); chargerInscriptions()"
-        />
-
-        @if (correction; as corr) {
-          <div class="ligne-actions m-t-16">
-            <mat-form-field>
-              <mat-label>Catégorie</mat-label>
-              <mat-select [(ngModel)]="corr.categorie">
-                <mat-option value="NOUVEAU">Nouveau</mat-option>
-                <mat-option value="ANCIEN">Ancien</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field class="w-40">
-              <mat-label>Motif (obligatoire)</mat-label>
-              <input matInput maxlength="255" [(ngModel)]="corr.motif" />
-            </mat-form-field>
-            <button
-              matButton="filled"
-              [disabled]="!corr.motif.trim()"
-              (click)="enregistrerCorrection()"
-            >
-              Enregistrer
-            </button>
-            <button matButton (click)="correction = null">Annuler</button>
-          </div>
-        }
-      </mat-card-content>
-    </mat-card>
-
-    @if (peutInscrire) {
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Importer la liste de la classe (Excel ou CSV)</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <app-import-fichier
-            [chemin]="'/classes/' + c.id + '/inscriptions/import'"
-            aide="Colonnes attendues : Matricule, Nom, Prénom, Date de naissance (JJ/MM/AAAA), Sexe (M ou F), et en option Parent, Contact, Redoublant (oui/non). La catégorie nouveau/ancien est calculée automatiquement."
-            (termine)="rafraichir()"
-          />
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Inscrire un élève</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form #formulaire="ngForm" (ngSubmit)="formulaire.valid && inscrire()">
-            <div class="grille-formulaire">
-              <mat-form-field>
-                <mat-label>Matricule</mat-label>
+    <mat-tab-group>
+      <mat-tab label="Inscriptions">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ c.nom }}</mat-card-title>
+            <mat-card-subtitle>{{ liste.total() }} élève(s)</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form class="barre-filtres" (ngSubmit)="filtrer()">
+              <mat-form-field class="filtre-recherche">
+                <mat-label>Rechercher un élève</mat-label>
                 <input
                   matInput
-                  name="matricule"
-                  required
-                  maxlength="30"
-                  [(ngModel)]="nouveau.matricule"
+                  name="recherche"
+                  autocomplete="off"
+                  placeholder="Matricule, nom, prénom"
+                  [ngModel]="recherche()"
+                  (ngModelChange)="chercher($event)"
                 />
+                <mat-icon matSuffix>search</mat-icon>
               </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Nom</mat-label>
-                <input matInput name="nom" required [(ngModel)]="nouveau.nom" />
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Prénom</mat-label>
-                <input matInput name="prenom" required [(ngModel)]="nouveau.prenom" />
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Date de naissance</mat-label>
-                <input
-                  matInput
-                  name="naissance"
-                  required
-                  [matDatepicker]="calendrierNaissance"
-                  [(ngModel)]="nouveau.dateNaissance"
-                />
-                <mat-datepicker-toggle matIconSuffix [for]="calendrierNaissance" />
-                <mat-datepicker #calendrierNaissance startView="multi-year" />
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Sexe</mat-label>
-                <mat-select name="sexe" [(ngModel)]="nouveau.sexe">
-                  <mat-option value="F">Féminin</mat-option>
-                  <mat-option value="M">Masculin</mat-option>
+              <mat-form-field class="filtre">
+                <mat-label>Statut</mat-label>
+                <mat-select
+                  name="statut"
+                  [ngModel]="statutFiltre()"
+                  (ngModelChange)="statutFiltre.set($event); filtrer()"
+                >
+                  <mat-option [value]="null">Tous</mat-option>
+                  <mat-option value="ACTIVE">Inscriptions actives</mat-option>
+                  <mat-option value="ANNULEE">Annulées</mat-option>
                 </mat-select>
               </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Parent ou tuteur</mat-label>
-                <input matInput name="parent" [(ngModel)]="nouveau.nomParent" />
+              <mat-form-field class="filtre">
+                <mat-label>Redoublants</mat-label>
+                <mat-select
+                  name="redoublant"
+                  [ngModel]="redoublantFiltre()"
+                  (ngModelChange)="redoublantFiltre.set($event); filtrer()"
+                >
+                  <mat-option [value]="null">Tous</mat-option>
+                  <mat-option [value]="true">Redoublants</mat-option>
+                  <mat-option [value]="false">Non redoublants</mat-option>
+                </mat-select>
               </mat-form-field>
 
-              <mat-form-field>
-                <mat-label>Contact du parent</mat-label>
-                <input matInput name="contact" [(ngModel)]="nouveau.contactParent" />
-              </mat-form-field>
-            </div>
+              @if (filtresActifs()) {
+                <button matButton type="button" class="bouton-filtre" (click)="viderFiltres()">
+                  <mat-icon>filter_alt_off</mat-icon>
+                  Effacer
+                </button>
+              }
 
-            <div class="ligne-actions m-b-16">
-              <mat-checkbox name="redoublant" [(ngModel)]="nouveau.redoublant">
-                Redoublant
-              </mat-checkbox>
-            </div>
+              <span class="pousse-a-droite"></span>
 
-            <p class="text-muted">
-              Si le matricule existe déjà, la fiche de l'élève est réutilisée.
-            </p>
+              @if (peutInscrire) {
+                <app-bouton-formulaire
+                  class="bouton-filtre"
+                  libelle="Inscrire un élève"
+                  formulaire="eleve-inscription"
+                  action="Inscrire"
+                  icone="how_to_reg"
+                >
+                  <ng-template let-fenetre>
+                    <form
+                      id="eleve-inscription"
+                      #formulaire="ngForm"
+                      (ngSubmit)="formulaire.valid && inscrire(fenetre)"
+                    >
+                      <div class="grille-formulaire">
+                        <mat-form-field>
+                          <mat-label>Matricule</mat-label>
+                          <input
+                            matInput
+                            name="matricule"
+                            required
+                            maxlength="30"
+                            [(ngModel)]="nouveau.matricule"
+                          />
+                        </mat-form-field>
 
-            <button matButton="filled" type="submit" [disabled]="enCours() || formulaire.invalid">
-              <mat-icon>how_to_reg</mat-icon>
-              Inscrire
-            </button>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    }
+                        <mat-form-field>
+                          <mat-label>Nom</mat-label>
+                          <input matInput name="nom" required [(ngModel)]="nouveau.nom" />
+                        </mat-form-field>
+
+                        <mat-form-field>
+                          <mat-label>Prénom</mat-label>
+                          <input matInput name="prenom" required [(ngModel)]="nouveau.prenom" />
+                        </mat-form-field>
+
+                        <mat-form-field>
+                          <mat-label>Date de naissance</mat-label>
+                          <input
+                            matInput
+                            name="naissance"
+                            required
+                            [matDatepicker]="calendrierNaissance"
+                            [(ngModel)]="nouveau.dateNaissance"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="calendrierNaissance" />
+                          <mat-datepicker #calendrierNaissance startView="multi-year" />
+                        </mat-form-field>
+
+                        <mat-form-field>
+                          <mat-label>Sexe</mat-label>
+                          <mat-select name="sexe" [(ngModel)]="nouveau.sexe">
+                            <mat-option value="F">Féminin</mat-option>
+                            <mat-option value="M">Masculin</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field>
+                          <mat-label>Parent ou tuteur</mat-label>
+                          <input matInput name="parent" [(ngModel)]="nouveau.nomParent" />
+                        </mat-form-field>
+
+                        <mat-form-field>
+                          <mat-label>Contact du parent</mat-label>
+                          <input matInput name="contact" [(ngModel)]="nouveau.contactParent" />
+                        </mat-form-field>
+                      </div>
+
+                      <div class="ligne-actions m-b-16">
+                        <mat-checkbox name="redoublant" [(ngModel)]="nouveau.redoublant">
+                          Redoublant
+                        </mat-checkbox>
+                      </div>
+
+                      <p class="text-muted">
+                        Si le matricule existe déjà, la fiche de l'élève est réutilisée.
+                      </p>
+                    </form>
+                  </ng-template>
+                </app-bouton-formulaire>
+              }
+            </form>
+
+            @if (inscriptions().length === 0) {
+              <p class="text-muted">
+                @if (filtresActifs()) {
+                  Aucun élève ne correspond à cette recherche.
+                } @else {
+                  Aucun élève n'est inscrit dans cette classe.
+                }
+              </p>
+            } @else {
+              <div class="table-defilement">
+                <table
+                  mat-table
+                  matSort
+                  matSortActive="eleve.nom"
+                  matSortDirection="asc"
+                  matSortDisableClear
+                  [dataSource]="inscriptions()"
+                  (matSortChange)="liste.surTri($event); chargerInscriptions()"
+                  class="w-full"
+                >
+                  <ng-container matColumnDef="matricule">
+                    <th mat-header-cell mat-sort-header="eleve.matricule" *matHeaderCellDef>
+                      Matricule
+                    </th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Matricule">
+                      {{ i.eleve.matricule }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="nom">
+                    <th mat-header-cell mat-sort-header="eleve.nom" *matHeaderCellDef>
+                      Nom et prénom
+                    </th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Nom et prénom">
+                      <strong>{{ i.eleve.nom }}</strong> {{ i.eleve.prenom }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="naissance">
+                    <th mat-header-cell mat-sort-header="eleve.dateNaissance" *matHeaderCellDef>
+                      Naissance
+                    </th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Naissance">
+                      {{ i.eleve.dateNaissance | date: 'dd/MM/yyyy' }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="sexe">
+                    <th mat-header-cell *matHeaderCellDef>Sexe</th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Sexe">{{ i.eleve.sexe }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="categorie">
+                    <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Catégorie">
+                      <mat-chip
+                        [highlighted]="i.categorie === 'ANCIEN'"
+                        [matTooltip]="i.categorieForcee ? 'Corrigée : ' + i.motifCategorie : ''"
+                      >
+                        {{ i.categorie === 'ANCIEN' ? 'Ancien' : 'Nouveau' }}
+                        @if (i.categorieForcee) {
+                          <mat-icon matChipTrailingIcon>edit_note</mat-icon>
+                        }
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="redoublant">
+                    <th mat-header-cell *matHeaderCellDef>Redoublant</th>
+                    <td mat-cell *matCellDef="let i" data-libelle="Redoublant">
+                      {{ i.redoublant ? 'Oui' : 'Non' }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let i" class="cellule-actions">
+                      <button matButton (click)="ouvrirCorrection(i)">Corriger la catégorie</button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+                  <tr mat-row *matRowDef="let ligne; columns: colonnes"></tr>
+                </table>
+              </div>
+            }
+
+            <mat-paginator
+              [length]="liste.total()"
+              [pageIndex]="liste.page()"
+              [pageSize]="liste.taille()"
+              [pageSizeOptions]="liste.taillesPage"
+              showFirstLastButtons
+              (page)="liste.surPage($event); chargerInscriptions()"
+            />
+
+            @if (correction; as corr) {
+              <div class="ligne-actions m-t-16">
+                <mat-form-field>
+                  <mat-label>Catégorie</mat-label>
+                  <mat-select [(ngModel)]="corr.categorie">
+                    <mat-option value="NOUVEAU">Nouveau</mat-option>
+                    <mat-option value="ANCIEN">Ancien</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-40">
+                  <mat-label>Motif (obligatoire)</mat-label>
+                  <input matInput maxlength="255" [(ngModel)]="corr.motif" />
+                </mat-form-field>
+                <button
+                  matButton="filled"
+                  [disabled]="!corr.motif.trim()"
+                  (click)="enregistrerCorrection()"
+                >
+                  Enregistrer
+                </button>
+                <button matButton (click)="correction = null">Annuler</button>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      @if (peutInscrire) {
+        <mat-tab label="Import de la classe">
+          <mat-card>
+            <mat-card-content>
+              <app-import-fichier
+                [chemin]="'/classes/' + c.id + '/inscriptions/import'"
+                aide="Colonnes attendues : Matricule, Nom, Prénom, Date de naissance (JJ/MM/AAAA), Sexe (M ou F), et en option Parent, Contact, Redoublant (oui/non). La catégorie nouveau/ancien est calculée automatiquement."
+                (termine)="rafraichir()"
+              />
+            </mat-card-content>
+          </mat-card>
+        </mat-tab>
+      }
+    </mat-tab-group>
   }
 }

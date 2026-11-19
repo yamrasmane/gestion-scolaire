@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
@@ -24,6 +25,7 @@ import { PageHeader } from '@shared/components/page-header/page-header';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 import { enIso } from '@shared/composants/dates';
 import { EtatListe } from '@shared/composants/etat-liste';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { ImportFichier } from '@shared/composants/import-fichier';
 
 @Component({
@@ -46,7 +48,9 @@ import { ImportFichier } from '@shared/composants/import-fichier';
     MatSortModule,
     MatPaginatorModule,
     MtxSelectModule,
+    MatTabsModule,
     PageHeader,
+    BoutonFormulaire,
     AnneeRequise,
     ImportFichier,
   ],
@@ -125,7 +129,8 @@ export class Eleves {
   protected readonly filtresActifs = () =>
     this.recherche() !== '' || this.statutFiltre() !== 'ACTIVE' || this.redoublantFiltre() !== null;
 
-  protected inscrire(): void {
+  /** La fenêtre ne se referme qu'une fois l'élève inscrit. */
+  protected inscrire(fenetre?: BoutonFormulaire): void {
     const classeId = this.classeId();
     if (!classeId) {
       return;
@@ -142,6 +147,7 @@ export class Eleves {
         next: () => {
           this.nouveau = this.vide();
           this.enCours.set(false);
+          fenetre?.fermer();
           this.rafraichir();
         },
         error: (e) => {

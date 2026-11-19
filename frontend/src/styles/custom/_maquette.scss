@@ -137,8 +137,36 @@ html {
     border-radius: var(--mat-sys-corner-small);
   }
 
-  .mat-mdc-list-item:hover {
-    background: var(--lycee-marine-clair);
+  /*
+   * Survol et focus : un marine plus pâle, jamais le fond clair que pose le
+   * gabarit. L'ondulation reste blanche mais très discrète.
+   */
+  --mat-ripple-color: rgb(255 255 255 / 12%);
+
+  .menu-heading:hover,
+  .menu-heading:focus,
+  .mat-mdc-list-item:hover,
+  .mat-mdc-list-item:focus,
+  a.mat-mdc-list-item:hover,
+  a.mat-mdc-list-item:focus {
+    background: var(--lycee-marine-clair) !important;
+  }
+
+  /* Un élément actif survolé garde son ambre. */
+  .menu-item.active > .menu-heading:hover,
+  .menu-item.active > .menu-heading:focus,
+  .menu-item.active > .mat-mdc-list-item:hover,
+  .mat-mdc-list-item.active:hover,
+  a.active:hover {
+    background: var(--lycee-ambre) !important;
+  }
+
+  /* La couche d'état de Material est blanche : on l'éteint. */
+  .mat-mdc-list-item::before,
+  .mat-mdc-list-item::after,
+  .menu-heading::before {
+    background: transparent !important;
+    opacity: 0 !important;
   }
 
   /*
@@ -343,14 +371,52 @@ table.mat-mdc-table {
 
 /* ---------- Onglets ---------- */
 
-.mat-mdc-tab-group,
-.mat-mdc-tab-header {
+/**
+ * Onglets des maquettes : du texte sous le titre de page, l'onglet courant en
+ * gras souligné d'ambre. Pas de pavé coloré ni de majuscules.
+ */
+.mat-mdc-tab-group {
   --mdc-tab-indicator-active-indicator-color: var(--lycee-ambre);
+  --mdc-tab-indicator-active-indicator-height: 3px;
+  --mat-tab-header-active-indicator-color: var(--lycee-ambre);
   --mat-tab-header-active-label-text-color: var(--lycee-texte);
   --mat-tab-header-active-focus-label-text-color: var(--lycee-texte);
   --mat-tab-header-active-hover-label-text-color: var(--lycee-texte);
+  --mat-tab-header-inactive-label-text-color: var(--lycee-texte-doux);
+  --mat-tab-header-label-text-size: 0.875rem;
+  --mat-tab-header-label-text-weight: 500;
+  --mat-tab-header-divider-color: var(--lycee-bordure);
 
-  border-bottom: 1px solid var(--lycee-bordure);
+  margin-bottom: 1rem;
+
+  /* Onglets rangés à gauche, à la largeur de leur texte. */
+  .mat-mdc-tab-labels {
+    justify-content: flex-start;
+  }
+
+  .mat-mdc-tab {
+    flex-grow: 0 !important;
+    min-width: 0;
+    padding: 0 1rem;
+    letter-spacing: 0;
+  }
+
+  .mat-mdc-tab:first-of-type {
+    padding-left: 0;
+  }
+
+  .mdc-tab--active .mdc-tab__text-label {
+    font-weight: 700;
+  }
+
+  .mdc-tab-indicator__content--underline {
+    border-color: var(--lycee-ambre) !important;
+  }
+
+  /* Le contenu respire sous la barre d'onglets. */
+  .mat-mdc-tab-body-wrapper {
+    padding-top: 1rem;
+  }
 }
 
 /* ---------- Barres de progression ---------- */
@@ -363,4 +429,30 @@ table.mat-mdc-table {
 
   height: 6px;
   border-radius: 999px;
+}
+
+/** Fenêtres : mêmes arrondis sobres que les cartes. */
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: var(--mat-sys-corner-medium);
+
+  .mat-mdc-dialog-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .mat-mdc-dialog-actions {
+    padding: 0.75rem 1.5rem 1.25rem;
+    border-top: 1px solid var(--lycee-filet);
+  }
+}
+
+/** Dans une barre d'actions, pousse ce qui suit contre le bord droit. */
+.pousse-a-droite {
+  flex: 1 1 auto;
+}
+
+/** Formulaire ouvert en fenêtre : la grille reste lisible à deux colonnes. */
+.mat-mdc-dialog-content .grille-formulaire {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }

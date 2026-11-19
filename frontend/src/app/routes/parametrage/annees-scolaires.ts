@@ -16,6 +16,7 @@ import { AnneeScolaire, ApiService, messageErreur } from '@core/api.service';
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { enIso } from '@shared/composants/dates';
 
 @Component({
@@ -34,6 +35,7 @@ import { enIso } from '@shared/composants/dates';
     MatCheckboxModule,
     MatDatepickerModule,
     PageHeader,
+    BoutonFormulaire,
   ],
 })
 export class AnneesScolaires {
@@ -67,7 +69,7 @@ export class AnneesScolaires {
     this.charger();
   }
 
-  protected creer(): void {
+  protected creer(fenetre?: BoutonFormulaire): void {
     if (this.formulaire.invalid) {
       this.formulaire.markAllAsTouched();
       return;
@@ -79,12 +81,15 @@ export class AnneesScolaires {
         dateDebut: enIso(saisie.dateDebut) ?? '',
         dateFin: enIso(saisie.dateFin) ?? '',
       }),
-      () =>
+      () => {
+        // La fenêtre ne se referme qu'une fois l'année créée.
         this.formulaire.reset({
           avecCompositionDefaut: true,
           poidsCompositionDefaut: 2,
           bloquerBulletinImpaye: false,
-        }),
+        });
+        fenetre?.fermer();
+      },
     );
   }
 

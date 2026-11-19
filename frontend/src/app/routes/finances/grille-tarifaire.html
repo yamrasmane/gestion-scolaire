@@ -73,16 +73,17 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Ajouter un tarif</mat-card-title>
-      <mat-card-subtitle>
+  <app-bouton-formulaire
+    libelle="Ajouter un tarif"
+    formulaire="tarif-nouveau"
+    action="Ajouter le tarif"
+  >
+    <ng-template let-fenetre>
+      <p class="text-muted">
         Un tarif de classe l'emporte sur celui du niveau ; un tarif « Tous » sert de valeur par
         défaut aux deux catégories.
-      </mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <form (ngSubmit)="ajouter()">
+      </p>
+      <form id="tarif-nouveau" (ngSubmit)="ajouter(fenetre)">
         <div class="grille-formulaire">
           <mat-form-field>
             <mat-label>Frais</mat-label>
@@ -143,13 +144,13 @@
           </mat-form-field>
         </div>
 
-        <button matButton="filled" type="submit" [disabled]="enCours()">
+        <button hidden type="submit">
           <mat-icon>add</mat-icon>
           Ajouter le tarif
         </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </ng-template>
+  </app-bouton-formulaire>
 
   <mat-accordion>
     <mat-expansion-panel>

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { Observable } from 'rxjs';
 
@@ -20,6 +21,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 
 /** Catalogue des matières et affectation par classe (SF-09, SF-10). */
 @Component({
@@ -35,7 +37,9 @@ import { PageHeader } from '@shared/components/page-header/page-header';
     MatInputModule,
     MatSelectModule,
     MtxSelectModule,
+    MatTabsModule,
     PageHeader,
+    BoutonFormulaire,
   ],
 })
 export class Matieres {
@@ -87,12 +91,14 @@ export class Matieres {
     this.chargerEnseignements();
   }
 
-  protected creerMatiere(): void {
+  /** La fenêtre ne se referme qu'une fois la matière créée. */
+  protected creerMatiere(fenetre?: BoutonFormulaire): void {
     if (!this.nouvelleMatiere.code.trim() || !this.nouvelleMatiere.libelle.trim()) {
       return;
     }
     this.executer(this.api.creerMatiere(this.nouvelleMatiere), () => {
       this.nouvelleMatiere = { code: '', libelle: '' };
+      fenetre?.fermer();
       this.chargerMatieres();
     });
   }
@@ -116,7 +122,8 @@ export class Matieres {
     this.executer(this.api.supprimerMatiere(matiere.id), () => this.chargerMatieres());
   }
 
-  protected affecter(): void {
+  /** La fenêtre ne se referme qu'une fois la matière affectée. */
+  protected affecter(fenetre?: BoutonFormulaire): void {
     const classeId = this.classeId();
     if (!classeId || !this.affectation.matiereId || !this.affectation.coefficient) {
       return;
@@ -129,6 +136,7 @@ export class Matieres {
       }),
       () => {
         this.affectation = this.videAffectation();
+        fenetre?.fermer();
         this.chargerEnseignements();
       },
     );
