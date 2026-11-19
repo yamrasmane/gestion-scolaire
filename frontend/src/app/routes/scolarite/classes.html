@@ -6,6 +6,53 @@
   @if (erreur(); as message) {
     <p class="alerte-erreur" role="alert">{{ message }}</p>
   }
+  @if (peutModifier) {
+    <div class="barre-page">
+      <app-bouton-formulaire
+        libelle="Nouvelle classe"
+        formulaire="classe-nouvelle"
+        action="Créer la classe"
+      >
+        <ng-template let-fenetre>
+          <form id="classe-nouvelle" (ngSubmit)="creerClasse(fenetre)">
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Niveau</mat-label>
+                <mat-select name="niveau" required [(ngModel)]="nouvelleClasse.niveauId">
+                  @for (n of niveaux(); track n.id) {
+                    <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Nom de la classe</mat-label>
+                <input
+                  matInput
+                  name="nom"
+                  required
+                  placeholder="6ème A"
+                  [(ngModel)]="nouvelleClasse.nom"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Effectif maximal</mat-label>
+                <input
+                  matInput
+                  name="effectif"
+                  type="number"
+                  min="1"
+                  required
+                  [(ngModel)]="nouvelleClasse.effectifMax"
+                />
+              </mat-form-field>
+            </div>
+          </form>
+        </ng-template>
+      </app-bouton-formulaire>
+    </div>
+  }
 
   <mat-card>
     <mat-card-content>
@@ -45,50 +92,6 @@
   </mat-card>
 
   @if (peutModifier) {
-    <app-bouton-formulaire
-      libelle="Nouvelle classe"
-      formulaire="classe-nouvelle"
-      action="Créer la classe"
-    >
-      <ng-template let-fenetre>
-        <form id="classe-nouvelle" (ngSubmit)="creerClasse(fenetre)">
-          <div class="grille-formulaire">
-            <mat-form-field>
-              <mat-label>Niveau</mat-label>
-              <mat-select name="niveau" required [(ngModel)]="nouvelleClasse.niveauId">
-                @for (n of niveaux(); track n.id) {
-                  <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Nom de la classe</mat-label>
-              <input
-                matInput
-                name="nom"
-                required
-                placeholder="6ème A"
-                [(ngModel)]="nouvelleClasse.nom"
-              />
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Effectif maximal</mat-label>
-              <input
-                matInput
-                name="effectif"
-                type="number"
-                min="1"
-                required
-                [(ngModel)]="nouvelleClasse.effectifMax"
-              />
-            </mat-form-field>
-          </div>
-        </form>
-      </ng-template>
-    </app-bouton-formulaire>
-
     <mat-accordion>
       <mat-expansion-panel>
         <mat-expansion-panel-header>

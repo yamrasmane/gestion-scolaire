@@ -19,6 +19,68 @@ import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
   template: `
     <page-header title="Types de frais" subtitle="Catalogue des frais de l'établissement" />
 
+    <div class="barre-page">
+      <app-bouton-formulaire
+        libelle="Ajouter un type de frais"
+        formulaire="type-frais-nouveau"
+        action="Ajouter"
+      >
+        <ng-template let-fenetre>
+          <form
+            id="type-frais-nouveau"
+            #formulaire="ngForm"
+            (ngSubmit)="formulaire.valid && creer(fenetre)"
+          >
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Code</mat-label>
+                <input
+                  matInput
+                  name="code"
+                  required
+                  maxlength="30"
+                  placeholder="CANTINE"
+                  [(ngModel)]="nouveau.code"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Libellé</mat-label>
+                <input
+                  matInput
+                  name="libelle"
+                  required
+                  placeholder="Frais de cantine"
+                  [(ngModel)]="nouveau.libelle"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Priorité d'imputation</mat-label>
+                <input
+                  matInput
+                  name="priorite"
+                  type="number"
+                  min="0"
+                  required
+                  [(ngModel)]="nouveau.prioriteImputation"
+                />
+              </mat-form-field>
+            </div>
+
+            <div class="ligne-actions m-b-16">
+              <mat-checkbox name="obligatoire" [(ngModel)]="nouveau.obligatoire">
+                Facturé à tous les élèves
+              </mat-checkbox>
+              <mat-checkbox name="fractionnable" [(ngModel)]="nouveau.fractionnable">
+                Réparti sur les tranches
+              </mat-checkbox>
+            </div>
+          </form>
+        </ng-template>
+      </app-bouton-formulaire>
+    </div>
+
     @if (erreur(); as message) {
       <p class="alerte-erreur" role="alert">{{ message }}</p>
     }
@@ -88,66 +150,6 @@ import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
         </p>
       </mat-card-content>
     </mat-card>
-
-    <app-bouton-formulaire
-      libelle="Ajouter un type de frais"
-      formulaire="type-frais-nouveau"
-      action="Ajouter"
-    >
-      <ng-template let-fenetre>
-        <form
-          id="type-frais-nouveau"
-          #formulaire="ngForm"
-          (ngSubmit)="formulaire.valid && creer(fenetre)"
-        >
-          <div class="grille-formulaire">
-            <mat-form-field>
-              <mat-label>Code</mat-label>
-              <input
-                matInput
-                name="code"
-                required
-                maxlength="30"
-                placeholder="CANTINE"
-                [(ngModel)]="nouveau.code"
-              />
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Libellé</mat-label>
-              <input
-                matInput
-                name="libelle"
-                required
-                placeholder="Frais de cantine"
-                [(ngModel)]="nouveau.libelle"
-              />
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Priorité d'imputation</mat-label>
-              <input
-                matInput
-                name="priorite"
-                type="number"
-                min="0"
-                required
-                [(ngModel)]="nouveau.prioriteImputation"
-              />
-            </mat-form-field>
-          </div>
-
-          <div class="ligne-actions m-b-16">
-            <mat-checkbox name="obligatoire" [(ngModel)]="nouveau.obligatoire">
-              Facturé à tous les élèves
-            </mat-checkbox>
-            <mat-checkbox name="fractionnable" [(ngModel)]="nouveau.fractionnable">
-              Réparti sur les tranches
-            </mat-checkbox>
-          </div>
-        </form>
-      </ng-template>
-    </app-bouton-formulaire>
   `,
   imports: [
     FormsModule,

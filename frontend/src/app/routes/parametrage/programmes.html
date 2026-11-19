@@ -25,6 +25,60 @@
 @if (niveauId()) {
   <mat-tab-group>
     <mat-tab label="Programme du niveau">
+      <div class="barre-page">
+        <app-bouton-formulaire
+          libelle="Ajouter une matière"
+          titre="Ajouter une matière au programme"
+          formulaire="programme-ligne"
+          action="Ajouter au programme"
+        >
+          <ng-template let-fenetre>
+            @if (matieresDisponibles().length === 0) {
+              <p class="text-muted">
+                Toutes les matières du catalogue figurent déjà dans ce programme. Créez d'abord une
+                nouvelle matière depuis « Matières et coefficients ».
+              </p>
+            } @else {
+              <form
+                id="programme-ligne"
+                #formulaire="ngForm"
+                (ngSubmit)="formulaire.valid && ajouter(fenetre)"
+              >
+                <div class="grille-formulaire">
+                  <mat-form-field>
+                    <mat-label>Matière</mat-label>
+                    <mtx-select
+                      name="matiereId"
+                      required
+                      [(ngModel)]="nouvelleLigne.matiereId"
+                      [items]="matieresDisponibles()"
+                      bindValue="id"
+                      bindLabel="libelle"
+                      placeholder="Choisir une matière"
+                      notFoundText="Aucune matière ne correspond"
+                      [searchable]="true"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Coefficient</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      min="0.5"
+                      step="0.5"
+                      name="coefficient"
+                      required
+                      [(ngModel)]="nouvelleLigne.coefficient"
+                    />
+                  </mat-form-field>
+                </div>
+              </form>
+            }
+          </ng-template>
+        </app-bouton-formulaire>
+      </div>
+
       <mat-card>
         <mat-card-header>
           <mat-card-title>Matières du niveau {{ nomNiveau() }}</mat-card-title>
@@ -98,58 +152,6 @@
           }
         </mat-card-content>
       </mat-card>
-
-      <app-bouton-formulaire
-        libelle="Ajouter une matière"
-        titre="Ajouter une matière au programme"
-        formulaire="programme-ligne"
-        action="Ajouter au programme"
-      >
-        <ng-template let-fenetre>
-          @if (matieresDisponibles().length === 0) {
-            <p class="text-muted">
-              Toutes les matières du catalogue figurent déjà dans ce programme. Créez d'abord une
-              nouvelle matière depuis « Matières et coefficients ».
-            </p>
-          } @else {
-            <form
-              id="programme-ligne"
-              #formulaire="ngForm"
-              (ngSubmit)="formulaire.valid && ajouter(fenetre)"
-            >
-              <div class="grille-formulaire">
-                <mat-form-field>
-                  <mat-label>Matière</mat-label>
-                  <mtx-select
-                    name="matiereId"
-                    required
-                    [(ngModel)]="nouvelleLigne.matiereId"
-                    [items]="matieresDisponibles()"
-                    bindValue="id"
-                    bindLabel="libelle"
-                    placeholder="Choisir une matière"
-                    notFoundText="Aucune matière ne correspond"
-                    [searchable]="true"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Coefficient</mat-label>
-                  <input
-                    matInput
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    name="coefficient"
-                    required
-                    [(ngModel)]="nouvelleLigne.coefficient"
-                  />
-                </mat-form-field>
-              </div>
-            </form>
-          }
-        </ng-template>
-      </app-bouton-formulaire>
     </mat-tab>
 
     <mat-tab label="Application aux classes">

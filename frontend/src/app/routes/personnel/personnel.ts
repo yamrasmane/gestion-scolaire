@@ -116,7 +116,7 @@ export class Personnel {
     };
     const gabarit = this.gabaritEdition();
     if (gabarit) {
-      this.fenetreEdition = this.fenetres.open(gabarit, { width: '780px', maxWidth: '96vw' });
+      this.fenetreEdition = this.fenetres.open(gabarit, { width: '960px', maxWidth: '96vw' });
     }
   }
 

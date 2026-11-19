@@ -32,7 +32,10 @@
 .grille-formulaire {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: 0 1rem;
+  // Les champs n'ont plus de place réservée sous eux : l'espacement entre
+  // les rangées se fait ici, sinon les lignes se touchent.
+  gap: 1.25rem 1rem;
+  margin-bottom: 0.5rem;
 
   .mat-mdc-form-field {
     width: 100%;

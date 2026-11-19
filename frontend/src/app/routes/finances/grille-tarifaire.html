@@ -9,6 +9,86 @@
   @if (information(); as message) {
     <p class="alerte-succes">{{ message }}</p>
   }
+  <div class="barre-page">
+    <app-bouton-formulaire
+      libelle="Ajouter un tarif"
+      formulaire="tarif-nouveau"
+      action="Ajouter le tarif"
+    >
+      <ng-template let-fenetre>
+        <p class="text-muted">
+          Un tarif de classe l'emporte sur celui du niveau ; un tarif « Tous » sert de valeur par
+          défaut aux deux catégories.
+        </p>
+        <form id="tarif-nouveau" (ngSubmit)="ajouter(fenetre)">
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Frais</mat-label>
+              <mat-select name="type" required [(ngModel)]="nouveau.typeFraisId">
+                @for (t of types(); track t.id) {
+                  <mat-option [value]="t.id">{{ t.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Portée</mat-label>
+              <mat-select name="portee" [(ngModel)]="nouveau.porteeClasse">
+                <mat-option [value]="false">Un niveau</mat-option>
+                <mat-option [value]="true">Une classe précise</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            @if (nouveau.porteeClasse) {
+              <mat-form-field>
+                <mat-label>Classe</mat-label>
+                <mat-select name="classe" required [(ngModel)]="nouveau.classeId">
+                  @for (c of classes(); track c.id) {
+                    <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            } @else {
+              <mat-form-field>
+                <mat-label>Niveau</mat-label>
+                <mat-select name="niveau" required [(ngModel)]="nouveau.niveauId">
+                  @for (n of niveaux(); track n.id) {
+                    <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+
+            <mat-form-field>
+              <mat-label>Élèves concernés</mat-label>
+              <mat-select name="categorie" [(ngModel)]="nouveau.categorie">
+                <mat-option value="TOUS">Tous</mat-option>
+                <mat-option value="NOUVEAU">Nouveaux</mat-option>
+                <mat-option value="ANCIEN">Anciens</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Montant (FCFA)</mat-label>
+              <input
+                matInput
+                name="montant"
+                type="number"
+                min="0"
+                required
+                [(ngModel)]="nouveau.montant"
+              />
+            </mat-form-field>
+          </div>
+
+          <button hidden type="submit">
+            <mat-icon>add</mat-icon>
+            Ajouter le tarif
+          </button>
+        </form>
+      </ng-template>
+    </app-bouton-formulaire>
+  </div>
 
   <mat-card>
     <mat-card-content>
@@ -72,85 +152,6 @@
       }
     </mat-card-content>
   </mat-card>
-
-  <app-bouton-formulaire
-    libelle="Ajouter un tarif"
-    formulaire="tarif-nouveau"
-    action="Ajouter le tarif"
-  >
-    <ng-template let-fenetre>
-      <p class="text-muted">
-        Un tarif de classe l'emporte sur celui du niveau ; un tarif « Tous » sert de valeur par
-        défaut aux deux catégories.
-      </p>
-      <form id="tarif-nouveau" (ngSubmit)="ajouter(fenetre)">
-        <div class="grille-formulaire">
-          <mat-form-field>
-            <mat-label>Frais</mat-label>
-            <mat-select name="type" required [(ngModel)]="nouveau.typeFraisId">
-              @for (t of types(); track t.id) {
-                <mat-option [value]="t.id">{{ t.libelle }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Portée</mat-label>
-            <mat-select name="portee" [(ngModel)]="nouveau.porteeClasse">
-              <mat-option [value]="false">Un niveau</mat-option>
-              <mat-option [value]="true">Une classe précise</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          @if (nouveau.porteeClasse) {
-            <mat-form-field>
-              <mat-label>Classe</mat-label>
-              <mat-select name="classe" required [(ngModel)]="nouveau.classeId">
-                @for (c of classes(); track c.id) {
-                  <mat-option [value]="c.id">{{ c.nom }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          } @else {
-            <mat-form-field>
-              <mat-label>Niveau</mat-label>
-              <mat-select name="niveau" required [(ngModel)]="nouveau.niveauId">
-                @for (n of niveaux(); track n.id) {
-                  <mat-option [value]="n.id">{{ n.code }} — {{ n.libelle }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          }
-
-          <mat-form-field>
-            <mat-label>Élèves concernés</mat-label>
-            <mat-select name="categorie" [(ngModel)]="nouveau.categorie">
-              <mat-option value="TOUS">Tous</mat-option>
-              <mat-option value="NOUVEAU">Nouveaux</mat-option>
-              <mat-option value="ANCIEN">Anciens</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Montant (FCFA)</mat-label>
-            <input
-              matInput
-              name="montant"
-              type="number"
-              min="0"
-              required
-              [(ngModel)]="nouveau.montant"
-            />
-          </mat-form-field>
-        </div>
-
-        <button hidden type="submit">
-          <mat-icon>add</mat-icon>
-          Ajouter le tarif
-        </button>
-      </form>
-    </ng-template>
-  </app-bouton-formulaire>
 
   <mat-accordion>
     <mat-expansion-panel>

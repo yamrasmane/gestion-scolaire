@@ -6,6 +6,62 @@
 
 <mat-tab-group>
   <mat-tab label="Matières de la classe">
+    <div class="barre-page">
+      <app-bouton-formulaire
+        libelle="Affecter une matière"
+        titre="Affecter une matière à la classe"
+      >
+        <ng-template let-fenetre>
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Matière</mat-label>
+              <mtx-select
+                name="matiere"
+                [(ngModel)]="affectation.matiereId"
+                [items]="matieres()"
+                bindValue="id"
+                bindLabel="libelle"
+                placeholder="Choisir une matière"
+                notFoundText="Aucune matière ne correspond"
+                [searchable]="true"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Professeur titulaire</mat-label>
+              <mtx-select
+                name="enseignant"
+                [(ngModel)]="affectation.enseignantId"
+                [items]="professeurs()"
+                bindValue="id"
+                bindLabel="libelle"
+                placeholder="À désigner"
+                notFoundText="Aucun professeur ne correspond"
+                [searchable]="true"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Coefficient</mat-label>
+              <input
+                matInput
+                name="coefficient"
+                type="number"
+                min="0.5"
+                step="0.5"
+                [(ngModel)]="affectation.coefficient"
+              />
+            </mat-form-field>
+          </div>
+
+          <button matButton="filled" [disabled]="enCours()" (click)="affecter(fenetre)">
+            <mat-icon>add</mat-icon>
+            Affecter à la classe
+          </button>
+        </ng-template>
+      </app-bouton-formulaire>
+    </div>
+
     <mat-card>
       <mat-card-header>
         <mat-card-title>Matières enseignées dans une classe</mat-card-title>
@@ -74,66 +130,46 @@
               </table>
             </div>
           }
-
-          <app-bouton-formulaire
-            libelle="Affecter une matière"
-            titre="Affecter une matière à la classe"
-          >
-            <ng-template let-fenetre>
-              <div class="grille-formulaire">
-                <mat-form-field>
-                  <mat-label>Matière</mat-label>
-                  <mtx-select
-                    name="matiere"
-                    [(ngModel)]="affectation.matiereId"
-                    [items]="matieres()"
-                    bindValue="id"
-                    bindLabel="libelle"
-                    placeholder="Choisir une matière"
-                    notFoundText="Aucune matière ne correspond"
-                    [searchable]="true"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Professeur titulaire</mat-label>
-                  <mtx-select
-                    name="enseignant"
-                    [(ngModel)]="affectation.enseignantId"
-                    [items]="professeurs()"
-                    bindValue="id"
-                    bindLabel="libelle"
-                    placeholder="À désigner"
-                    notFoundText="Aucun professeur ne correspond"
-                    [searchable]="true"
-                  />
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Coefficient</mat-label>
-                  <input
-                    matInput
-                    name="coefficient"
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    [(ngModel)]="affectation.coefficient"
-                  />
-                </mat-form-field>
-              </div>
-
-              <button matButton="filled" [disabled]="enCours()" (click)="affecter(fenetre)">
-                <mat-icon>add</mat-icon>
-                Affecter à la classe
-              </button>
-            </ng-template>
-          </app-bouton-formulaire>
         }
       </mat-card-content>
     </mat-card>
   </mat-tab>
 
   <mat-tab label="Catalogue des matières">
+    <div class="barre-page">
+      <app-bouton-formulaire libelle="Ajouter une matière">
+        <ng-template let-fenetre>
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Code</mat-label>
+              <input
+                matInput
+                name="code"
+                maxlength="20"
+                placeholder="MATH"
+                [(ngModel)]="nouvelleMatiere.code"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Libellé</mat-label>
+              <input
+                matInput
+                name="libelle"
+                placeholder="Mathématiques"
+                [(ngModel)]="nouvelleMatiere.libelle"
+              />
+            </mat-form-field>
+          </div>
+
+          <button matButton="filled" [disabled]="enCours()" (click)="creerMatiere(fenetre)">
+            <mat-icon>add</mat-icon>
+            Ajouter la matière
+          </button>
+        </ng-template>
+      </app-bouton-formulaire>
+    </div>
+
     <mat-card>
       <mat-card-header>
         <mat-card-title>Catalogue des matières ({{ matieres().length }})</mat-card-title>
@@ -205,38 +241,6 @@
             </table>
           </div>
         }
-
-        <app-bouton-formulaire libelle="Ajouter une matière">
-          <ng-template let-fenetre>
-            <div class="grille-formulaire">
-              <mat-form-field>
-                <mat-label>Code</mat-label>
-                <input
-                  matInput
-                  name="code"
-                  maxlength="20"
-                  placeholder="MATH"
-                  [(ngModel)]="nouvelleMatiere.code"
-                />
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Libellé</mat-label>
-                <input
-                  matInput
-                  name="libelle"
-                  placeholder="Mathématiques"
-                  [(ngModel)]="nouvelleMatiere.libelle"
-                />
-              </mat-form-field>
-            </div>
-
-            <button matButton="filled" [disabled]="enCours()" (click)="creerMatiere(fenetre)">
-              <mat-icon>add</mat-icon>
-              Ajouter la matière
-            </button>
-          </ng-template>
-        </app-bouton-formulaire>
       </mat-card-content>
     </mat-card>
   </mat-tab>

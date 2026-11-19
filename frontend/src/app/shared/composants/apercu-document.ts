@@ -72,14 +72,14 @@ export interface DemandeApercu {
     .apercu-contenu {
       display: flex;
       flex-direction: column;
-      min-height: 60vh;
+      min-height: 68vh;
       padding-top: 0;
     }
 
     .apercu-cadre {
       flex: 1 1 auto;
       width: 100%;
-      min-height: 60vh;
+      min-height: 68vh;
       border: 1px solid var(--mat-sys-outline-variant);
       border-radius: 4px;
     }

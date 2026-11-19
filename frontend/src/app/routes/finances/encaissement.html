@@ -102,6 +102,92 @@
       }
     </mat-card>
 
+    @if (peutEncaisser && f.resteAPayer > 0) {
+      <div class="barre-page">
+        <app-bouton-formulaire
+          libelle="Encaisser un règlement"
+          titre="Enregistrer un règlement"
+          icone="payments"
+        >
+          <ng-template let-fenetre>
+            <p class="text-muted">
+              Sans précision, le montant solde les échéances les plus anciennes.
+            </p>
+
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Date</mat-label>
+                <input
+                  matInput
+                  name="date"
+                  [matDatepicker]="calendrierPaiement"
+                  [(ngModel)]="paiement.datePaiement"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="calendrierPaiement" />
+                <mat-datepicker #calendrierPaiement />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Montant (FCFA)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="1"
+                  name="montant"
+                  [(ngModel)]="paiement.montant"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mode de paiement</mat-label>
+                <mat-select name="mode" [(ngModel)]="paiement.mode">
+                  @for (m of modes; track m.code) {
+                    <mat-option [value]="m.code">{{ m.libelle }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Référence</mat-label>
+                <input
+                  matInput
+                  name="reference"
+                  placeholder="N° de transaction"
+                  [(ngModel)]="paiement.reference"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Payeur</mat-label>
+                <input matInput name="payeur" [(ngModel)]="paiement.payeur" />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Imputer sur un frais précis</mat-label>
+                <mat-select name="imputation" [(ngModel)]="paiement.typeFraisId">
+                  <mat-option [value]="null">Automatique (plus ancienne échéance)</mat-option>
+                  @for (frais of f.frais; track frais.id) {
+                    <mat-option [value]="frais.typeFraisId">{{
+                      frais.typeFraisLibelle
+                    }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <button
+              matButton="filled"
+              [disabled]="enCours() || !paiement.montant"
+              (click)="encaisser(fenetre)"
+            >
+              <mat-icon>payments</mat-icon>
+              Encaisser
+            </button>
+          </ng-template>
+        </app-bouton-formulaire>
+      </div>
+    }
+
     <!-- Échéancier -->
     <mat-tab-group>
       <mat-tab label="Échéancier">
@@ -165,91 +251,7 @@
         </mat-card>
 
         <!-- Encaissement -->
-        @if (peutEncaisser && f.resteAPayer > 0) {
-          <div class="ligne-actions m-b-16">
-            <app-bouton-formulaire
-              libelle="Encaisser un règlement"
-              titre="Enregistrer un règlement"
-              icone="payments"
-            >
-              <ng-template let-fenetre>
-                <p class="text-muted">
-                  Sans précision, le montant solde les échéances les plus anciennes.
-                </p>
-
-                <div class="grille-formulaire">
-                  <mat-form-field>
-                    <mat-label>Date</mat-label>
-                    <input
-                      matInput
-                      name="date"
-                      [matDatepicker]="calendrierPaiement"
-                      [(ngModel)]="paiement.datePaiement"
-                    />
-                    <mat-datepicker-toggle matIconSuffix [for]="calendrierPaiement" />
-                    <mat-datepicker #calendrierPaiement />
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Montant (FCFA)</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      min="1"
-                      name="montant"
-                      [(ngModel)]="paiement.montant"
-                    />
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Mode de paiement</mat-label>
-                    <mat-select name="mode" [(ngModel)]="paiement.mode">
-                      @for (m of modes; track m.code) {
-                        <mat-option [value]="m.code">{{ m.libelle }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Référence</mat-label>
-                    <input
-                      matInput
-                      name="reference"
-                      placeholder="N° de transaction"
-                      [(ngModel)]="paiement.reference"
-                    />
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Payeur</mat-label>
-                    <input matInput name="payeur" [(ngModel)]="paiement.payeur" />
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Imputer sur un frais précis</mat-label>
-                    <mat-select name="imputation" [(ngModel)]="paiement.typeFraisId">
-                      <mat-option [value]="null">Automatique (plus ancienne échéance)</mat-option>
-                      @for (frais of f.frais; track frais.id) {
-                        <mat-option [value]="frais.typeFraisId">{{
-                          frais.typeFraisLibelle
-                        }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <button
-                  matButton="filled"
-                  [disabled]="enCours() || !paiement.montant"
-                  (click)="encaisser(fenetre)"
-                >
-                  <mat-icon>payments</mat-icon>
-                  Encaisser
-                </button>
-              </ng-template>
-            </app-bouton-formulaire>
-          </div>
-        }
+        @if (peutEncaisser && f.resteAPayer > 0) {}
       </mat-tab>
 
       <mat-tab label="Règlements">

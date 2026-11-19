@@ -57,6 +57,53 @@
   }
 
   @if (grille(); as g) {
+    @if (modifiable()) {
+      <div class="barre-page">
+        <app-bouton-formulaire libelle="Ajouter une épreuve">
+          <ng-template let-fenetre>
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Type</mat-label>
+                <mat-select name="categorie" [(ngModel)]="nouvelleEvaluation.categorie">
+                  <mat-option value="DEVOIR">Devoir</mat-option>
+                  @if (g.avecComposition) {
+                    <mat-option value="COMPOSITION">Composition</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Libellé</mat-label>
+                <input
+                  matInput
+                  name="libelle"
+                  placeholder="Devoir 1"
+                  [(ngModel)]="nouvelleEvaluation.libelle"
+                />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date</mat-label>
+                <input
+                  matInput
+                  name="dateEval"
+                  [matDatepicker]="calendrierEval"
+                  [(ngModel)]="nouvelleEvaluation.dateEval"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="calendrierEval" />
+                <mat-datepicker #calendrierEval />
+              </mat-form-field>
+            </div>
+
+            <button matButton="filled" [disabled]="enCours()" (click)="creerEvaluation(fenetre)">
+              <mat-icon>add</mat-icon>
+              Ajouter l'épreuve
+            </button>
+          </ng-template>
+        </app-bouton-formulaire>
+      </div>
+    }
+
     <mat-card>
       <mat-card-header>
         <mat-card-title>{{ g.matiereLibelle }} — {{ g.classeNom }}</mat-card-title>
@@ -162,52 +209,5 @@
         </mat-card-actions>
       }
     </mat-card>
-
-    @if (modifiable()) {
-      <div class="ligne-actions m-b-16">
-        <app-bouton-formulaire libelle="Ajouter une épreuve">
-          <ng-template let-fenetre>
-            <div class="grille-formulaire">
-              <mat-form-field>
-                <mat-label>Type</mat-label>
-                <mat-select name="categorie" [(ngModel)]="nouvelleEvaluation.categorie">
-                  <mat-option value="DEVOIR">Devoir</mat-option>
-                  @if (g.avecComposition) {
-                    <mat-option value="COMPOSITION">Composition</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Libellé</mat-label>
-                <input
-                  matInput
-                  name="libelle"
-                  placeholder="Devoir 1"
-                  [(ngModel)]="nouvelleEvaluation.libelle"
-                />
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label>Date</mat-label>
-                <input
-                  matInput
-                  name="dateEval"
-                  [matDatepicker]="calendrierEval"
-                  [(ngModel)]="nouvelleEvaluation.dateEval"
-                />
-                <mat-datepicker-toggle matIconSuffix [for]="calendrierEval" />
-                <mat-datepicker #calendrierEval />
-              </mat-form-field>
-            </div>
-
-            <button matButton="filled" [disabled]="enCours()" (click)="creerEvaluation(fenetre)">
-              <mat-icon>add</mat-icon>
-              Ajouter l'épreuve
-            </button>
-          </ng-template>
-        </app-bouton-formulaire>
-      </div>
-    }
   }
 }

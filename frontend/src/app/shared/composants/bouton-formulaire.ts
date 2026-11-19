@@ -58,7 +58,7 @@ export class BoutonFormulaire {
   /** Titre de la fenêtre ; le libellé du bouton par défaut. */
   readonly titre = input('');
   readonly icone = input('add');
-  readonly largeur = input('780px');
+  readonly largeur = input('960px');
   /**
    * Identifiant du `form` projeté. Renseigné, le bouton de validation est
    * rendu dans la barre d'actions de la fenêtre, comme sur les maquettes.

@@ -6,6 +6,56 @@
   @if (erreur(); as message) {
     <p class="alerte-erreur" role="alert">{{ message }}</p>
   }
+  @if (peutModifier && trimestres().length < 3) {
+    <div class="barre-page">
+      <app-bouton-formulaire
+        libelle="Ajouter un trimestre"
+        formulaire="trimestre-nouveau"
+        action="Créer le trimestre"
+      >
+        <ng-template let-fenetre>
+          <form id="trimestre-nouveau" (ngSubmit)="creer(fenetre)">
+            <div class="grille-formulaire">
+              <mat-form-field>
+                <mat-label>Numéro</mat-label>
+                <mat-select name="numero" [(ngModel)]="nouveau.numero">
+                  <mat-option [value]="1">1</mat-option>
+                  <mat-option [value]="2">2</mat-option>
+                  <mat-option [value]="3">3</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date de début</mat-label>
+                <input
+                  matInput
+                  name="debut"
+                  required
+                  [matDatepicker]="calendrierDebut"
+                  [(ngModel)]="nouveau.dateDebut"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
+                <mat-datepicker #calendrierDebut />
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Date de fin</mat-label>
+                <input
+                  matInput
+                  name="fin"
+                  required
+                  [matDatepicker]="calendrierFin"
+                  [(ngModel)]="nouveau.dateFin"
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
+                <mat-datepicker #calendrierFin />
+              </mat-form-field>
+            </div>
+          </form>
+        </ng-template>
+      </app-bouton-formulaire>
+    </div>
+  }
 
   @for (t of trimestres(); track t.id) {
     <mat-card>
@@ -116,54 +166,5 @@
     </mat-card>
   } @empty {
     <p class="text-muted">Aucun trimestre n'est encore défini pour cette année.</p>
-  }
-
-  @if (peutModifier && trimestres().length < 3) {
-    <app-bouton-formulaire
-      libelle="Ajouter un trimestre"
-      formulaire="trimestre-nouveau"
-      action="Créer le trimestre"
-    >
-      <ng-template let-fenetre>
-        <form id="trimestre-nouveau" (ngSubmit)="creer(fenetre)">
-          <div class="grille-formulaire">
-            <mat-form-field>
-              <mat-label>Numéro</mat-label>
-              <mat-select name="numero" [(ngModel)]="nouveau.numero">
-                <mat-option [value]="1">1</mat-option>
-                <mat-option [value]="2">2</mat-option>
-                <mat-option [value]="3">3</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Date de début</mat-label>
-              <input
-                matInput
-                name="debut"
-                required
-                [matDatepicker]="calendrierDebut"
-                [(ngModel)]="nouveau.dateDebut"
-              />
-              <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
-              <mat-datepicker #calendrierDebut />
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Date de fin</mat-label>
-              <input
-                matInput
-                name="fin"
-                required
-                [matDatepicker]="calendrierFin"
-                [(ngModel)]="nouveau.dateFin"
-              />
-              <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
-              <mat-datepicker #calendrierFin />
-            </mat-form-field>
-          </div>
-        </form>
-      </ng-template>
-    </app-bouton-formulaire>
   }
 }

@@ -431,9 +431,15 @@ table.mat-mdc-table {
   border-radius: 999px;
 }
 
-/** Fenêtres : mêmes arrondis sobres que les cartes. */
+/** Fenêtres : mêmes arrondis sobres que les cartes, et de l'air autour. */
 .mat-mdc-dialog-container {
   --mdc-dialog-container-shape: var(--mat-sys-corner-medium);
+
+  .mat-mdc-dialog-content {
+    max-height: 74vh;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+  }
 
   .mat-mdc-dialog-title {
     font-size: 1.125rem;
@@ -452,7 +458,18 @@ table.mat-mdc-table {
   flex: 1 1 auto;
 }
 
-/** Formulaire ouvert en fenêtre : la grille reste lisible à deux colonnes. */
+/** Formulaire ouvert en fenêtre : des colonnes larges et des lignes aérées. */
 .mat-mdc-dialog-content .grille-formulaire {
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.5rem 1.25rem;
+}
+
+/** Barre d'actions au-dessus d'une page : le bouton de création à droite. */
+.barre-page {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
 }

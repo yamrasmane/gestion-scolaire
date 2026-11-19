@@ -89,7 +89,7 @@ export class BoutonDocument {
     };
     this.fenetres.open(ApercuDocument, {
       data: demande,
-      width: '900px',
+      width: '1100px',
       maxWidth: '96vw',
       maxHeight: '94vh',
       autoFocus: false,

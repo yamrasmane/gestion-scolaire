@@ -3,6 +3,63 @@
 @if (erreur(); as message) {
   <p class="alerte-erreur" role="alert">{{ message }}</p>
 }
+@if (peutModifier) {
+  <div class="barre-page">
+    <app-bouton-formulaire
+      libelle="Nouvelle année scolaire"
+      formulaire="annee-nouvelle"
+      action="Créer l'année"
+    >
+      <ng-template let-fenetre>
+        <form id="annee-nouvelle" [formGroup]="formulaire" (ngSubmit)="creer(fenetre)">
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Libellé</mat-label>
+              <input matInput formControlName="libelle" placeholder="2026-2027" />
+              @if (formulaire.controls.libelle.touched && formulaire.controls.libelle.invalid) {
+                <mat-error>Format attendu : 2026-2027</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Date de début</mat-label>
+              <input matInput [matDatepicker]="calendrierDebut" formControlName="dateDebut" />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
+              <mat-datepicker #calendrierDebut />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Date de fin</mat-label>
+              <input matInput [matDatepicker]="calendrierFin" formControlName="dateFin" />
+              <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
+              <mat-datepicker #calendrierFin />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Poids de la composition</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0.5"
+                step="0.5"
+                formControlName="poidsCompositionDefaut"
+              />
+            </mat-form-field>
+          </div>
+
+          <div class="ligne-actions m-b-16">
+            <mat-checkbox formControlName="avecCompositionDefaut">
+              Composition activée par défaut
+            </mat-checkbox>
+            <mat-checkbox formControlName="bloquerBulletinImpaye">
+              Bloquer la remise du bulletin en cas d'impayé
+            </mat-checkbox>
+          </div>
+        </form>
+      </ng-template>
+    </app-bouton-formulaire>
+  </div>
+}
 
 <mat-card>
   <mat-card-content>
@@ -67,60 +124,6 @@
   </mat-card-content>
 </mat-card>
 
-@if (peutModifier) {
-  <app-bouton-formulaire
-    libelle="Nouvelle année scolaire"
-    formulaire="annee-nouvelle"
-    action="Créer l'année"
-  >
-    <ng-template let-fenetre>
-      <form id="annee-nouvelle" [formGroup]="formulaire" (ngSubmit)="creer(fenetre)">
-        <div class="grille-formulaire">
-          <mat-form-field>
-            <mat-label>Libellé</mat-label>
-            <input matInput formControlName="libelle" placeholder="2026-2027" />
-            @if (formulaire.controls.libelle.touched && formulaire.controls.libelle.invalid) {
-              <mat-error>Format attendu : 2026-2027</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Date de début</mat-label>
-            <input matInput [matDatepicker]="calendrierDebut" formControlName="dateDebut" />
-            <mat-datepicker-toggle matIconSuffix [for]="calendrierDebut" />
-            <mat-datepicker #calendrierDebut />
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Date de fin</mat-label>
-            <input matInput [matDatepicker]="calendrierFin" formControlName="dateFin" />
-            <mat-datepicker-toggle matIconSuffix [for]="calendrierFin" />
-            <mat-datepicker #calendrierFin />
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Poids de la composition</mat-label>
-            <input
-              matInput
-              type="number"
-              min="0.5"
-              step="0.5"
-              formControlName="poidsCompositionDefaut"
-            />
-          </mat-form-field>
-        </div>
-
-        <div class="ligne-actions m-b-16">
-          <mat-checkbox formControlName="avecCompositionDefaut">
-            Composition activée par défaut
-          </mat-checkbox>
-          <mat-checkbox formControlName="bloquerBulletinImpaye">
-            Bloquer la remise du bulletin en cas d'impayé
-          </mat-checkbox>
-        </div>
-      </form>
-    </ng-template>
-  </app-bouton-formulaire>
-} @else {
+@if (!peutModifier) {
   <p class="text-muted">Seule la direction peut créer ou activer une année scolaire.</p>
 }
