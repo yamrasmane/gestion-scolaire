@@ -3,6 +3,7 @@ package bf.lycee.gestion;
 import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -220,6 +221,50 @@ class NotesIntegrationTest {
                         .content("{\"mention\": \"Encouragements\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value(containsString("délibération")));
+    }
+
+    @Test
+    void une_epreuve_verrouillee_n_accepte_plus_aucune_note() throws Exception {
+        reglerComposition(false, null);
+        UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        saisir(maths, note(awa, devoir, "12", false));
+
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+                        .param("verrouillee", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.verrouillee").value(true));
+
+        // Plus de correction possible, ni d'ajout de note, ni de suppression.
+        mvc.perform(put(grilleDe(maths)).with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"notes\": [%s]}".formatted(note(awa, devoir, "18", false))))
+                .andExpect(status().isUnprocessableEntity());
+        mvc.perform(delete("/api/evaluations/" + devoir).with(DIRECTEUR))
+                .andExpect(status().isUnprocessableEntity());
+
+        // La note d'avant le verrou reste celle qui compte.
+        mvc.perform(get(grilleDe(maths)).with(DIRECTEUR))
+                .andExpect(jsonPath("$.evaluations[0].verrouillee").value(true))
+                .andExpect(jsonPath("$.lignes[?(@.matricule == 'EL-001')].moyenne").value(12.00));
+    }
+
+    @Test
+    void un_enseignant_ne_peut_pas_rouvrir_une_epreuve_qu_il_a_verrouillee() throws Exception {
+        reglerComposition(false, null);
+        UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+                        .param("verrouillee", "true"))
+                .andExpect(status().isOk());
+
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+                        .param("verrouillee", "false"))
+                .andExpect(status().isUnprocessableEntity());
+
+        // La direction, elle, peut rouvrir : la saisie redevient possible.
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(DIRECTEUR)
+                        .param("verrouillee", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.verrouillee").value(false));
+        saisir(maths, note(awa, devoir, "15", false));
     }
 
     // ---------- Outils ----------

@@ -42,4 +42,11 @@ public class Evaluation extends AbstractAuditingEntity {
 
     @Column(nullable = false, precision = 4, scale = 1)
     private BigDecimal bareme;
+
+    /**
+     * Épreuve verrouillée : ses notes ne peuvent plus être modifiées ni
+     * complétées tant que la direction ne l'a pas déverrouillée.
+     */
+    @Column(nullable = false)
+    private boolean verrouillee;
 }

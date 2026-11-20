@@ -100,9 +100,29 @@ public class EvaluationService {
         Evaluation evaluation = evaluation(evaluationId);
         verifierAcces(evaluation.getEnseignement());
         verifierOuvert(evaluation.getTrimestre());
+        verifierDeverrouillee(evaluation);
         notes.deleteAll(notes.findByEvaluationId(evaluationId));
         notes.flush();
         evaluations.delete(evaluation);
+    }
+
+    /**
+     * Verrouille ou déverrouille une épreuve (SF-12). Un enseignant peut
+     * verrouiller la sienne quand il a fini de saisir ; seule la direction
+     * peut rouvrir, sans quoi le verrou ne protégerait rien.
+     */
+    public NotesDto.EvaluationVue verrouiller(UUID evaluationId, boolean verrouillee) {
+        Evaluation evaluation = evaluation(evaluationId);
+        verifierAcces(evaluation.getEnseignement());
+        verifierOuvert(evaluation.getTrimestre());
+        if (!verrouillee && !estDeLaDirection()) {
+            throw new RegleMetierException(
+                    "Seule la direction peut déverrouiller une épreuve : « "
+                            + evaluation.getLibelle() + " »");
+        }
+        evaluation.setVerrouillee(verrouillee);
+        evaluations.save(evaluation);
+        return versVue(evaluation);
     }
 
     // ---------- Grille de saisie (SF-12) ----------
@@ -162,6 +182,7 @@ public class EvaluationService {
                     || !evaluation.getTrimestre().getId().equals(trimestreId)) {
                 throw new SaisieInvalideException("Épreuve étrangère à cette grille de saisie");
             }
+            verifierDeverrouillee(evaluation);
             if (ligne.valeur() != null && ligne.valeur().compareTo(evaluation.getBareme()) > 0) {
                 throw new SaisieInvalideException("La note dépasse le barème de « "
                         + evaluation.getLibelle() + " » (" + evaluation.getBareme() + ")");
@@ -189,6 +210,14 @@ public class EvaluationService {
         return grille(enseignementId, trimestreId);
     }
 
+    /** Refuse toute écriture sur une épreuve verrouillée. */
+    private static void verifierDeverrouillee(Evaluation evaluation) {
+        if (evaluation.isVerrouillee()) {
+            throw new RegleMetierException("L'épreuve « " + evaluation.getLibelle()
+                    + " » est verrouillée : ses notes ne peuvent plus être modifiées.");
+        }
+    }
+
     // ---------- Outils ----------
 
     Map<UUID, List<Note>> notesParInscription(List<Evaluation> epreuves) {
@@ -211,16 +240,21 @@ public class EvaluationService {
     }
 
     /** Un enseignant ne saisit que dans ses propres classes ; la direction partout. */
+    /** Direction au sens large : administrateur, directeur ou censeur. */
+    private static boolean estDeLaDirection() {
+        Authentication authentification = SecurityContextHolder.getContext().getAuthentication();
+        return authentification != null && authentification.getAuthorities().stream()
+                .anyMatch(autorite -> "ROLE_ADMIN".equals(autorite.getAuthority())
+                        || "ROLE_DIRECTEUR".equals(autorite.getAuthority())
+                        || "ROLE_CENSEUR".equals(autorite.getAuthority()));
+    }
+
     void verifierAcces(Enseignement enseignement) {
         Authentication authentification = SecurityContextHolder.getContext().getAuthentication();
         if (authentification == null) {
             return;
         }
-        boolean toutesClasses = authentification.getAuthorities().stream()
-                .anyMatch(autorite -> "ROLE_ADMIN".equals(autorite.getAuthority())
-                        || "ROLE_DIRECTEUR".equals(autorite.getAuthority())
-                        || "ROLE_CENSEUR".equals(autorite.getAuthority()));
-        if (toutesClasses) {
+        if (estDeLaDirection()) {
             return;
         }
         UUID titulaire = enseignement.getEnseignant() == null ? null : enseignement.getEnseignant().getId();
@@ -255,7 +289,7 @@ public class EvaluationService {
     static NotesDto.EvaluationVue versVue(Evaluation evaluation) {
         return new NotesDto.EvaluationVue(evaluation.getId(), evaluation.getEnseignement().getId(),
                 evaluation.getTrimestre().getId(), evaluation.getCategorie(), evaluation.getLibelle(),
-                evaluation.getDateEval(), evaluation.getBareme());
+                evaluation.getDateEval(), evaluation.getBareme(), evaluation.isVerrouillee());
     }
 
     /** Barème par défaut, pour les épreuves créées sans précision. */

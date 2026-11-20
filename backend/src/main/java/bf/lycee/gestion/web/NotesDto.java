@@ -70,7 +70,7 @@ public final class NotesDto {
 
     public record EvaluationVue(UUID id, UUID enseignementId, UUID trimestreId,
                                 CategorieEvaluation categorie, String libelle, LocalDate dateEval,
-                                BigDecimal bareme) {
+                                BigDecimal bareme, boolean verrouillee) {
     }
 
     public record EvaluationSaisie(@NotNull CategorieEvaluation categorie,

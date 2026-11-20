@@ -164,6 +164,13 @@ public class NotesController {
         return evaluations.creer(enseignementId, trimestreId, saisie);
     }
 
+    /** Verrouille (ou rouvre) une épreuve : ses notes deviennent intouchables. */
+    @PutMapping("/evaluations/{evaluationId}/verrou")
+    public NotesDto.EvaluationVue verrouiller(@PathVariable UUID evaluationId,
+                                              @RequestParam boolean verrouillee) {
+        return evaluations.verrouiller(evaluationId, verrouillee);
+    }
+
     @DeleteMapping("/evaluations/{evaluationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(SAISIE_NOTES)
