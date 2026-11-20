@@ -91,7 +91,8 @@ export class BoutonDocument {
       data: demande,
       width: '1100px',
       maxWidth: '96vw',
-      maxHeight: '94vh',
+      height: '92vh',
+      maxHeight: '95vh',
       autoFocus: false,
       restoreFocus: true,
     });

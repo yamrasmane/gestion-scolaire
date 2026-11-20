@@ -79,7 +79,7 @@ export class BoutonFormulaire {
     this.reference = this.fenetres.open(gabarit, {
       width: this.largeur(),
       maxWidth: '96vw',
-      maxHeight: '92vh',
+      maxHeight: '95vh',
       autoFocus: 'first-tabbable',
     });
   }

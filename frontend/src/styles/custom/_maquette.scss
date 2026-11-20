@@ -436,7 +436,10 @@ table.mat-mdc-table {
   --mdc-dialog-container-shape: var(--mat-sys-corner-medium);
 
   .mat-mdc-dialog-content {
-    max-height: 74vh;
+    // Haute par défaut : un formulaire court ne donne plus une fenêtre
+    // écrasée, un formulaire long défile beaucoup plus tard.
+    min-height: 10rem;
+    max-height: 82vh;
     padding-top: 0.5rem;
     padding-bottom: 1rem;
   }
