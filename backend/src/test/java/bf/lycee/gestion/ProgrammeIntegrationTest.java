@@ -67,7 +67,7 @@ class ProgrammeIntegrationTest {
         inscrireAuProgramme(niveau6, maths, 4);
         inscrireAuProgramme(niveau6, francais, 5);
 
-        mvc.perform(get("/api/niveaux/" + niveau6 + "/programme").with(DIRECTEUR))
+        mvc.perform(get("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme").with(DIRECTEUR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].matiereLibelle").value("Français"))
                 .andExpect(jsonPath("$[0].coefficient").value(5.0))
@@ -77,7 +77,7 @@ class ProgrammeIntegrationTest {
     @Test
     void une_matiere_ne_figure_qu_une_fois_au_programme() throws Exception {
         inscrireAuProgramme(niveau6, maths, 4);
-        mvc.perform(post("/api/niveaux/" + niveau6 + "/programme").with(DIRECTEUR)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"matiereId\": \"%s\", \"coefficient\": 3}".formatted(maths)))
                 .andExpect(status().isConflict())
@@ -108,7 +108,7 @@ class ProgrammeIntegrationTest {
         inscrireAuProgramme(niveau6, maths, 4);
         inscrireAuProgramme(niveau6, francais, 5);
 
-        mvc.perform(post("/api/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
                         .param("anneeId", annee.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.classesTouchees").value(2))
@@ -136,7 +136,7 @@ class ProgrammeIntegrationTest {
                 .andExpect(status().isOk());
 
         // Sans demande d'alignement, le coefficient de la classe est conservé.
-        mvc.perform(post("/api/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
                         .param("anneeId", annee.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.coefficientsMisAJour").value(0));
@@ -145,7 +145,7 @@ class ProgrammeIntegrationTest {
                 .andExpect(jsonPath("$[0].enseignantNom").value("ZONGO Rasmané"));
 
         // Avec alignement, il revient à la valeur du programme, le professeur restant en place.
-        mvc.perform(post("/api/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme/application").with(DIRECTEUR)
                         .param("anneeId", annee.toString())
                         .param("alignerCoefficients", "true"))
                 .andExpect(status().isOk())
@@ -211,7 +211,7 @@ class ProgrammeIntegrationTest {
 
     @Test
     void un_enseignant_ne_touche_pas_au_programme() throws Exception {
-        mvc.perform(post("/api/niveaux/" + niveau6 + "/programme").with(ENSEIGNANT)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau6 + "/programme").with(ENSEIGNANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"matiereId\": \"%s\", \"coefficient\": 4}".formatted(maths)))
                 .andExpect(status().isForbidden());
@@ -265,7 +265,7 @@ class ProgrammeIntegrationTest {
     }
 
     private void inscrireAuProgramme(UUID niveau, UUID matiere, int coefficient) throws Exception {
-        mvc.perform(post("/api/niveaux/" + niveau + "/programme").with(DIRECTEUR)
+        mvc.perform(post("/api/annees-scolaires/" + annee + "/niveaux/" + niveau + "/programme").with(DIRECTEUR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"matiereId\": \"%s\", \"coefficient\": %d}"
                                 .formatted(matiere, coefficient)))
