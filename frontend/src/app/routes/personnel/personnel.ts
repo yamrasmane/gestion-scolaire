@@ -116,7 +116,12 @@ export class Personnel {
     };
     const gabarit = this.gabaritEdition();
     if (gabarit) {
-      this.fenetreEdition = this.fenetres.open(gabarit, { width: '960px', maxWidth: '96vw', maxHeight: '95vh' });
+      this.fenetreEdition = this.fenetres.open(gabarit, {
+        width: '960px',
+        maxWidth: '96vw',
+        maxHeight: '95vh',
+        disableClose: true,
+      });
     }
   }
 

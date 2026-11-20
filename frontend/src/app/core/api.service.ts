@@ -373,6 +373,8 @@ export interface ChargeEnseignant {
 }
 
 export interface Evaluation {
+  /** Une épreuve verrouillée n'accepte plus aucune note. */
+  verrouillee: boolean;
   id: string;
   enseignementId: string;
   trimestreId: string;
@@ -933,6 +935,15 @@ export class ApiService {
     return this.http.post<Evaluation>(
       `${this.base}/enseignements/${enseignementId}/trimestres/${trimestreId}/evaluations`,
       saisie,
+    );
+  }
+
+  /** Verrouille ou rouvre une épreuve : notes figées tant qu'elle est verrouillée. */
+  verrouillerEvaluation(evaluationId: string, verrouillee: boolean): Observable<Evaluation> {
+    return this.http.put<Evaluation>(
+      `${this.base}/evaluations/${evaluationId}/verrou`,
+      null,
+      { params: parametres({ verrouillee }) },
     );
   }
 

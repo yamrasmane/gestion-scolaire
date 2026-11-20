@@ -23,6 +23,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { depuisIso, enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
@@ -58,6 +59,8 @@ interface TrancheSaisie {
 })
 export class PlansPaiement {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
 
   protected readonly colonnes = ['numero', 'libelle', 'echeance', 'part'];
@@ -182,7 +185,11 @@ export class PlansPaiement {
   }
 
   protected supprimer(plan: PlanPaiement): void {
-    this.executer(this.api.supprimerPlan(plan.id));
+    this.confirmer({
+      titre: 'Supprimer le plan de paiement',
+      message: `Supprimer « ${plan.libelle} » ?`,
+      precision: 'Les échéanciers déjà établis avec ce plan ne changent pas.',
+    }).subscribe(() => this.executer(this.api.supprimerPlan(plan.id)));
   }
 
   private executer(action: Observable<unknown>, apres?: () => void): void {

@@ -18,11 +18,13 @@ import {
   CategorieEvaluation,
   Classe,
   Enseignement,
+  Evaluation,
   Grille,
   Trimestre,
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
@@ -50,6 +52,8 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
 })
 export class SaisieNotes {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
 
   protected readonly classes = signal<Classe[]>([]);
@@ -146,8 +150,30 @@ export class SaisieNotes {
     );
   }
 
-  protected supprimerEvaluation(evaluationId: string): void {
-    this.executer(this.api.supprimerEvaluation(evaluationId));
+  /**
+   * Verrouille une épreuve quand la saisie est finie, ou la rouvre. La
+   * réouverture est réservée à la direction : le serveur la refuse aux autres.
+   */
+  protected basculerVerrou(evaluation: Evaluation): void {
+    if (!evaluation.verrouillee) {
+      this.confirmer({
+        titre: "Verrouiller l'épreuve",
+        message: `Verrouiller « ${evaluation.libelle} » ?`,
+        precision:
+          'Les notes ne pourront plus être modifiées ni complétées, et seule la direction pourra rouvrir la saisie.',
+        action: 'Verrouiller',
+      }).subscribe(() => this.executer(this.api.verrouillerEvaluation(evaluation.id, true)));
+      return;
+    }
+    this.executer(this.api.verrouillerEvaluation(evaluation.id, false));
+  }
+
+  protected supprimerEvaluation(evaluationId: string, libelle: string): void {
+    this.confirmer({
+      titre: "Supprimer l'épreuve",
+      message: `Supprimer « ${libelle} » ?`,
+      precision: 'Toutes les notes saisies pour cette épreuve seront effacées.',
+    }).subscribe(() => this.executer(this.api.supprimerEvaluation(evaluationId)));
   }
 
   protected enregistrer(): void {

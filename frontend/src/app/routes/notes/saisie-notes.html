@@ -137,16 +137,37 @@
                     <th>
                       {{ e.libelle }}
                       @if (e.categorie === 'COMPOSITION') {
-                        <mat-chip highlighted>Compo</mat-chip>
+                        <mat-chip class="etat-info">Compo</mat-chip>
+                      }
+                      @if (e.verrouillee) {
+                        <mat-chip class="etat-attention" matTooltip="Notes figées">
+                          Verrouillée
+                        </mat-chip>
                       }
                       @if (modifiable()) {
                         <button
                           matIconButton
-                          aria-label="Supprimer l'épreuve"
-                          (click)="supprimerEvaluation(e.id)"
+                          [attr.aria-label]="
+                            e.verrouillee ? 'Déverrouiller l\'épreuve' : 'Verrouiller l\'épreuve'
+                          "
+                          [matTooltip]="
+                            e.verrouillee
+                              ? 'Rouvrir la saisie (direction seulement)'
+                              : 'Verrouiller : plus aucune note modifiable'
+                          "
+                          (click)="basculerVerrou(e)"
                         >
-                          <mat-icon>close</mat-icon>
+                          <mat-icon>{{ e.verrouillee ? 'lock' : 'lock_open' }}</mat-icon>
                         </button>
+                        @if (!e.verrouillee) {
+                          <button
+                            matIconButton
+                            aria-label="Supprimer l'épreuve"
+                            (click)="supprimerEvaluation(e.id, e.libelle)"
+                          >
+                            <mat-icon>close</mat-icon>
+                          </button>
+                        }
                       }
                     </th>
                   }
@@ -167,13 +188,15 @@
                           min="0"
                           max="20"
                           step="0.25"
-                          [disabled]="!modifiable() || saisie(ligne.inscriptionId, e.id).absent"
+                          [disabled]="
+                            !modifiable() || e.verrouillee || saisie(ligne.inscriptionId, e.id).absent
+                          "
                           [(ngModel)]="saisie(ligne.inscriptionId, e.id).valeur"
                           [name]="'n' + ligne.inscriptionId + '-' + e.id"
                           aria-label="Note"
                         />
                         <mat-checkbox
-                          [disabled]="!modifiable()"
+                          [disabled]="!modifiable() || e.verrouillee"
                           [(ngModel)]="saisie(ligne.inscriptionId, e.id).absent"
                           [name]="'a' + ligne.inscriptionId + '-' + e.id"
                           matTooltip="Absent : la note est exclue du calcul"

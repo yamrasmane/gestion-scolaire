@@ -32,6 +32,7 @@ import { AuthService } from '@core/authentication';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
 
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { aujourdhui, enIso } from '@shared/composants/dates';
@@ -64,6 +65,8 @@ import { aujourdhui, enIso } from '@shared/composants/dates';
 })
 export class Encaissement {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   private readonly auth = inject(AuthService);
   protected readonly contexte = inject(AnneeContexte);
 
@@ -124,7 +127,7 @@ export class Encaissement {
   protected fraisAAjouter: string | null = null;
   protected remise: { fraisId: string; type: TypeRemise; valeur: number; motif: string } | null =
     null;
-  protected annulation: { paiementId: string; motif: string } | null = null;
+  protected annulation: { paiementId: string; numeroRecu: string; motif: string } | null = null;
 
   constructor() {
     this.api.typesFrais(true).subscribe({
@@ -252,14 +255,25 @@ export class Encaissement {
   }
 
   protected retirerRemise(frais: FraisEleve): void {
-    this.executer(
-      this.api.appliquerRemise(frais.id, { type: null, valeur: null, motif: null }),
-      () => (this.remise = null),
+    this.confirmer({
+      titre: 'Retirer la remise',
+      message: `Retirer la remise accordée sur « ${frais.typeFraisLibelle} » ?`,
+      precision: "L'échéancier est recalculé sans la remise.",
+      action: 'Retirer la remise',
+    }).subscribe(() =>
+      this.executer(
+        this.api.appliquerRemise(frais.id, { type: null, valeur: null, motif: null }),
+        () => (this.remise = null),
+      ),
     );
   }
 
   protected supprimerFrais(frais: FraisEleve): void {
-    this.executer(this.api.supprimerFrais(frais.id));
+    this.confirmer({
+      titre: 'Supprimer le frais',
+      message: `Supprimer « ${frais.typeFraisLibelle} » de l'échéancier de cet élève ?`,
+      precision: 'Les échéances rattachées disparaissent avec lui.',
+    }).subscribe(() => this.executer(this.api.supprimerFrais(frais.id)));
   }
 
   /** La fenêtre ne se referme qu'une fois le règlement enregistré. */
@@ -286,7 +300,7 @@ export class Encaissement {
   }
 
   protected ouvrirAnnulation(paiement: Paiement): void {
-    this.annulation = { paiementId: paiement.id, motif: '' };
+    this.annulation = { paiementId: paiement.id, numeroRecu: paiement.numeroRecu, motif: '' };
   }
 
   protected annuler(): void {
@@ -294,10 +308,17 @@ export class Encaissement {
     if (!a || !a.motif.trim()) {
       return;
     }
-    this.executer(this.api.annulerPaiement(a.paiementId, a.motif), () => {
-      this.annulation = null;
-      this.information.set('Paiement annulé.');
-    });
+    this.confirmer({
+      titre: 'Annuler le règlement',
+      message: `Annuler le reçu ${a.numeroRecu} ?`,
+      precision: "Le reçu reste au journal, marqué annulé, et l'échéancier est recalculé.",
+      action: 'Annuler le règlement',
+    }).subscribe(() =>
+      this.executer(this.api.annulerPaiement(a.paiementId, a.motif), () => {
+        this.annulation = null;
+        this.information.set('Paiement annulé.');
+      }),
+    );
   }
 
   protected ouvrirRecu(paiement: Paiement, duplicata: boolean): void {

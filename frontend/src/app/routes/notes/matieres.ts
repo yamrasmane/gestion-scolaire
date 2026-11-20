@@ -21,6 +21,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 
 /** Catalogue des matières et affectation par classe (SF-09, SF-10). */
@@ -44,6 +45,8 @@ import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 })
 export class Matieres {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
 
   protected readonly colonnes = ['matiere', 'enseignant', 'coefficient', 'actions'];
@@ -119,7 +122,13 @@ export class Matieres {
   }
 
   protected supprimerMatiere(matiere: Matiere): void {
-    this.executer(this.api.supprimerMatiere(matiere.id), () => this.chargerMatieres());
+    this.confirmer({
+      titre: 'Supprimer la matière du catalogue',
+      message: `Supprimer « ${matiere.libelle} » ?`,
+      precision: "La suppression est refusée si la matière sert dans une classe ou un programme.",
+    }).subscribe(() =>
+      this.executer(this.api.supprimerMatiere(matiere.id), () => this.chargerMatieres()),
+    );
   }
 
   /** La fenêtre ne se referme qu'une fois la matière affectée. */
@@ -143,8 +152,15 @@ export class Matieres {
   }
 
   protected retirer(enseignement: Enseignement): void {
-    this.executer(this.api.supprimerEnseignement(enseignement.id), () =>
-      this.chargerEnseignements(),
+    this.confirmer({
+      titre: 'Retirer la matière de la classe',
+      message: `Retirer « ${enseignement.matiereLibelle} » de ${enseignement.classeNom} ?`,
+      precision: 'Les notes déjà saisies dans cette matière seront perdues.',
+      action: 'Retirer',
+    }).subscribe(() =>
+      this.executer(this.api.supprimerEnseignement(enseignement.id), () =>
+        this.chargerEnseignements(),
+      ),
     );
   }
 

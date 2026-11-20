@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
@@ -47,6 +48,8 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
 })
 export class GrilleTarifaire {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
 
   protected readonly colonnes = ['cible', 'categorie', 'frais', 'montant', 'actions'];
@@ -125,14 +128,28 @@ export class GrilleTarifaire {
   }
 
   protected supprimer(tarif: Tarif): void {
-    this.executer(this.api.supprimerTarif(tarif.id));
+    this.confirmer({
+      titre: 'Supprimer le tarif',
+      message:
+        `Supprimer le tarif « ${tarif.typeFraisLibelle} » ` +
+        `(${tarif.classeNom ?? tarif.niveauCode ?? 'toutes classes'}) ?`,
+      precision: 'Les échéanciers déjà calculés ne changent pas.',
+    }).subscribe(() => this.executer(this.api.supprimerTarif(tarif.id)));
   }
 
   protected vider(): void {
     const anneeId = this.contexte.anneeId();
-    if (anneeId) {
-      this.executer(this.api.viderGrille(anneeId));
+    if (!anneeId) {
+      return;
     }
+    this.confirmer({
+      titre: 'Vider la grille tarifaire',
+      message: "Supprimer tous les tarifs de l'année de travail ?",
+      precision: 'La grille sera entièrement à ressaisir.',
+      action: 'Vider la grille',
+    }).subscribe(() => {
+      this.executer(this.api.viderGrille(anneeId));
+    });
   }
 
   protected dupliquer(): void {

@@ -22,6 +22,7 @@ import {
   messageErreur,
 } from '@core/api.service';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { AnneeRequise } from '@shared/composants/annee-requise';
 
@@ -53,6 +54,8 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
 })
 export class Programmes {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
 
   protected readonly colonnes = ['matiere', 'coefficient', 'actions'];
@@ -139,7 +142,12 @@ export class Programmes {
   }
 
   protected retirer(ligne: LigneProgramme): void {
-    this.executer(this.api.retirerDuProgramme(ligne.id), () => this.charger());
+    this.confirmer({
+      titre: 'Retirer la matière du programme',
+      message: `Retirer « ${ligne.matiereLibelle} » du programme de ${ligne.niveauLibelle} ?`,
+      precision: 'Les classes déjà créées gardent cette matière ; seul le programme change.',
+      action: 'Retirer',
+    }).subscribe(() => this.executer(this.api.retirerDuProgramme(ligne.id), () => this.charger()));
   }
 
   /** Complète les classes déjà créées dans ce niveau pour l'année de travail. */

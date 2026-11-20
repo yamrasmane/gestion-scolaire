@@ -80,6 +80,9 @@ export class BoutonFormulaire {
       width: this.largeur(),
       maxWidth: '96vw',
       maxHeight: '95vh',
+      // Une fenêtre ne se ferme qu'avec ses propres boutons : un clic à
+      // côté ne doit pas faire perdre une saisie en cours.
+      disableClose: true,
       autoFocus: 'first-tabbable',
     });
   }

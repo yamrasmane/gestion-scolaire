@@ -93,6 +93,9 @@ export class BoutonDocument {
       maxWidth: '96vw',
       height: '92vh',
       maxHeight: '95vh',
+      // Une fenêtre ne se ferme qu'avec ses propres boutons : un clic à
+      // côté ne doit pas faire perdre une saisie en cours.
+      disableClose: true,
       autoFocus: false,
       restoreFocus: true,
     });

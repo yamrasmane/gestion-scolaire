@@ -30,6 +30,12 @@ class NotesIntegrationTest {
 
     private static final RequestPostProcessor DIRECTEUR = utilisateur("le.directeur", "DIRECTEUR");
     private static final RequestPostProcessor ENSEIGNANT = utilisateur("prof.math", "ENSEIGNANT");
+    /** Professeur titulaire des maths : reconnu par le courriel de sa fiche. */
+    private static final RequestPostProcessor TITULAIRE = jwt()
+            .jwt(jeton -> jeton.subject("id-prof.titulaire")
+                    .claim("preferred_username", "prof.titulaire")
+                    .claim("email", "issa.sawadogo@lycee.bf"))
+            .authorities(new SimpleGrantedAuthority("ROLE_ENSEIGNANT"));
 
     @Autowired
     private MockMvc mvc;
@@ -228,8 +234,10 @@ class NotesIntegrationTest {
         reglerComposition(false, null);
         UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
         saisir(maths, note(awa, devoir, "12", false));
+        confierLesMathsAuTitulaire();
 
-        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+        // Le professeur titulaire verrouille quand il a fini sa saisie.
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(TITULAIRE)
                         .param("verrouillee", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.verrouillee").value(true));
@@ -237,9 +245,10 @@ class NotesIntegrationTest {
         // Plus de correction possible, ni d'ajout de note, ni de suppression.
         mvc.perform(put(grilleDe(maths)).with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"notes\": [%s]}".formatted(note(awa, devoir, "18", false))))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(containsString("verrouillée")));
         mvc.perform(delete("/api/evaluations/" + devoir).with(DIRECTEUR))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isConflict());
 
         // La note d'avant le verrou reste celle qui compte.
         mvc.perform(get(grilleDe(maths)).with(DIRECTEUR))
@@ -251,13 +260,15 @@ class NotesIntegrationTest {
     void un_enseignant_ne_peut_pas_rouvrir_une_epreuve_qu_il_a_verrouillee() throws Exception {
         reglerComposition(false, null);
         UUID devoir = creerEvaluation(maths, "DEVOIR", "Devoir 1");
-        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+        confierLesMathsAuTitulaire();
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(TITULAIRE)
                         .param("verrouillee", "true"))
                 .andExpect(status().isOk());
 
-        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(ENSEIGNANT)
+        mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(TITULAIRE)
                         .param("verrouillee", "false"))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(containsString("Seule la direction")));
 
         // La direction, elle, peut rouvrir : la saisie redevient possible.
         mvc.perform(put("/api/evaluations/" + devoir + "/verrou").with(DIRECTEUR)
@@ -268,6 +279,24 @@ class NotesIntegrationTest {
     }
 
     // ---------- Outils ----------
+
+    /** Crée la fiche du professeur titulaire et lui confie les mathématiques. */
+    private void confierLesMathsAuTitulaire() throws Exception {
+        mvc.perform(post("/api/personnel").with(DIRECTEUR).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"matricule": "P-MATH", "nom": "SAWADOGO", "prenom": "Issa",
+                                 "email": "issa.sawadogo@lycee.bf", "telephone": "70010203",
+                                 "role": "ENSEIGNANT"}"""))
+                .andExpect(status().isCreated());
+        UUID titulaire = jdbc.queryForObject(
+                "SELECT id FROM personnel WHERE matricule = 'P-MATH'", UUID.class);
+        mvc.perform(put("/api/classes/" + classe + "/affectations").with(DIRECTEUR)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"affectations": [{"enseignementId": "%s", "enseignantId": "%s"}]}"""
+                                .formatted(maths, titulaire)))
+                .andExpect(status().isOk());
+    }
 
     private static RequestPostProcessor utilisateur(String nom, String role) {
         return jwt()

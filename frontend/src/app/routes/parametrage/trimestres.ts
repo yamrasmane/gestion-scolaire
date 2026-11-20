@@ -24,6 +24,7 @@ import {
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
+import { confirmation } from '@shared/composants/confirmation';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
 import { enIso } from '@shared/composants/dates';
 import { AnneeRequise } from '@shared/composants/annee-requise';
@@ -53,6 +54,8 @@ type ChoixTrimestre = 'ANNEE' | 'AVEC' | 'SANS';
 })
 export class Trimestres {
   private readonly api = inject(ApiService);
+  /** Demande confirmation avant toute suppression. */
+  private readonly confirmer = confirmation();
   protected readonly contexte = inject(AnneeContexte);
   protected readonly peutModifier = inject(AuthService).aUnRole(...DIRECTION);
 
@@ -153,7 +156,12 @@ export class Trimestres {
   }
 
   protected supprimerCycle(t: Trimestre, cycle: Cycle): void {
-    this.executer(this.api.supprimerReglageCycle(t.id, cycle));
+    this.confirmer({
+      titre: 'Supprimer le réglage de composition',
+      message: `Supprimer le réglage du ${cycle === 'PREMIER' ? 'premier' : 'second'} cycle`
+        + ` pour le trimestre ${t.numero} ?`,
+      precision: 'Le trimestre reprendra le réglage par défaut de l\'année.',
+    }).subscribe(() => this.executer(this.api.supprimerReglageCycle(t.id, cycle)));
   }
 
   protected basculerCloture(t: Trimestre): void {
