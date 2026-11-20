@@ -2,6 +2,7 @@ package bf.lycee.gestion.web;
 
 import bf.lycee.gestion.security.Roles;
 import bf.lycee.gestion.service.AnneeScolaireService;
+import bf.lycee.gestion.service.ParametresAnnuelsService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnneeScolaireController {
 
     private final AnneeScolaireService service;
+    private final ParametresAnnuelsService parametres;
 
-    public AnneeScolaireController(AnneeScolaireService service) {
+    public AnneeScolaireController(AnneeScolaireService service,
+                                   ParametresAnnuelsService parametres) {
         this.service = service;
+        this.parametres = parametres;
     }
 
     @GetMapping
@@ -46,6 +51,18 @@ public class AnneeScolaireController {
     @PreAuthorize(Roles.DIRECTION)
     public AnneeScolaireDto.Vue activer(@PathVariable UUID id) {
         return AnneeScolaireDto.Vue.de(service.activer(id));
+    }
+
+    /**
+     * Reprend sur cette année les paramètres d'une autre : programmes des
+     * niveaux, appréciations, grille tarifaire et plans de paiement. Ce que
+     * l'année contenait est remplacé.
+     */
+    @PostMapping("/{id}/parametres/copie")
+    @PreAuthorize(Roles.DIRECTION)
+    public AnneeScolaireDto.CopieParametres copierParametres(@PathVariable UUID id,
+                                                             @RequestParam UUID depuis) {
+        return parametres.copier(depuis, id);
     }
 
     @GetMapping("/{id}/historique")

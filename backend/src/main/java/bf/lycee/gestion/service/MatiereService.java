@@ -1,11 +1,13 @@
 package bf.lycee.gestion.service;
 
+import bf.lycee.gestion.domain.AnneeScolaire;
 import bf.lycee.gestion.domain.Classe;
 import bf.lycee.gestion.domain.Enseignement;
 import bf.lycee.gestion.domain.Matiere;
 import bf.lycee.gestion.domain.Niveau;
 import bf.lycee.gestion.domain.Personnel;
 import bf.lycee.gestion.domain.ProgrammeNiveau;
+import bf.lycee.gestion.repository.AnneeScolaireRepository;
 import bf.lycee.gestion.repository.ClasseRepository;
 import bf.lycee.gestion.repository.EnseignementRepository;
 import bf.lycee.gestion.repository.MatiereRepository;
@@ -31,16 +33,19 @@ public class MatiereService {
     private final PersonnelRepository personnels;
     private final NiveauRepository niveaux;
     private final ProgrammeNiveauRepository programmes;
+    private final AnneeScolaireRepository annees;
 
     public MatiereService(MatiereRepository matieres, EnseignementRepository enseignements,
                           ClasseRepository classes, PersonnelRepository personnels,
-                          NiveauRepository niveaux, ProgrammeNiveauRepository programmes) {
+                          NiveauRepository niveaux, ProgrammeNiveauRepository programmes,
+                          AnneeScolaireRepository annees) {
         this.matieres = matieres;
         this.enseignements = enseignements;
         this.classes = classes;
         this.personnels = personnels;
         this.niveaux = niveaux;
         this.programmes = programmes;
+        this.annees = annees;
     }
 
     @Transactional(readOnly = true)
@@ -90,24 +95,51 @@ public class MatiereService {
     // ---------- Programme d'un niveau (SF-09) ----------
 
     @Transactional(readOnly = true)
-    public List<NotesDto.LigneProgrammeVue> listerProgramme(UUID niveauId) {
-        return programmes.findByNiveauIdOrderByMatiereLibelle(niveauId).stream()
+    public List<NotesDto.LigneProgrammeVue> listerProgramme(UUID anneeId, UUID niveauId) {
+        return programmes.findByAnneeScolaireIdAndNiveauIdOrderByMatiereLibelle(anneeId, niveauId)
+                .stream()
                 .map(MatiereService::versVue)
                 .toList();
     }
 
-    public NotesDto.LigneProgrammeVue ajouterAuProgramme(UUID niveauId,
+    public NotesDto.LigneProgrammeVue ajouterAuProgramme(UUID anneeId, UUID niveauId,
                                                          NotesDto.LigneProgrammeSaisie saisie) {
         Niveau niveau = niveau(niveauId);
-        if (programmes.findByNiveauIdAndMatiereId(niveauId, saisie.matiereId()).isPresent()) {
+        if (programmes.findByAnneeScolaireIdAndNiveauIdAndMatiereId(anneeId, niveauId,
+                saisie.matiereId()).isPresent()) {
             throw new RegleMetierException("Cette matière figure déjà au programme du niveau "
                     + niveau.getCode());
         }
         ProgrammeNiveau ligne = new ProgrammeNiveau();
+        ligne.setAnneeScolaire(annee(anneeId));
         ligne.setNiveau(niveau);
         ligne.setMatiere(matiere(saisie.matiereId()));
         ligne.setCoefficient(saisie.coefficient());
         return versVue(programmes.save(ligne));
+    }
+
+    /**
+     * Reprend le programme d'une autre année : c'est ainsi qu'une année
+     * nouvelle hérite des matières et coefficients de la précédente, sans que
+     * les modifications ultérieures ne remontent en arrière.
+     */
+    public int copierProgrammes(UUID anneeSourceId, UUID anneeCibleId) {
+        AnneeScolaire cible = annee(anneeCibleId);
+        List<ProgrammeNiveau> source = programmes.findByAnneeScolaireId(anneeSourceId);
+        if (source.isEmpty()) {
+            return 0;
+        }
+        programmes.deleteAll(programmes.findByAnneeScolaireId(anneeCibleId));
+        programmes.flush();
+        for (ProgrammeNiveau origine : source) {
+            ProgrammeNiveau copie = new ProgrammeNiveau();
+            copie.setAnneeScolaire(cible);
+            copie.setNiveau(origine.getNiveau());
+            copie.setMatiere(origine.getMatiere());
+            copie.setCoefficient(origine.getCoefficient());
+            programmes.save(copie);
+        }
+        return source.size();
     }
 
     public NotesDto.LigneProgrammeVue modifierLigneProgramme(UUID ligneId,
@@ -133,7 +165,8 @@ public class MatiereService {
     public NotesDto.ApplicationProgramme appliquerProgramme(UUID niveauId, UUID anneeId,
                                                             boolean alignerCoefficients) {
         Niveau niveau = niveau(niveauId);
-        List<ProgrammeNiveau> programme = programmes.findByNiveauIdOrderByMatiereLibelle(niveauId);
+        List<ProgrammeNiveau> programme = programmes
+                .findByAnneeScolaireIdAndNiveauIdOrderByMatiereLibelle(anneeId, niveauId);
         if (programme.isEmpty()) {
             throw new RegleMetierException("Le programme du niveau " + niveau.getCode() + " est vide");
         }
@@ -177,7 +210,8 @@ public class MatiereService {
     /** Dote une classe nouvellement créée des matières de son niveau. */
     public int doterDuProgramme(Classe classe) {
         List<ProgrammeNiveau> programme = programmes
-                .findByNiveauIdOrderByMatiereLibelle(classe.getNiveau().getId());
+                .findByAnneeScolaireIdAndNiveauIdOrderByMatiereLibelle(
+                        classe.getAnneeScolaire().getId(), classe.getNiveau().getId());
         for (ProgrammeNiveau ligne : programme) {
             Enseignement enseignement = new Enseignement();
             enseignement.setClasse(classe);
@@ -264,6 +298,11 @@ public class MatiereService {
                 .orElseThrow(() -> new IntrouvableException("Matière introuvable : " + id));
     }
 
+    private AnneeScolaire annee(UUID id) {
+        return annees.findById(id)
+                .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + id));
+    }
+
     private Niveau niveau(UUID id) {
         return niveaux.findById(id)
                 .orElseThrow(() -> new IntrouvableException("Niveau introuvable : " + id));
@@ -279,7 +318,8 @@ public class MatiereService {
     }
 
     private static NotesDto.LigneProgrammeVue versVue(ProgrammeNiveau ligne) {
-        return new NotesDto.LigneProgrammeVue(ligne.getId(), ligne.getNiveau().getId(),
+        return new NotesDto.LigneProgrammeVue(ligne.getId(), ligne.getAnneeScolaire().getId(),
+                ligne.getNiveau().getId(),
                 ligne.getNiveau().getCode(), ligne.getNiveau().getLibelle(),
                 ligne.getMatiere().getId(), ligne.getMatiere().getCode(),
                 ligne.getMatiere().getLibelle(), ligne.getCoefficient());

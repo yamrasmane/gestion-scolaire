@@ -58,4 +58,9 @@ public final class AnneeScolaireDto {
             String libelle,
             boolean actif) {
     }
+
+    /** Compte rendu d'une reprise de paramètres d'une année sur une autre. */
+    public record CopieParametres(String anneeSource, int lignesProgramme, int appreciations,
+                                  int tarifs, int plans) {
+    }
 }

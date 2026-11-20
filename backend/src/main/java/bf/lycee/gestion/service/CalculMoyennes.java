@@ -145,24 +145,4 @@ public final class CalculMoyennes {
 
     public record Rang(Integer valeur, boolean exAequo) {
     }
-
-    /** Décision proposée au conseil de classe d'après la moyenne générale (SF-18). */
-    public static String mention(BigDecimal moyenneGenerale) {
-        if (moyenneGenerale == null) {
-            return null;
-        }
-        if (moyenneGenerale.compareTo(new BigDecimal("16")) >= 0) {
-            return "Félicitations";
-        }
-        if (moyenneGenerale.compareTo(new BigDecimal("14")) >= 0) {
-            return "Encouragements";
-        }
-        if (moyenneGenerale.compareTo(new BigDecimal("12")) >= 0) {
-            return "Tableau d'honneur";
-        }
-        if (moyenneGenerale.compareTo(new BigDecimal("8")) < 0) {
-            return "Avertissement";
-        }
-        return null;
-    }
 }

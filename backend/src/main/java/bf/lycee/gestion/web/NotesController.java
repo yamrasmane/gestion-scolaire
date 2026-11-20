@@ -1,7 +1,9 @@
 package bf.lycee.gestion.web;
 
+import bf.lycee.gestion.domain.enums.PorteeAppreciation;
 import bf.lycee.gestion.security.Roles;
 import bf.lycee.gestion.service.BulletinService;
+import bf.lycee.gestion.service.AppreciationService;
 import bf.lycee.gestion.service.EvaluationService;
 import bf.lycee.gestion.service.MatiereService;
 import jakarta.validation.Valid;
@@ -29,12 +31,15 @@ public class NotesController {
 
     private final MatiereService matieres;
     private final EvaluationService evaluations;
+    private final AppreciationService appreciations;
     private final BulletinService bulletins;
 
     public NotesController(MatiereService matieres, EvaluationService evaluations,
-                           BulletinService bulletins) {
+                           BulletinService bulletins,
+                           AppreciationService appreciations) {
         this.matieres = matieres;
         this.evaluations = evaluations;
+        this.appreciations = appreciations;
         this.bulletins = bulletins;
     }
 
@@ -68,17 +73,20 @@ public class NotesController {
 
     // ---------- Programme d'un niveau (SF-09) ----------
 
-    @GetMapping("/niveaux/{niveauId}/programme")
-    public List<NotesDto.LigneProgrammeVue> programme(@PathVariable UUID niveauId) {
-        return matieres.listerProgramme(niveauId);
+    /** Le programme appartient à une année : elle fait partie de l'adresse. */
+    @GetMapping("/annees-scolaires/{anneeId}/niveaux/{niveauId}/programme")
+    public List<NotesDto.LigneProgrammeVue> programme(@PathVariable UUID anneeId,
+                                                      @PathVariable UUID niveauId) {
+        return matieres.listerProgramme(anneeId, niveauId);
     }
 
-    @PostMapping("/niveaux/{niveauId}/programme")
+    @PostMapping("/annees-scolaires/{anneeId}/niveaux/{niveauId}/programme")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Roles.DIRECTION)
     public NotesDto.LigneProgrammeVue ajouterAuProgramme(
-            @PathVariable UUID niveauId, @Valid @RequestBody NotesDto.LigneProgrammeSaisie saisie) {
-        return matieres.ajouterAuProgramme(niveauId, saisie);
+            @PathVariable UUID anneeId, @PathVariable UUID niveauId,
+            @Valid @RequestBody NotesDto.LigneProgrammeSaisie saisie) {
+        return matieres.ajouterAuProgramme(anneeId, niveauId, saisie);
     }
 
     @PutMapping("/programme/{ligneId}")
@@ -96,13 +104,46 @@ public class NotesController {
     }
 
     /** Applique le programme du niveau aux classes de l'année (SF-09). */
-    @PostMapping("/niveaux/{niveauId}/programme/application")
+    @PostMapping("/annees-scolaires/{anneeId}/niveaux/{niveauId}/programme/application")
     @PreAuthorize(Roles.DIRECTION)
     public NotesDto.ApplicationProgramme appliquerProgramme(
+            @PathVariable UUID anneeId,
             @PathVariable UUID niveauId,
-            @RequestParam UUID anneeId,
             @RequestParam(defaultValue = "false") boolean alignerCoefficients) {
         return matieres.appliquerProgramme(niveauId, anneeId, alignerCoefficients);
+    }
+
+    // ---------- Appréciations du bulletin (SF-17) ----------
+
+    /** Barème d'appréciations d'une année, pour les matières ou la moyenne générale. */
+    @GetMapping("/annees-scolaires/{anneeId}/appreciations/{portee}")
+    public List<NotesDto.AppreciationVue> appreciations(@PathVariable UUID anneeId,
+                                                        @PathVariable PorteeAppreciation portee) {
+        return appreciations.lister(anneeId, portee);
+    }
+
+    @PostMapping("/annees-scolaires/{anneeId}/appreciations/{portee}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.AppreciationVue ajouterAppreciation(
+            @PathVariable UUID anneeId, @PathVariable PorteeAppreciation portee,
+            @Valid @RequestBody NotesDto.AppreciationSaisie saisie) {
+        return appreciations.ajouter(anneeId, portee, saisie);
+    }
+
+    @PutMapping("/appreciations/{intervalleId}")
+    @PreAuthorize(Roles.DIRECTION)
+    public NotesDto.AppreciationVue modifierAppreciation(
+            @PathVariable UUID intervalleId,
+            @Valid @RequestBody NotesDto.AppreciationSaisie saisie) {
+        return appreciations.modifier(intervalleId, saisie);
+    }
+
+    @DeleteMapping("/appreciations/{intervalleId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize(Roles.DIRECTION)
+    public void supprimerAppreciation(@PathVariable UUID intervalleId) {
+        appreciations.supprimer(intervalleId);
     }
 
     // ---------- Affectation des professeurs (SF-10) ----------

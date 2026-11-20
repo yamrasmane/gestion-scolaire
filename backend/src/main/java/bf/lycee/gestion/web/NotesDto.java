@@ -1,6 +1,7 @@
 package bf.lycee.gestion.web;
 
 import bf.lycee.gestion.domain.enums.CategorieEvaluation;
+import bf.lycee.gestion.domain.enums.PorteeAppreciation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -47,7 +48,8 @@ public final class NotesDto {
 
     // ---------- Programme d'un niveau (SF-09) ----------
 
-    public record LigneProgrammeVue(UUID id, UUID niveauId, String niveauCode, String niveauLibelle,
+    public record LigneProgrammeVue(UUID id, UUID anneeScolaireId, UUID niveauId, String niveauCode,
+                                    String niveauLibelle,
                                     UUID matiereId, String matiereCode, String matiereLibelle,
                                     BigDecimal coefficient) {
     }
@@ -111,6 +113,17 @@ public final class NotesDto {
                                 BigDecimal composition, BigDecimal moyenne, BigDecimal coefficient,
                                 BigDecimal moyenneCoefficientee, Integer rang, boolean exAequo,
                                 boolean nonClasse, String appreciation) {
+    }
+
+    // ---------- Appréciations du bulletin (SF-17) ----------
+
+    public record AppreciationVue(UUID id, UUID anneeScolaireId, PorteeAppreciation portee,
+                                  BigDecimal borneMin, BigDecimal borneMax, String libelle) {
+    }
+
+    public record AppreciationSaisie(@NotNull @DecimalMin("0") @DecimalMax("20") BigDecimal borneMin,
+                                     @NotNull @DecimalMin("0") @DecimalMax("20") BigDecimal borneMax,
+                                     @NotBlank @Size(max = 60) String libelle) {
     }
 
     public record StatistiquesClasse(BigDecimal plusForteMoyenne, BigDecimal plusFaibleMoyenne,

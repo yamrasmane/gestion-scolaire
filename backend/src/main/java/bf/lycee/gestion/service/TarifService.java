@@ -87,6 +87,36 @@ public class TarifService {
     // ---------- Grille tarifaire ----------
 
     @Transactional(readOnly = true)
+    /**
+     * Reprend la grille d'une autre année. Les tarifs visant une classe
+     * précise ne sont pas repris : cette classe appartient à l'année
+     * d'origine. Les tarifs par niveau et les tarifs généraux, eux, se
+     * transposent tels quels.
+     */
+    public int copierGrille(UUID anneeSourceId, UUID anneeCibleId) {
+        AnneeScolaire cible = annees.findById(anneeCibleId)
+                .orElseThrow(() -> new IntrouvableException(
+                        "Année scolaire introuvable : " + anneeCibleId));
+        List<GrilleTarifaire> source = grilles.findByAnneeScolaireId(anneeSourceId).stream()
+                .filter(tarif -> tarif.getClasse() == null)
+                .toList();
+        if (source.isEmpty()) {
+            return 0;
+        }
+        grilles.deleteAll(grilles.findByAnneeScolaireId(anneeCibleId));
+        grilles.flush();
+        for (GrilleTarifaire origine : source) {
+            GrilleTarifaire copie = new GrilleTarifaire();
+            copie.setAnneeScolaire(cible);
+            copie.setTypeFrais(origine.getTypeFrais());
+            copie.setNiveau(origine.getNiveau());
+            copie.setCategorie(origine.getCategorie());
+            copie.setMontant(origine.getMontant());
+            grilles.save(copie);
+        }
+        return source.size();
+    }
+
     public List<FinancesDto.TarifVue> listerGrille(UUID anneeId) {
         return grilles.findByAnneeScolaireId(anneeId).stream()
                 .map(TarifService::versVue)

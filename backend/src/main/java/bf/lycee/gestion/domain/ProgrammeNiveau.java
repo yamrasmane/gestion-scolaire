@@ -12,8 +12,9 @@ import lombok.Setter;
 import org.hibernate.envers.Audited;
 
 /**
- * Matière enseignée à un niveau (« type de classe ») et son coefficient.
- * Appliqué à une classe, le programme crée ses enseignements (SF-09).
+ * Matière enseignée à un niveau (« type de classe ») et son coefficient, pour
+ * une année scolaire donnée. Appliqué à une classe, le programme crée ses
+ * enseignements (SF-09).
  */
 @Entity
 @Table(name = "programme_niveau")
@@ -21,6 +22,10 @@ import org.hibernate.envers.Audited;
 @Getter
 @Setter
 public class ProgrammeNiveau extends AbstractAuditingEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "annee_scolaire_id", nullable = false)
+    private AnneeScolaire anneeScolaire;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "niveau_id", nullable = false)

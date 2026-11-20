@@ -46,6 +46,60 @@ public class PlanPaiementService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Reprend les plans d'une autre année, avec leurs tranches. Les plans
+     * visant une classe précise sont laissés de côté — cette classe
+     * appartient à l'année d'origine. Les dates d'échéance sont décalées du
+     * nombre d'années qui sépare les deux rentrées, pour tomber au même
+     * moment du calendrier scolaire.
+     */
+    public int copierPlans(UUID anneeSourceId, UUID anneeCibleId) {
+        AnneeScolaire source = annee(anneeSourceId);
+        AnneeScolaire cible = annee(anneeCibleId);
+        List<PlanPaiement> aCopier = plans.findByAnneeScolaireIdOrderByLibelle(anneeSourceId).stream()
+                .filter(plan -> plan.getClasse() == null)
+                .toList();
+        if (aCopier.isEmpty()) {
+            return 0;
+        }
+        int decalage = cible.getDateDebut().getYear() - source.getDateDebut().getYear();
+        for (PlanPaiement plan : plans.findByAnneeScolaireIdOrderByLibelle(anneeCibleId)) {
+            tranches.deleteByPlanPaiementId(plan.getId());
+            plans.delete(plan);
+        }
+        plans.flush();
+
+        for (PlanPaiement origine : aCopier) {
+            PlanPaiement copie = new PlanPaiement();
+            copie.setAnneeScolaire(cible);
+            copie.setLibelle(origine.getLibelle());
+            copie.setNiveau(origine.getNiveau());
+            copie.setCategorie(origine.getCategorie());
+            copie.setModeRepartition(origine.getModeRepartition());
+            copie.setParDefaut(origine.isParDefaut());
+            copie.setMontantMinInscription(origine.getMontantMinInscription());
+            plans.save(copie);
+            for (TranchePaiement tranche : tranches
+                    .findByPlanPaiementIdOrderByNumero(origine.getId())) {
+                TranchePaiement nouvelle = new TranchePaiement();
+                nouvelle.setPlanPaiement(copie);
+                nouvelle.setNumero(tranche.getNumero());
+                nouvelle.setLibelle(tranche.getLibelle());
+                nouvelle.setDateEcheance(tranche.getDateEcheance() == null ? null
+                        : tranche.getDateEcheance().plusYears(decalage));
+                nouvelle.setPourcentage(tranche.getPourcentage());
+                nouvelle.setMontant(tranche.getMontant());
+                tranches.save(nouvelle);
+            }
+        }
+        return aCopier.size();
+    }
+
+    private AnneeScolaire annee(UUID id) {
+        return annees.findById(id)
+                .orElseThrow(() -> new IntrouvableException("Année scolaire introuvable : " + id));
+    }
+
     public List<FinancesDto.PlanVue> lister(UUID anneeId) {
         return plans.findByAnneeScolaireIdOrderByLibelle(anneeId).stream().map(this::versVue).toList();
     }

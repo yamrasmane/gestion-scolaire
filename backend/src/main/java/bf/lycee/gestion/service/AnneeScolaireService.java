@@ -25,10 +25,13 @@ public class AnneeScolaireService {
 
     private final AnneeScolaireRepository repository;
     private final EntityManager entityManager;
+    private final ParametresAnnuelsService parametres;
 
-    public AnneeScolaireService(AnneeScolaireRepository repository, EntityManager entityManager) {
+    public AnneeScolaireService(AnneeScolaireRepository repository, EntityManager entityManager,
+                                ParametresAnnuelsService parametres) {
         this.repository = repository;
         this.entityManager = entityManager;
+        this.parametres = parametres;
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +61,12 @@ public class AnneeScolaireService {
                 saisie.poidsCompositionDefaut() != null ? saisie.poidsCompositionDefaut() : POIDS_PAR_DEFAUT);
         annee.setBloquerBulletinImpaye(Boolean.TRUE.equals(saisie.bloquerBulletinImpaye()));
         annee.setActif(false);
-        return repository.save(annee);
+        AnneeScolaire creee = repository.save(annee);
+        // L'année naît avec ses propres paramètres : repris de l'année
+        // précédente s'il y en a une, sinon posés par défaut. Chaque année a
+        // ainsi sa version, qu'on peut modifier sans toucher aux précédentes.
+        parametres.initialiser(creee);
+        return creee;
     }
 
     /** Active une année et désactive la précédente : une seule année active à la fois. */

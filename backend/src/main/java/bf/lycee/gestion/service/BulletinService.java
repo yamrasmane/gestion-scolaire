@@ -47,11 +47,13 @@ public class BulletinService {
     private final BulletinRepository bulletins;
     private final EvaluationService evaluationService;
     private final FacturationService facturation;
+    private final AppreciationService appreciations;
 
     public BulletinService(EnseignementRepository enseignements, EvaluationRepository evaluations,
                            NoteRepository notes, InscriptionRepository inscriptions,
                            TrimestreRepository trimestres, BulletinRepository bulletins,
-                           EvaluationService evaluationService, FacturationService facturation) {
+                           EvaluationService evaluationService, FacturationService facturation,
+                           AppreciationService appreciations) {
         this.enseignements = enseignements;
         this.evaluations = evaluations;
         this.notes = notes;
@@ -60,6 +62,7 @@ public class BulletinService {
         this.bulletins = bulletins;
         this.evaluationService = evaluationService;
         this.facturation = facturation;
+        this.appreciations = appreciations;
     }
 
     // ---------- API ----------
@@ -73,7 +76,7 @@ public class BulletinService {
                 .map(e -> new NotesDto.LigneClassement(e.inscription().getId(),
                         e.inscription().getEleve().getMatricule(), e.inscription().getEleve().getNom(),
                         e.inscription().getEleve().getPrenom(), e.moyenneGenerale(), e.rang(),
-                        e.exAequo(), CalculMoyennes.mention(e.moyenneGenerale()),
+                        e.exAequo(), resultat.bareme().mention(e.moyenneGenerale()),
                         bloqueImpaye(e.inscription())))
                 .toList();
     }
@@ -109,7 +112,7 @@ public class BulletinService {
             bulletin.setExAequo(eleve.exAequo());
             bulletin.setBloqueImpaye(bloqueImpaye(eleve.inscription()));
             if (bulletin.getMention() == null) {
-                bulletin.setMention(CalculMoyennes.mention(eleve.moyenneGenerale()));
+                bulletin.setMention(resultat.bareme().mention(eleve.moyenneGenerale()));
             }
             bulletins.save(bulletin);
         }
@@ -134,6 +137,9 @@ public class BulletinService {
                 .orElseThrow(() -> new IntrouvableException("Trimestre introuvable : " + trimestreId));
         List<Enseignement> matieres = enseignements.findByClasseIdOrderByMatiereLibelle(classeId);
         List<Inscription> eleves = inscriptions.findByClasseIdOrderByEleveNomAscElevePrenomAsc(classeId);
+
+        AppreciationService.Bareme bareme = appreciations.baremeDe(
+                trimestre.getAnneeScolaire().getId());
 
         CompositionEffective composition = matieres.isEmpty()
                 ? new CompositionEffective(false, BigDecimal.ONE, "ANNEE")
@@ -215,7 +221,10 @@ public class BulletinService {
                         resultat.moyenne(), enseignement.getCoefficient(), moyenneCoefficientee,
                         resultat.nonClasse() ? null : rang.valeur(),
                         !resultat.nonClasse() && rang.exAequo(), resultat.nonClasse(),
-                        resultat.absentComposition() ? "Absent à la composition" : null));
+                        // L'appréciation vient du barème de l'année ; l'absence
+                        // à la composition prime, car elle explique la moyenne.
+                        resultat.absentComposition() ? "Absent à la composition"
+                                : bareme.appreciationMatiere(resultat.moyenne())));
             }
 
             BigDecimal moyenneGenerale = CalculMoyennes.generale(totalPoints, totalCoefficients);
@@ -245,7 +254,7 @@ public class BulletinService {
                 moyennes.isEmpty() ? null : CalculMoyennes.moyenne(moyennes),
                 eleves.size());
 
-        return new ResultatClasse(trimestre, composition, finaux, statistiques);
+        return new ResultatClasse(trimestre, composition, finaux, statistiques, bareme);
     }
 
     private static Comparator<Inscription> comparateurMoyenne(
@@ -292,7 +301,8 @@ public class BulletinService {
                 resultat.composition().avecComposition(), resultat.composition().poidsComposition(),
                 eleve.lignes(), eleve.totalCoefficients(), eleve.totalPoints(),
                 eleve.moyenneGenerale(), eleve.rang(), eleve.exAequo(),
-                fige.map(Bulletin::getMention).orElseGet(() -> CalculMoyennes.mention(eleve.moyenneGenerale())),
+                fige.map(Bulletin::getMention)
+                        .orElseGet(() -> resultat.bareme().mention(eleve.moyenneGenerale())),
                 fige.map(Bulletin::getAppreciationConseil).orElse(null),
                 bloqueImpaye(inscription), resultat.statistiques(), observations);
     }
@@ -302,7 +312,9 @@ public class BulletinService {
                                  BigDecimal moyenneGenerale, Integer rang, boolean exAequo) {
     }
 
+    /** Le barème voyage avec le résultat : il est lu une fois par classe. */
     private record ResultatClasse(Trimestre trimestre, CompositionEffective composition,
-                                  List<ResultatEleve> eleves, NotesDto.StatistiquesClasse statistiques) {
+                                  List<ResultatEleve> eleves, NotesDto.StatistiquesClasse statistiques,
+                                  AppreciationService.Bareme bareme) {
     }
 }
