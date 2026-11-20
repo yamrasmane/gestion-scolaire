@@ -205,6 +205,17 @@ règle dans `application.yml`, sous `lycee.etablissement`.
 export RAPPORTS_DOSSIER=/opt/lycee/rapports   # puis y déposer bulletin.jasper, recu.jasper, …
 ```
 
+## Garde-fous de la saisie
+
+Toute suppression demande confirmation dans une fenêtre qui nomme ce qui va disparaître et sa
+conséquence (notes effacées, échéances supprimées…). Les fenêtres ne se ferment pas au clic à côté
+— un geste trop facile quand une saisie est en cours ; la touche Échap, elle, ferme toujours.
+
+Une **épreuve peut être verrouillée** quand sa saisie est finie : ses notes ne sont alors plus
+modifiables ni complétables, et l'épreuve ne peut plus être supprimée. Le professeur titulaire
+verrouille lui-même, mais **seule la direction peut rouvrir** la saisie, sans quoi le verrou ne
+protégerait rien.
+
 ## Règles de calcul
 
 **Moyenne d'une matière** (SF-13) : seules les notes saisies et non marquées « absent » comptent.

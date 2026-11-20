@@ -260,6 +260,12 @@ html {
   background: #f7f8fb;
 }
 
+/** Bouton d'une action irréversible : rouge, pour qu'on le voie venir. */
+.mat-mdc-unelevated-button.bouton-danger:not(:disabled) {
+  color: #fff;
+  background: var(--lycee-alerte-texte);
+}
+
 /** Bouton tonal : marine très clair. */
 .mat-mdc-tonal-button:not(:disabled) {
   color: var(--lycee-marine);

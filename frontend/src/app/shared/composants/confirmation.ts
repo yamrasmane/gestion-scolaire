@@ -67,6 +67,12 @@ export function confirmation(): (demande: DemandeConfirmation) => Observable<boo
         disableClose: true,
         autoFocus: 'dialog',
       });
+      // Échap vaut « Annuler » : le geste est volontaire et sans danger.
+      reference.keydownEvents().subscribe((evenement) => {
+        if (evenement.key === 'Escape') {
+          reference.close(false);
+        }
+      });
       const abonnement = reference.afterClosed().subscribe((confirme) => {
         if (confirme) {
           abonne.next(true);

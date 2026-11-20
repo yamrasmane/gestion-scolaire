@@ -85,6 +85,19 @@ export class BoutonFormulaire {
       disableClose: true,
       autoFocus: 'first-tabbable',
     });
+    this.echapFerme(this.reference);
+  }
+
+  /**
+   * La touche Échap reste un geste volontaire : elle ferme la fenêtre, alors
+   * qu'un clic à côté — souvent involontaire — ne fait rien.
+   */
+  private echapFerme(reference: MatDialogRef<unknown>): void {
+    reference.keydownEvents().subscribe((evenement) => {
+      if (evenement.key === 'Escape') {
+        reference.close();
+      }
+    });
   }
 
   /** Ferme la fenêtre : à appeler après un enregistrement réussi. */

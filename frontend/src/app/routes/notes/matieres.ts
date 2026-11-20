@@ -125,7 +125,7 @@ export class Matieres {
     this.confirmer({
       titre: 'Supprimer la matière du catalogue',
       message: `Supprimer « ${matiere.libelle} » ?`,
-      precision: "La suppression est refusée si la matière sert dans une classe ou un programme.",
+      precision: 'La suppression est refusée si la matière sert dans une classe ou un programme.',
     }).subscribe(() =>
       this.executer(this.api.supprimerMatiere(matiere.id), () => this.chargerMatieres()),
     );

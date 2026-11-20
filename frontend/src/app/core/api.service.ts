@@ -940,11 +940,9 @@ export class ApiService {
 
   /** Verrouille ou rouvre une épreuve : notes figées tant qu'elle est verrouillée. */
   verrouillerEvaluation(evaluationId: string, verrouillee: boolean): Observable<Evaluation> {
-    return this.http.put<Evaluation>(
-      `${this.base}/evaluations/${evaluationId}/verrou`,
-      null,
-      { params: parametres({ verrouillee }) },
-    );
+    return this.http.put<Evaluation>(`${this.base}/evaluations/${evaluationId}/verrou`, null, {
+      params: parametres({ verrouillee }),
+    });
   }
 
   supprimerEvaluation(evaluationId: string): Observable<void> {

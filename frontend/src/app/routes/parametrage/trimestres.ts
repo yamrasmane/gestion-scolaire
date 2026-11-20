@@ -158,9 +158,10 @@ export class Trimestres {
   protected supprimerCycle(t: Trimestre, cycle: Cycle): void {
     this.confirmer({
       titre: 'Supprimer le réglage de composition',
-      message: `Supprimer le réglage du ${cycle === 'PREMIER' ? 'premier' : 'second'} cycle`
-        + ` pour le trimestre ${t.numero} ?`,
-      precision: 'Le trimestre reprendra le réglage par défaut de l\'année.',
+      message:
+        `Supprimer le réglage du ${cycle === 'PREMIER' ? 'premier' : 'second'} cycle` +
+        ` pour le trimestre ${t.numero} ?`,
+      precision: "Le trimestre reprendra le réglage par défaut de l'année.",
     }).subscribe(() => this.executer(this.api.supprimerReglageCycle(t.id, cycle)));
   }
 

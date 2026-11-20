@@ -122,6 +122,11 @@ export class Personnel {
         maxHeight: '95vh',
         disableClose: true,
       });
+      this.fenetreEdition.keydownEvents().subscribe((evenement) => {
+        if (evenement.key === 'Escape') {
+          this.abandonner();
+        }
+      });
     }
   }
 

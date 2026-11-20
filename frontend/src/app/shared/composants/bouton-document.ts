@@ -87,7 +87,7 @@ export class BoutonDocument {
         (a, b) => Number(b.code === this.formatDefaut()) - Number(a.code === this.formatDefaut()),
       ),
     };
-    this.fenetres.open(ApercuDocument, {
+    const reference = this.fenetres.open(ApercuDocument, {
       data: demande,
       width: '1100px',
       maxWidth: '96vw',
@@ -98,6 +98,12 @@ export class BoutonDocument {
       disableClose: true,
       autoFocus: false,
       restoreFocus: true,
+    });
+    // Échap ferme, le clic à côté non.
+    reference.keydownEvents().subscribe((evenement) => {
+      if (evenement.key === 'Escape') {
+        reference.close();
+      }
     });
   }
 
