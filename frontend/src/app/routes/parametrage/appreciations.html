@@ -1,0 +1,229 @@
+<page-header title="Appréciations du bulletin" />
+
+@if (erreur(); as message) {
+  <p class="alerte-erreur" role="alert">{{ message }}</p>
+}
+
+@if (!contexte.anneeId()) {
+  <app-annee-requise />
+} @else {
+  <mat-card>
+    <mat-card-content>
+      <p class="text-muted">
+        Les appréciations du bulletin se règlent par intervalles de moyenne, pour
+        <strong>{{ contexte.annee()?.libelle }}</strong
+        >. Un intervalle va de sa borne basse <em>incluse</em> à sa borne haute <em>exclue</em> ; 20
+        est compris dans le dernier. Le bulletin les applique de lui-même : il n'y a rien à
+        ressaisir après un changement.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-tab-group>
+    <mat-tab label="Moyennes de matière">
+      <div class="barre-page">
+        <app-bouton-formulaire
+          libelle="Ajouter un intervalle"
+          titre="Ajouter un intervalle d'appréciation de matière"
+          formulaire="appreciation-matiere"
+          action="Ajouter"
+        >
+          <ng-template let-fenetre>
+            <ng-container
+              [ngTemplateOutlet]="champs"
+              [ngTemplateOutletContext]="{
+                $implicit: fenetre,
+                portee: 'MATIERE',
+                formulaire: 'appreciation-matiere',
+              }"
+            />
+          </ng-template>
+        </app-bouton-formulaire>
+      </div>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Appréciation portée en face de chaque matière</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="text-muted">
+            Cette appréciation paraît sur la ligne de la matière, à côté de la moyenne obtenue.
+          </p>
+          <ng-container
+            [ngTemplateOutlet]="tableau"
+            [ngTemplateOutletContext]="{ $implicit: 'MATIERE' }"
+          />
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Moyenne générale">
+      <div class="barre-page">
+        <app-bouton-formulaire
+          libelle="Ajouter un intervalle"
+          titre="Ajouter un intervalle de mention"
+          formulaire="appreciation-generale"
+          action="Ajouter"
+        >
+          <ng-template let-fenetre>
+            <ng-container
+              [ngTemplateOutlet]="champs"
+              [ngTemplateOutletContext]="{
+                $implicit: fenetre,
+                portee: 'GENERALE',
+                formulaire: 'appreciation-generale',
+              }"
+            />
+          </ng-template>
+        </app-bouton-formulaire>
+      </div>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Mention portée au pied du bulletin</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="text-muted">
+            Cette appréciation tient la mention du bulletin, obtenue à partir de la moyenne
+            générale. Le conseil de classe peut toujours la remplacer à la délibération.
+          </p>
+          <ng-container
+            [ngTemplateOutlet]="tableau"
+            [ngTemplateOutletContext]="{ $implicit: 'GENERALE' }"
+          />
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+}
+
+<!-- Tableau d'un barème : les deux portées se règlent de la même manière. -->
+<ng-template #tableau let-portee>
+  @if (intervalles(portee).length === 0) {
+    <p class="text-muted">
+      Aucun intervalle : les bulletins de cette année paraîtront sans appréciation. Ajoutez-en, ou
+      reprenez le barème d'une autre année depuis « Années scolaires ».
+    </p>
+  } @else {
+    <div class="table-defilement">
+      <table mat-table [dataSource]="intervalles(portee)" class="w-full">
+        <ng-container matColumnDef="intervalle">
+          <th mat-header-cell *matHeaderCellDef>Moyenne</th>
+          <td mat-cell *matCellDef="let intervalle">
+            @if (ligneModifiee() === intervalle.id) {
+              <mat-form-field class="champ-etroit">
+                <mat-label>De</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="0.25"
+                  name="borneMin"
+                  [(ngModel)]="modification.borneMin"
+                />
+              </mat-form-field>
+              <mat-form-field class="champ-etroit">
+                <mat-label>À</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="0.25"
+                  name="borneMax"
+                  [(ngModel)]="modification.borneMax"
+                />
+              </mat-form-field>
+            } @else {
+              de <strong>{{ intervalle.borneMin }}</strong> à
+              <strong>{{ intervalle.borneMax }}</strong>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="libelle">
+          <th mat-header-cell *matHeaderCellDef>Appréciation</th>
+          <td mat-cell *matCellDef="let intervalle">
+            @if (ligneModifiee() === intervalle.id) {
+              <mat-form-field class="champ-large">
+                <mat-label>Appréciation</mat-label>
+                <input matInput maxlength="60" name="libelle" [(ngModel)]="modification.libelle" />
+              </mat-form-field>
+            } @else {
+              {{ intervalle.libelle }}
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let intervalle">
+            @if (ligneModifiee() === intervalle.id) {
+              <button matButton="filled" [disabled]="enCours()" (click)="enregistrer(intervalle)">
+                Enregistrer
+              </button>
+              <button matButton (click)="ligneModifiee.set(null)">Annuler</button>
+            } @else {
+              <button matButton (click)="modifier(intervalle)">Modifier</button>
+              <button matButton [disabled]="enCours()" (click)="supprimer(intervalle)">
+                Supprimer
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+        <tr mat-row *matRowDef="let intervalle; columns: colonnes"></tr>
+      </table>
+    </div>
+
+    @if (trousDe(portee).length > 0) {
+      <p class="alerte-attention">
+        Moyennes sans appréciation : {{ trousDe(portee).join(', ') }}. C'est permis — une moyenne
+        générale ordinaire n'appelle pas forcément de mention — mais vérifiez que c'est voulu.
+      </p>
+    }
+  }
+</ng-template>
+
+<!-- Formulaire d'ajout, commun aux deux portées. -->
+<ng-template #champs let-fenetre let-portee="portee" let-identifiant="formulaire">
+  <form [id]="identifiant" #saisie="ngForm" (ngSubmit)="saisie.valid && ajouter(portee, fenetre)">
+    <div class="grille-formulaire">
+      <mat-form-field>
+        <mat-label>De (incluse)</mat-label>
+        <input
+          matInput
+          type="number"
+          min="0"
+          max="20"
+          step="0.25"
+          name="borneMin"
+          required
+          [(ngModel)]="nouveau.borneMin"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>À (exclue)</mat-label>
+        <input
+          matInput
+          type="number"
+          min="0"
+          max="20"
+          step="0.25"
+          name="borneMax"
+          required
+          [(ngModel)]="nouveau.borneMax"
+        />
+      </mat-form-field>
+
+      <mat-form-field class="champ-large">
+        <mat-label>Appréciation</mat-label>
+        <input matInput maxlength="60" name="libelle" required [(ngModel)]="nouveau.libelle" />
+        <mat-hint>Par exemple : Assez bien, Encouragements, Félicitations.</mat-hint>
+      </mat-form-field>
+    </div>
+  </form>
+</ng-template>

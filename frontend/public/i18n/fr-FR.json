@@ -20,6 +20,7 @@
     "notes.classement": "Classement et bulletins",
     "parametrage.matieres": "Matières et coefficients",
     "parametrage.programmes": "Programmes par niveau",
+    "parametrage.appreciations": "Appréciations du bulletin",
     "notes.affectations": "Affectation des enseignants"
   },
   "validation": {

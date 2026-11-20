@@ -5,7 +5,8 @@
 }
 
 .alerte-erreur,
-.alerte-succes {
+.alerte-succes,
+.alerte-attention {
   padding: 0.75rem 1rem;
   margin: 1rem 0;
   font-size: 0.875rem;
@@ -20,6 +21,12 @@
 .alerte-succes {
   color: var(--mat-sys-on-tertiary-container, var(--mat-sys-on-secondary-container));
   background-color: var(--mat-sys-tertiary-container, var(--mat-sys-secondary-container));
+}
+
+/** Avertissement : ce n'est pas une erreur, mais cela mérite un regard. */
+.alerte-attention {
+  color: #7a4b00;
+  background-color: #fff3dc;
 }
 
 /** Tableau large sur petit écran : défilement horizontal plutôt que débordement. */
@@ -125,6 +132,18 @@
 /** Champ numérique saisi directement dans une cellule de tableau. */
 .champ-etroit {
   width: 6rem;
+}
+
+/**
+ * Saisie dans une cellule de tableau : l'étiquette flotte au-dessus du champ
+ * et serait coupée par le haut de la ligne sans cette marge.
+ */
+.mat-mdc-cell .mat-mdc-form-field {
+  margin-top: 0.75rem;
+
+  + .mat-mdc-form-field {
+    margin-left: 0.5rem;
+  }
 }
 
 /**

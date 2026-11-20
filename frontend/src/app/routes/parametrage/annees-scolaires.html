@@ -58,7 +58,59 @@
         </form>
       </ng-template>
     </app-bouton-formulaire>
+
+    <app-bouton-formulaire
+      libelle="Reprendre les paramètres d'une autre année"
+      titre="Reprendre les paramètres d'une autre année"
+      icone="content_copy"
+      formulaire="annee-reprise"
+      action="Reprendre"
+    >
+      <ng-template let-fenetre>
+        <form id="annee-reprise" [formGroup]="reprise" (ngSubmit)="reprendre(fenetre)">
+          <p class="text-muted">
+            Les paramètres qui changent d'une année à l'autre — programme des niveaux,
+            appréciations du bulletin, grille tarifaire, plans de paiement et options de l'année —
+            sont propres à chaque année. Une année nouvelle reçoit déjà ceux de la précédente ;
+            cette reprise sert à repartir d'une autre année.
+          </p>
+          <div class="grille-formulaire">
+            <mat-form-field>
+              <mat-label>Année à régler</mat-label>
+              <mat-select formControlName="cible">
+                @for (annee of annees(); track annee.id) {
+                  <mat-option [value]="annee.id">{{ annee.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Reprendre les paramètres de</mat-label>
+              <mat-select formControlName="source">
+                @for (annee of annees(); track annee.id) {
+                  @if (annee.id !== reprise.controls.cible.value) {
+                    <mat-option [value]="annee.id">{{ annee.libelle }}</mat-option>
+                  }
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <p class="alerte-attention">
+            Ce que l'année à régler contenait est remplacé. Les notes, les inscriptions et les
+            paiements ne sont pas touchés.
+          </p>
+        </form>
+      </ng-template>
+    </app-bouton-formulaire>
   </div>
+
+  @if (copie(); as bilan) {
+    <p class="alerte-succes">
+      Paramètres repris de {{ bilan.anneeSource }} : {{ bilan.lignesProgramme }} ligne(s) de
+      programme, {{ bilan.appreciations }} appréciation(s), {{ bilan.tarifs }} tarif(s),
+      {{ bilan.plans }} plan(s) de paiement.
+    </p>
+  }
 }
 
 <mat-card>

@@ -9,14 +9,16 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 
 import { AnneeContexte } from '@core/annee-contexte';
-import { AnneeScolaire, ApiService, messageErreur } from '@core/api.service';
+import { AnneeScolaire, ApiService, CopieParametres, messageErreur } from '@core/api.service';
 import { AuthService } from '@core/authentication';
 import { DIRECTION } from '@core/roles';
 import { PageHeader } from '@shared/components/page-header/page-header';
 import { BoutonFormulaire } from '@shared/composants/bouton-formulaire';
+import { confirmation } from '@shared/composants/confirmation';
 import { enIso } from '@shared/composants/dates';
 
 @Component({
@@ -34,6 +36,7 @@ import { enIso } from '@shared/composants/dates';
     MatInputModule,
     MatCheckboxModule,
     MatDatepickerModule,
+    MatSelectModule,
     PageHeader,
     BoutonFormulaire,
   ],
@@ -43,12 +46,16 @@ export class AnneesScolaires {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly contexte = inject(AnneeContexte);
+  private readonly confirmer = confirmation();
 
   protected readonly annees = signal<AnneeScolaire[]>([]);
   protected readonly chargement = signal(true);
   protected readonly enCours = signal(false);
   protected readonly erreur = signal('');
   protected readonly peutModifier = this.auth.aUnRole(...DIRECTION);
+
+  /** Compte rendu de la dernière reprise de paramètres. */
+  protected readonly copie = signal<CopieParametres | null>(null);
 
   protected readonly colonnes = this.peutModifier
     ? ['libelle', 'dateDebut', 'dateFin', 'composition', 'etat', 'actions']
@@ -63,6 +70,12 @@ export class AnneesScolaires {
     avecCompositionDefaut: [true],
     poidsCompositionDefaut: [2, [Validators.required, Validators.min(0.01)]],
     bloquerBulletinImpaye: [false],
+  });
+
+  /** Reprise des paramètres : l'année à régler et celle dont on les reprend. */
+  protected readonly reprise = this.fb.nonNullable.group({
+    cible: ['', Validators.required],
+    source: ['', Validators.required],
   });
 
   constructor() {
@@ -95,6 +108,49 @@ export class AnneesScolaires {
 
   protected activer(annee: AnneeScolaire): void {
     this.executer(this.api.activerAnneeScolaire(annee.id));
+  }
+
+  /**
+   * Reprend sur une année les paramètres réglés sur une autre : programme des
+   * niveaux, appréciations, grille tarifaire, plans de paiement et options de
+   * l'année. La reprise remplace ce que l'année cible avait déjà, d'où la
+   * confirmation.
+   */
+  protected reprendre(fenetre?: BoutonFormulaire): void {
+    const { cible, source } = this.reprise.getRawValue();
+    if (!cible || !source || cible === source) {
+      return;
+    }
+    this.confirmer({
+      titre: 'Reprendre les paramètres',
+      message: `Reprendre sur ${this.libelle(cible)} les paramètres de ${this.libelle(source)} ?`,
+      precision:
+        "Le programme des niveaux, les appréciations, la grille tarifaire, les plans de paiement "
+        + "et les options de l'année cible sont remplacés. Les notes, inscriptions et paiements "
+        + 'ne sont pas touchés.',
+      action: 'Reprendre',
+    }).subscribe(() => {
+      this.enCours.set(true);
+      this.erreur.set('');
+      this.copie.set(null);
+      this.api.copierParametresAnnuels(cible, source).subscribe({
+        next: (bilan) => {
+          this.copie.set(bilan);
+          this.enCours.set(false);
+          fenetre?.fermer();
+          this.charger();
+          this.contexte.charger();
+        },
+        error: (e) => {
+          this.erreur.set(messageErreur(e));
+          this.enCours.set(false);
+        },
+      });
+    });
+  }
+
+  protected libelle(anneeId: string): string {
+    return this.annees().find((annee) => annee.id === anneeId)?.libelle ?? '';
   }
 
   private executer(

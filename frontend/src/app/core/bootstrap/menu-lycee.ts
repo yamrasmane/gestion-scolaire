@@ -72,6 +72,12 @@ export const MENU_LYCEE: Menu[] = [
         permissions: { only: DIRECTION },
       },
       {
+        route: 'appreciations',
+        name: 'appreciations',
+        type: 'link',
+        permissions: { only: DIRECTION },
+      },
+      {
         route: 'finances/types-frais',
         name: 'types_frais',
         type: 'link',

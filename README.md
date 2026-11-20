@@ -107,7 +107,8 @@ Le **programme d'un niveau** (« Paramétrage › Programmes par niveau ») déc
 type de classe et leur coefficient : une ligne par matière, un coefficient par niveau. Toute classe
 créée ensuite dans ce niveau reçoit ces matières automatiquement ; le bouton *Appliquer aux classes
 existantes* complète celles qui existent déjà, sans toucher aux professeurs déjà nommés (cocher la
-case pour réaligner aussi les coefficients).
+case pour réaligner aussi les coefficients). Le programme appartient à **une année scolaire** :
+celui affiché est celui de l'année choisie dans le bandeau.
 
 Les professeurs sont nommés classe par classe dans « Notes › Affectation des enseignants » : un
 choix par matière, enregistré en une seule fois pour toute la classe. La même page donne le service
@@ -115,6 +116,33 @@ d'un professeur — ses classes, ses matières et son total de coefficients.
 
 Les **fiches du personnel** (« Personnel ») se modifient en place : nom, prénom, adresse, téléphone
 et rôle. Changer le rôle met aussi à jour les droits du compte Keycloak lié, s'il existe.
+
+## Appréciations du bulletin et paramètres versionnés par année
+
+Les **appréciations du bulletin** (« Paramétrage › Appréciations du bulletin ») se règlent par
+intervalles de moyenne, en deux barèmes : l'un porte sur les moyennes de matière, en face de chaque
+ligne du bulletin, l'autre sur la moyenne générale, où il tient la mention. Un intervalle va de sa
+borne basse *incluse* à sa borne haute *exclue*, 20 étant compris dans le dernier ; deux
+intervalles ne peuvent pas se chevaucher. Le bulletin les applique de lui-même : rien à ressaisir
+après un changement, et le conseil de classe garde la main sur la mention à la délibération.
+
+Une année créée sans barème en reçoit un par défaut : *Très insuffisant* sous 5, puis *Insuffisant*,
+*Médiocre*, *Passable*, *Assez bien*, *Bien*, *Très bien* et *Excellent* pour les matières ;
+*Avertissement* sous 8, *Tableau d'honneur* à partir de 12, *Encouragements* à partir de 14 et
+*Félicitations* à partir de 16 pour la moyenne générale.
+
+**Ce qui change d'une année à l'autre est versionné par année** : le programme de chaque niveau,
+le barème d'appréciations, la grille tarifaire, les plans de paiement, les trimestres et leurs
+réglages de composition, et les options de l'année (composition par défaut, blocage des bulletins
+impayés). Restent communs à toutes les années les catalogues qui ne dépendent pas du calendrier :
+niveaux, matières et types de frais — leurs montants, eux, vivent dans la grille tarifaire de
+chaque année.
+
+Une année nouvelle hérite des paramètres de la précédente, ce qui évite de tout ressaisir ; les
+modifications faites ensuite ne remontent jamais vers les années antérieures. Le bouton *Reprendre
+les paramètres d'une autre année* (« Paramétrage › Années scolaires ») permet de repartir d'une
+autre année : la reprise remplace les paramètres de l'année visée, sans toucher aux notes, aux
+inscriptions ni aux paiements.
 
 ## Habillage
 

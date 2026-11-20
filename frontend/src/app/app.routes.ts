@@ -83,6 +83,12 @@ export const routes: Routes = [
         loadComponent: () => import('./routes/parametrage/programmes').then((m) => m.Programmes),
       },
       {
+        path: 'parametrage/appreciations',
+        canActivate: [roleGuard(...DIRECTION)],
+        loadComponent: () =>
+          import('./routes/parametrage/appreciations').then((m) => m.Appreciations),
+      },
+      {
         path: 'notes/affectations',
         canActivate: [roleGuard(...DIRECTION)],
         loadComponent: () => import('./routes/notes/affectations').then((m) => m.Affectations),

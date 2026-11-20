@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -31,6 +31,10 @@ import { AnneeRequise } from '@shared/composants/annee-requise';
  * pour un type de classe (SF-09). Toute classe créée ensuite dans ce
  * niveau reçoit automatiquement ces matières ; le bouton « Appliquer »
  * complète en plus les classes qui existent déjà.
+ *
+ * <p>Le programme appartient à une année scolaire : changer d'année dans le
+ * bandeau change le programme affiché, et une année nouvelle peut reprendre
+ * celui d'une autre depuis la page des années scolaires.
  */
 @Component({
   selector: 'app-programmes',
@@ -92,6 +96,14 @@ export class Programmes {
       next: (matieres) => this.matieres.set(matieres),
       error: (e) => this.erreur.set(messageErreur(e)),
     });
+    // Le programme dépend de l'année de travail : la suivre évite d'afficher
+    // celui d'une autre année après un changement dans le bandeau.
+    effect(() => {
+      this.contexte.anneeId();
+      this.compteRendu.set(null);
+      this.ligneModifiee.set(null);
+      this.charger();
+    });
   }
 
   protected choisirNiveau(id: string): void {
@@ -104,11 +116,12 @@ export class Programmes {
   /** La fenêtre ne se referme qu'une fois la ligne ajoutée. */
   protected ajouter(fenetre?: BoutonFormulaire): void {
     const niveauId = this.niveauId();
-    if (!niveauId || !this.nouvelleLigne.matiereId || !this.nouvelleLigne.coefficient) {
+    const anneeId = this.contexte.anneeId();
+    if (!niveauId || !anneeId || !this.nouvelleLigne.matiereId || !this.nouvelleLigne.coefficient) {
       return;
     }
     this.executer(
-      this.api.ajouterAuProgramme(niveauId, {
+      this.api.ajouterAuProgramme(anneeId, niveauId, {
         matiereId: this.nouvelleLigne.matiereId,
         coefficient: this.nouvelleLigne.coefficient,
       }),
@@ -159,7 +172,7 @@ export class Programmes {
     }
     this.compteRendu.set(null);
     this.executer(
-      this.api.appliquerProgramme(niveauId, anneeId, this.alignerCoefficients),
+      this.api.appliquerProgramme(anneeId, niveauId, this.alignerCoefficients),
       (resultat) => this.compteRendu.set(resultat as ApplicationProgramme),
     );
   }
@@ -170,10 +183,12 @@ export class Programmes {
 
   private charger(): void {
     const niveauId = this.niveauId();
-    if (!niveauId) {
+    const anneeId = this.contexte.anneeId();
+    if (!niveauId || !anneeId) {
+      this.lignes.set([]);
       return;
     }
-    this.api.programme(niveauId).subscribe({
+    this.api.programme(anneeId, niveauId).subscribe({
       next: (lignes) => this.lignes.set(lignes),
       error: (e) => this.erreur.set(messageErreur(e)),
     });

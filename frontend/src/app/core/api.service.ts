@@ -348,6 +348,7 @@ export interface Enseignement {
 
 export interface LigneProgramme {
   id: string;
+  anneeScolaireId: string;
   niveauId: string;
   niveauCode: string;
   niveauLibelle: string;
@@ -355,6 +356,33 @@ export interface LigneProgramme {
   matiereCode: string;
   matiereLibelle: string;
   coefficient: number;
+}
+
+/** Portée d'un barème d'appréciations : moyennes de matière ou moyenne générale. */
+export type PorteeAppreciation = 'MATIERE' | 'GENERALE';
+
+export interface Appreciation {
+  id: string;
+  anneeScolaireId: string;
+  portee: PorteeAppreciation;
+  borneMin: number;
+  borneMax: number;
+  libelle: string;
+}
+
+export interface AppreciationSaisie {
+  borneMin: number;
+  borneMax: number;
+  libelle: string;
+}
+
+/** Compte rendu d'une reprise des paramètres d'une autre année. */
+export interface CopieParametres {
+  anneeSource: string;
+  lignesProgramme: number;
+  appreciations: number;
+  tarifs: number;
+  plans: number;
 }
 
 export interface ApplicationProgramme {
@@ -856,15 +884,21 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/matieres/${id}`);
   }
 
-  programme(niveauId: string): Observable<LigneProgramme[]> {
-    return this.http.get<LigneProgramme[]>(`${this.base}/niveaux/${niveauId}/programme`);
+  programme(anneeId: string, niveauId: string): Observable<LigneProgramme[]> {
+    return this.http.get<LigneProgramme[]>(
+      `${this.base}/annees-scolaires/${anneeId}/niveaux/${niveauId}/programme`,
+    );
   }
 
   ajouterAuProgramme(
+    anneeId: string,
     niveauId: string,
     saisie: { matiereId: string; coefficient: number },
   ): Observable<LigneProgramme> {
-    return this.http.post<LigneProgramme>(`${this.base}/niveaux/${niveauId}/programme`, saisie);
+    return this.http.post<LigneProgramme>(
+      `${this.base}/annees-scolaires/${anneeId}/niveaux/${niveauId}/programme`,
+      saisie,
+    );
   }
 
   modifierLigneProgramme(
@@ -879,13 +913,52 @@ export class ApiService {
   }
 
   appliquerProgramme(
-    niveauId: string,
     anneeId: string,
+    niveauId: string,
     alignerCoefficients: boolean,
   ): Observable<ApplicationProgramme> {
     return this.http.post<ApplicationProgramme>(
-      `${this.base}/niveaux/${niveauId}/programme/application` +
-        `?anneeId=${anneeId}&alignerCoefficients=${alignerCoefficients}`,
+      `${this.base}/annees-scolaires/${anneeId}/niveaux/${niveauId}/programme/application` +
+        `?alignerCoefficients=${alignerCoefficients}`,
+      null,
+    );
+  }
+
+  appreciations(anneeId: string, portee: PorteeAppreciation): Observable<Appreciation[]> {
+    return this.http.get<Appreciation[]>(
+      `${this.base}/annees-scolaires/${anneeId}/appreciations/${portee}`,
+    );
+  }
+
+  ajouterAppreciation(
+    anneeId: string,
+    portee: PorteeAppreciation,
+    saisie: AppreciationSaisie,
+  ): Observable<Appreciation> {
+    return this.http.post<Appreciation>(
+      `${this.base}/annees-scolaires/${anneeId}/appreciations/${portee}`,
+      saisie,
+    );
+  }
+
+  modifierAppreciation(
+    intervalleId: string,
+    saisie: AppreciationSaisie,
+  ): Observable<Appreciation> {
+    return this.http.put<Appreciation>(`${this.base}/appreciations/${intervalleId}`, saisie);
+  }
+
+  supprimerAppreciation(intervalleId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/appreciations/${intervalleId}`);
+  }
+
+  /** Reprend sur une année les paramètres réglés sur une autre (SF-17). */
+  copierParametresAnnuels(
+    anneeId: string,
+    depuis: string,
+  ): Observable<CopieParametres> {
+    return this.http.post<CopieParametres>(
+      `${this.base}/annees-scolaires/${anneeId}/parametres/copie?depuis=${depuis}`,
       null,
     );
   }
